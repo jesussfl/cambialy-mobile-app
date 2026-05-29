@@ -1,30 +1,59 @@
-import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { StyleSheet } from 'react-native-unistyles';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import { ScrollView, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native-unistyles";
+import { z } from "zod";
 
-import { AppText } from '@/components/ui/app-text';
-import { AppButton } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { AppTextField } from '@/components/ui/text-field';
-import { appTheme as theme } from '@/theme/app-theme';
+import { AppText } from "@/components/ui/app-text";
+import { AppButton } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { AppTextField } from "@/components/ui/text-field";
+import { appTheme as theme } from "@/theme/app-theme";
 
-import { RateCard } from '../components/rate-card';
-import { mockRates } from '../data/mock-rates';
+import { RateCard } from "../components/rate-card";
+import { mockRates } from "../data/mock-rates";
+
+const parseCurrencyAmount = (value: string) => {
+  const trimmedValue = value.trim();
+  const normalizedValue = trimmedValue.includes(",") && trimmedValue.includes(".") ? trimmedValue.replace(/,/g, "") : trimmedValue.replace(",", ".");
+
+  return Number(normalizedValue);
+};
+
+const currencyAmountSchema = z
+  .string()
+  .trim()
+  .min(1, "Ingresa un precio")
+  .refine((value) => Number.isFinite(parseCurrencyAmount(value)), "Ingresa un numero valido")
+  .refine((value) => parseCurrencyAmount(value) > 0, "Ingresa un precio mayor a cero");
+
+const calculatorSchema = z.object({
+  usdValue: currencyAmountSchema,
+  vesValue: currencyAmountSchema,
+});
+
+type CalculatorFormValues = z.infer<typeof calculatorSchema>;
 
 export function CalculatorScreen() {
-  const [usdValue, setUsdValue] = useState('10.00');
-  const [vesValue, setVesValue] = useState('5,445.80');
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CalculatorFormValues>({
+    resolver: zodResolver(calculatorSchema),
+  });
+
+  const handleCalculate = (values: CalculatorFormValues) => {
+    console.log(values);
+  };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.backgroundGlowTop} />
       <View style={styles.backgroundGlowBottom} />
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-        bounces={false}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
         <View style={styles.header}>
           <AppText variant="title">Paga Claro</AppText>
           <AppText variant="subtitle">Compara precios en bolivares y divisas</AppText>
@@ -46,29 +75,57 @@ export function CalculatorScreen() {
           <AppText variant="cardTitle">Ingresa los precios a comparar</AppText>
 
           <View style={styles.formFields}>
-            <AppTextField
-              label="Precio en Divisa (USD)"
-              value={usdValue}
-              onChangeText={setUsdValue}
-              keyboardType="decimal-pad"
-              autoCapitalize="none"
-              autoCorrect={false}
-              icon={{ ios: 'dollarsign.square', android: 'attach_money' }}
+            <Controller
+              control={control}
+              name="usdValue"
+              render={({ field: { onBlur, onChange, value } }) => (
+                <View style={styles.fieldGroup}>
+                  <AppTextField
+                    label="Precio en Divisa (USD)"
+                    value={value ?? ""}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    keyboardType="decimal-pad"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    icon={{ ios: "dollarsign.square", android: "attach_money" }}
+                  />
+                  {errors.usdValue ? (
+                    <AppText variant="body" color={theme.colors.error}>
+                      {errors.usdValue.message}
+                    </AppText>
+                  ) : null}
+                </View>
+              )}
             />
 
-            <AppTextField
-              label="Precio en Bolívares (Bs.)"
-              value={vesValue}
-              onChangeText={setVesValue}
-              keyboardType="decimal-pad"
-              autoCapitalize="none"
-              autoCorrect={false}
-              prefix="Bs."
+            <Controller
+              control={control}
+              name="vesValue"
+              render={({ field: { onBlur, onChange, value } }) => (
+                <View style={styles.fieldGroup}>
+                  <AppTextField
+                    label="Precio en Bolivares (Bs.)"
+                    value={value ?? ""}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    keyboardType="decimal-pad"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    prefix="Bs."
+                  />
+                  {errors.vesValue ? (
+                    <AppText variant="body" color={theme.colors.error}>
+                      {errors.vesValue.message}
+                    </AppText>
+                  ) : null}
+                </View>
+              )}
             />
           </View>
 
           <AppButton label="Cambiar a dolares (BCV)" variant="secondary" />
-          <AppButton label="Calcular" variant="primary" />
+          <AppButton label="Calcular" variant="primary" onPress={handleSubmit(handleCalculate)} />
         </Card>
       </ScrollView>
     </SafeAreaView>
@@ -81,7 +138,7 @@ const styles = StyleSheet.create(() => ({
     backgroundColor: theme.colors.background,
   },
   backgroundGlowTop: {
-    position: 'absolute',
+    position: "absolute",
     top: -140,
     left: -80,
     width: 280,
@@ -91,7 +148,7 @@ const styles = StyleSheet.create(() => ({
     opacity: 0.32,
   },
   backgroundGlowBottom: {
-    position: 'absolute',
+    position: "absolute",
     right: -120,
     bottom: 120,
     width: 300,
@@ -102,9 +159,9 @@ const styles = StyleSheet.create(() => ({
   },
   content: {
     paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing['3xl'],
-    paddingBottom: theme.spacing['3xl'],
-    gap: theme.spacing['3xl'],
+    paddingTop: theme.spacing["3xl"],
+    paddingBottom: theme.spacing["3xl"],
+    gap: theme.spacing["3xl"],
   },
   header: {
     gap: theme.spacing.xs,
@@ -114,21 +171,22 @@ const styles = StyleSheet.create(() => ({
     gap: theme.spacing.lg,
   },
   centeredTitle: {
-    textAlign: 'center',
+    textAlign: "center",
   },
   rateGrid: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: theme.spacing.sm,
   },
   formCard: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingTop: theme.spacing.xl,
-    paddingBottom: theme.spacing.xl,
+    padding: theme.spacing.md,
     gap: theme.spacing.xl,
     backgroundColor: theme.colors.surface,
     borderColor: theme.colors.border,
   },
   formFields: {
     gap: theme.spacing.xl,
+  },
+  fieldGroup: {
+    gap: theme.spacing.xs,
   },
 }));

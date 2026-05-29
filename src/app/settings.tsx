@@ -1,0 +1,30 @@
+import { View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet } from 'react-native-unistyles';
+
+import { AppText } from '@/components/ui/app-text';
+import { appTheme as theme } from '@/theme/app-theme';
+
+export default function SettingsScreen() {
+  return (
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.content}>
+        <AppText variant="title">Ajustes</AppText>
+        <AppText variant="body">Configura tus preferencias de comparacion.</AppText>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create(() => ({
+  safeArea: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: theme.spacing.md,
+    paddingTop: theme.spacing['3xl'],
+    gap: theme.spacing.xs,
+  },
+}));

@@ -1,8 +1,8 @@
-import type { PropsWithChildren } from 'react';
-import { View, type ViewProps } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import type { PropsWithChildren } from "react";
+import { View, type ViewProps } from "react-native";
+import { StyleSheet } from "react-native-unistyles";
 
-import { appTheme as theme } from '@/theme/app-theme';
+import { appTheme as theme } from "@/theme/app-theme";
 
 type CardProps = PropsWithChildren<
   ViewProps & {
@@ -21,7 +21,7 @@ export function Card({ children, elevated = false, style, ...rest }: CardProps) 
 const styles = StyleSheet.create(() => ({
   base: {
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.lg,
+    borderRadius: theme.radius.sm,
     borderWidth: 1,
     borderColor: theme.colors.borderSubtle,
   },

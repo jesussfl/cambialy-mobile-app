@@ -30,6 +30,7 @@ export const themes = {
       tabBorder: '#173E70',
       inputSurface: '#182B4A',
       icon: '#87A2C5',
+      error: '#FFB4AB',
     },
   },
   light: {
@@ -54,6 +55,7 @@ export const themes = {
       tabBorder: '#D1DEF1',
       inputSurface: '#F4F7FC',
       icon: '#5D789C',
+      error: '#BA1A1A',
     },
   },
 } as const;

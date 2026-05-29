@@ -1,43 +1,144 @@
-import '@/theme/unistyles';
+import "@/theme/unistyles";
 
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
-import { StatusBar } from 'expo-status-bar';
+import { Tabs } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import type { ComponentProps } from "react";
+import { Pressable, View } from "react-native";
+import RemixIcon, { type IconName } from "react-native-remix-icon";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native-unistyles";
 
-import { appTheme as theme } from '@/theme/app-theme';
+import { AppText } from "@/components/ui/app-text";
+import { appTheme as theme } from "@/theme/app-theme";
+
+type ExpoTabsProps = ComponentProps<typeof Tabs>;
+type BottomTabBarProps = Parameters<NonNullable<ExpoTabsProps["tabBar"]>>[0];
+
+type TabConfig = {
+  icon: IconName;
+  label: string;
+};
+
+const tabConfig: Record<string, TabConfig> = {
+  index: {
+    icon: "calculator-line",
+    label: "Calcular",
+  },
+  history: {
+    icon: "history-line",
+    label: "Historial",
+  },
+  settings: {
+    icon: "settings-3-line",
+    label: "Ajustes",
+  },
+};
+
+function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, theme.spacing.sm) }]}>
+      {state.routes.map((route, index) => {
+        const config = tabConfig[route.name];
+        const options = descriptors[route.key]?.options;
+        const isFocused = state.index === index;
+
+        if (!config) {
+          return null;
+        }
+
+        const color = isFocused ? theme.colors.primary : theme.colors.textMuted;
+
+        const handlePress = () => {
+          const event = navigation.emit({
+            type: "tabPress",
+            target: route.key,
+            canPreventDefault: true,
+          });
+
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name, route.params);
+          }
+        };
+
+        const handleLongPress = () => {
+          navigation.emit({
+            type: "tabLongPress",
+            target: route.key,
+          });
+        };
+
+        return (
+          <Pressable
+            key={route.key}
+            accessibilityLabel={options.tabBarAccessibilityLabel}
+            accessibilityRole="button"
+            accessibilityState={isFocused ? { selected: true } : undefined}
+            onLongPress={handleLongPress}
+            onPress={handlePress}
+            style={styles.tabButton}
+          >
+            <View style={[styles.activeDot, { opacity: isFocused ? 1 : 0 }]} />
+            <RemixIcon name={config.icon} size={22} color={color} />
+            <AppText variant="tab" color={color} style={styles.tabLabel}>
+              {config.label}
+            </AppText>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
 
 export default function RootLayout() {
   return (
     <>
       <StatusBar style="light" />
-      <NativeTabs
-        backgroundColor={theme.colors.tabSurface}
-        tintColor={theme.colors.primary}
-        iconColor={{
-          default: theme.colors.textMuted,
-          selected: theme.colors.primary,
-        }}
-        labelStyle={{
-          default: {
-            color: theme.colors.textMuted,
-            fontSize: theme.typography.fontSize.sm,
-            fontWeight: theme.typography.fontWeight.semibold,
-          },
-          selected: {
-            color: theme.colors.primary,
-            fontSize: theme.typography.fontSize.sm,
-            fontWeight: theme.typography.fontWeight.semibold,
+      <Tabs
+        tabBar={(props) => <CustomTabBar {...props} />}
+        screenOptions={{
+          headerShown: false,
+          tabBarHideOnKeyboard: true,
+          sceneStyle: {
+            backgroundColor: theme.colors.background,
           },
         }}
-        shadowColor={theme.colors.background}
-        blurEffect="systemChromeMaterialDark">
-        <NativeTabs.Trigger name="index">
-          <NativeTabs.Trigger.Icon
-            sf={{ default: 'plus.forwardslash.minus', selected: 'plus.forwardslash.minus' }}
-            md={{ default: 'calculate', selected: 'calculate' }}
-          />
-          <NativeTabs.Trigger.Label>Calcular</NativeTabs.Trigger.Label>
-        </NativeTabs.Trigger>
-      </NativeTabs>
+      >
+        <Tabs.Screen name="index" options={{ title: tabConfig.index.label }} />
+        <Tabs.Screen name="history" options={{ title: tabConfig.history.label }} />
+        <Tabs.Screen name="settings" options={{ title: tabConfig.settings.label }} />
+      </Tabs>
     </>
   );
 }
+
+const styles = StyleSheet.create(() => ({
+  tabBar: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-around",
+    minHeight: 96,
+    paddingTop: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    backgroundColor: theme.colors.tabSurface,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.tabBorder,
+  },
+  tabButton: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "flex-start",
+    gap: theme.spacing.xxs,
+    minHeight: 68,
+  },
+  activeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: theme.colors.primary,
+  },
+  tabLabel: {
+    lineHeight: theme.typography.lineHeight.xs,
+  },
+}));
