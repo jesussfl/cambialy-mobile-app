@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import type { ComponentProps } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { Modal, Pressable, ScrollView, View } from "react-native";
@@ -120,12 +121,21 @@ const formatRate = (value: number) =>
       }).format(value)} Bs.`
     : "Sin datos";
 
+const RATES_CACHE_TIME = 1000 * 60 * 10;
+const RATES_STALE_TIME = 1000 * 60 * 5;
+
 export function CalculatorScreen() {
-  const [rates, setRates] = useState<ExchangeRate[]>(fallbackRates);
-  const [isLoadingRates, setIsLoadingRates] = useState(true);
-  const [ratesError, setRatesError] = useState<string | null>(null);
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [comparisonMode, setComparisonMode] = useState<ComparisonMode>("ves");
+  const ratesQuery = useQuery({
+    queryKey: ["exchange-rates"],
+    queryFn: fetchExchangeRates,
+    staleTime: RATES_STALE_TIME,
+    gcTime: RATES_CACHE_TIME,
+  });
+  const rates = ratesQuery.data ?? fallbackRates;
+  const isLoadingRates = ratesQuery.isPending;
+  const ratesError = ratesQuery.isError ? "No se pudieron cargar las tasas actualizadas." : null;
 
   const {
     control,
@@ -139,35 +149,6 @@ export function CalculatorScreen() {
 
   const usdValue = useWatch({ control, name: "usdValue" });
   const comparisonValue = useWatch({ control, name: "comparisonValue" });
-
-  useEffect(() => {
-    let isActive = true;
-
-    fetchExchangeRates()
-      .then((freshRates) => {
-        if (!isActive) {
-          return;
-        }
-
-        setRates(freshRates);
-        setRatesError(null);
-      })
-      .catch((error) => {
-        console.error("Error loading exchange rates:", error);
-        if (isActive) {
-          setRatesError("No se pudieron cargar las tasas actualizadas.");
-        }
-      })
-      .finally(() => {
-        if (isActive) {
-          setIsLoadingRates(false);
-        }
-      });
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
 
   const bcvRate = useMemo(() => rates.find((rate) => rate.id === "bcv")?.value ?? 0, [rates]);
   const usdtRate = useMemo(() => rates.find((rate) => rate.id === "usdt")?.value ?? 0, [rates]);

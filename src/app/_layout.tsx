@@ -1,5 +1,6 @@
 import "@/theme/unistyles";
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Tabs } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import type { ComponentProps } from "react";
@@ -33,6 +34,8 @@ const tabConfig: Record<string, TabConfig> = {
     label: "Ajustes",
   },
 };
+
+const queryClient = new QueryClient();
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
@@ -93,7 +96,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 
 export default function RootLayout() {
   return (
-    <>
+    <QueryClientProvider client={queryClient}>
       <StatusBar style="light" />
       <Tabs
         tabBar={(props) => <CustomTabBar {...props} />}
@@ -109,7 +112,7 @@ export default function RootLayout() {
         <Tabs.Screen name="history" options={{ title: tabConfig.history.label }} />
         <Tabs.Screen name="settings" options={{ title: tabConfig.settings.label }} />
       </Tabs>
-    </>
+    </QueryClientProvider>
   );
 }
 
