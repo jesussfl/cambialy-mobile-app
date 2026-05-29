@@ -6,14 +6,13 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { Modal, Pressable, ScrollView, View } from "react-native";
 import { interpolateColor, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet, useUnistyles, withUnistyles } from "react-native-unistyles";
 import { z } from "zod";
 
 import { AppText } from "@/components/ui/app-text";
 import { AppButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AppTextField } from "@/components/ui/text-field";
-import { appTheme as theme } from "@/theme/app-theme";
 
 import { fetchExchangeRates, type ExchangeRate } from "../api/rates-api";
 import { RateCard } from "../components/rate-card";
@@ -72,28 +71,19 @@ const fallbackRates: ExchangeRate[] = [
     id: "usdt",
     label: "Binance USDT",
     value: 0,
-    icon: {
-      ios: "bitcoinsign.circle",
-      android: "currency_bitcoin",
-    },
+    icon: "copper-coin-line",
   },
   {
     id: "bcv",
     label: "BCV USD",
     value: 0,
-    icon: {
-      ios: "dollarsign.circle",
-      android: "attach_money",
-    },
+    icon: "money-dollar-circle-line",
   },
   {
     id: "eur",
     label: "EUR BCV",
     value: 0,
-    icon: {
-      ios: "eurosign.circle",
-      android: "euro_symbol",
-    },
+    icon: "money-euro-circle-line",
   },
 ];
 
@@ -123,6 +113,8 @@ const formatRate = (value: number) =>
 
 const RATES_CACHE_TIME = 1000 * 60 * 10;
 const RATES_STALE_TIME = 1000 * 60 * 5;
+
+const UniAppText = withUnistyles(AppText);
 
 export function CalculatorScreen() {
   const [result, setResult] = useState<CalculationResult | null>(null);
@@ -223,7 +215,7 @@ export function CalculatorScreen() {
 
           {isLoadingRates ? <AppText variant="body">Cargando tasas actualizadas...</AppText> : null}
           {ratesError ? (
-            <AppText variant="body" color={theme.colors.error}>
+            <AppText variant="body" style={styles.errorText}>
               {ratesError}
             </AppText>
           ) : null}
@@ -246,10 +238,10 @@ export function CalculatorScreen() {
                     keyboardType="decimal-pad"
                     autoCapitalize="none"
                     autoCorrect={false}
-                    icon={{ ios: "dollarsign.square", android: "attach_money" }}
+                    icon="money-dollar-circle-line"
                   />
                   {errors.usdValue ? (
-                    <AppText variant="body" color={theme.colors.error}>
+                    <AppText variant="body" style={styles.errorText}>
                       {errors.usdValue.message}
                     </AppText>
                   ) : null}
@@ -273,7 +265,7 @@ export function CalculatorScreen() {
                     prefix={comparisonMode === "ves" ? "Bs." : "$"}
                   />
                   {errors.comparisonValue ? (
-                    <AppText variant="body" color={theme.colors.error}>
+                    <AppText variant="body" style={styles.errorText}>
                       {errors.comparisonValue.message}
                     </AppText>
                   ) : null}
@@ -332,7 +324,7 @@ export function CalculatorScreen() {
                   <AppText variant="body">Diferencia: {formatVes(result.differenceVes)}</AppText>
                 </View>
 
-                <AppButton label="Cerrar" variant="secondary" icon="xmark" onPress={() => setResult(null)} />
+                <AppButton label="Cerrar" variant="secondary" icon="close-line" onPress={() => setResult(null)} />
               </>
             ) : null}
           </View>
@@ -345,6 +337,7 @@ export function CalculatorScreen() {
 function CalculatorTextField({ onBlur, onFocus, onPointerEnter, onPointerLeave, ...props }: CalculatorTextFieldProps) {
   const focusProgress = useSharedValue(0);
   const hoverProgress = useSharedValue(0);
+  const { theme } = useUnistyles();
 
   const animatedInputContainerStyle = useAnimatedStyle(() => {
     const activeProgress = Math.max(focusProgress.value, hoverProgress.value);
@@ -392,9 +385,14 @@ function PaymentOptionCard({ title, amount, detail, label }: PaymentOptionCardPr
   return (
     <View style={[styles.optionCard, isBestOption ? styles.bestOptionCard : null]}>
       <View style={[styles.resultBadge, isBestOption ? styles.bestBadge : styles.expensiveBadge]}>
-        <AppText variant="tab" color={isBestOption ? theme.colors.primaryText : theme.colors.textSecondary}>
+        <UniAppText
+          variant="tab"
+          uniProps={(theme) => ({
+            color: isBestOption ? theme.colors.primaryText : theme.colors.textSecondary,
+          })}
+        >
           {label}
-        </AppText>
+        </UniAppText>
       </View>
       <AppText variant="label">{title}</AppText>
       <AppText variant="value" style={styles.optionAmount}>
@@ -405,7 +403,7 @@ function PaymentOptionCard({ title, amount, detail, label }: PaymentOptionCardPr
   );
 }
 
-const styles = StyleSheet.create(() => ({
+const styles = StyleSheet.create((theme) => ({
   safeArea: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -461,6 +459,9 @@ const styles = StyleSheet.create(() => ({
   },
   fieldGroup: {
     gap: theme.spacing.xs,
+  },
+  errorText: {
+    color: theme.colors.error,
   },
   modalOverlay: {
     flex: 1,

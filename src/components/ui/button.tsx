@@ -1,10 +1,8 @@
-import { SymbolView } from "expo-symbols";
-import type { ComponentProps } from "react";
 import type { PressableProps } from "react-native";
 import { Pressable, View } from "react-native";
-import { StyleSheet } from "react-native-unistyles";
+import RemixIcon, { IconName } from "react-native-remix-icon";
+import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
-import { appTheme as theme } from "@/theme/app-theme";
 import { AppText } from "./app-text";
 
 type ButtonVariant = "primary" | "secondary";
@@ -12,19 +10,16 @@ type ButtonVariant = "primary" | "secondary";
 type ButtonProps = PressableProps & {
   label: string;
   variant?: ButtonVariant;
-  icon?: ComponentProps<typeof SymbolView>["name"];
+  icon?: IconName;
 };
 
 const buttonIcons = {
-  calculator: {
-    ios: "plus.forwardslash.minus",
-    android: "calculate",
-  },
-  switch: {
-    ios: "arrow.left.arrow.right",
-    android: "swap_horiz",
-  },
+  calculator: "calculator-line",
+  switch: "arrow-left-right-line",
 } as const;
+
+const UniRemixIcon = withUnistyles(RemixIcon);
+const UniAppText = withUnistyles(AppText);
 
 export function AppButton({ label, variant = "primary", style, disabled, icon, ...rest }: ButtonProps) {
   const resolvedIcon = icon ?? (variant === "primary" ? buttonIcons.calculator : buttonIcons.switch);
@@ -42,16 +37,27 @@ export function AppButton({ label, variant = "primary", style, disabled, icon, .
       ]}
     >
       <View style={styles.content}>
-        <SymbolView name={resolvedIcon} size={22} tintColor={variant === "primary" ? theme.colors.primaryText : theme.colors.textSecondary} />
-        <AppText variant="button" color={variant === "primary" ? theme.colors.primaryText : undefined}>
+        <UniRemixIcon
+          name={resolvedIcon}
+          size={22}
+          uniProps={(theme:any) => ({
+            color: variant === "primary" ? theme.colors.primaryText : theme.colors.textSecondary,
+          })}
+        />
+        <UniAppText
+          variant="button"
+          uniProps={(theme) => ({
+            color: variant === "primary" ? theme.colors.primaryText : undefined,
+          })}
+        >
           {label}
-        </AppText>
+        </UniAppText>
       </View>
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create(() => ({
+const styles = StyleSheet.create((theme) => ({
   base: {
     height: 48,
     borderRadius: theme.radius.pill,

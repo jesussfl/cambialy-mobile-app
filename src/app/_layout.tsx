@@ -7,10 +7,9 @@ import type { ComponentProps } from "react";
 import { Pressable, View } from "react-native";
 import RemixIcon, { type IconName } from "react-native-remix-icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet, useUnistyles, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
-import { appTheme as theme } from "@/theme/app-theme";
 
 type ExpoTabsProps = ComponentProps<typeof Tabs>;
 type BottomTabBarProps = Parameters<NonNullable<ExpoTabsProps["tabBar"]>>[0];
@@ -37,11 +36,23 @@ const tabConfig: Record<string, TabConfig> = {
 
 const queryClient = new QueryClient();
 
+const UniRemixIcon = withUnistyles(RemixIcon);
+const UniAppText = withUnistyles(AppText);
+const UniTabs = withUnistyles(Tabs);
+
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { theme } = useUnistyles();
 
   return (
-    <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, theme.spacing.sm) }]}>
+    <View
+      style={[
+        styles.tabBar,
+        {
+          paddingBottom: Math.max(insets.bottom, theme.spacing.sm),
+        },
+      ]}
+    >
       {state.routes.map((route, index) => {
         const config = tabConfig[route.name];
         const options = descriptors[route.key]?.options;
@@ -50,8 +61,6 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
         if (!config) {
           return null;
         }
-
-        const color = isFocused ? theme.colors.primary : theme.colors.textMuted;
 
         const handlePress = () => {
           const event = navigation.emit({
@@ -82,11 +91,30 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             onPress={handlePress}
             style={styles.tabButton}
           >
-            <View style={[styles.activeDot, { opacity: isFocused ? 1 : 0 }]} />
-            <RemixIcon name={config.icon} size={22} color={color} />
-            <AppText variant="tab" color={color} style={styles.tabLabel}>
+            <View
+              style={[
+                styles.activeDot,
+                {
+                  opacity: isFocused ? 1 : 0,
+                },
+              ]}
+            />
+            <UniRemixIcon
+              name={config.icon}
+              size={22}
+              uniProps={(theme: any) => ({
+                color: isFocused ? theme.colors.primary : theme.colors.textMuted,
+              })}
+            />
+            <UniAppText
+              variant="tab"
+              style={styles.tabLabel}
+              uniProps={(theme: any) => ({
+                color: isFocused ? theme.colors.primary : theme.colors.textMuted,
+              })}
+            >
               {config.label}
-            </AppText>
+            </UniAppText>
           </Pressable>
         );
       })}
@@ -98,25 +126,29 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <StatusBar style="light" />
-      <Tabs
+      <UniTabs
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{
           headerShown: false,
           tabBarHideOnKeyboard: true,
-          sceneStyle: {
-            backgroundColor: theme.colors.background,
-          },
         }}
+        uniProps={(theme: any) => ({
+          screenOptions: {
+            sceneStyle: {
+              backgroundColor: theme.colors.background,
+            },
+          },
+        })}
       >
         <Tabs.Screen name="index" options={{ title: tabConfig.index.label }} />
         <Tabs.Screen name="history" options={{ title: tabConfig.history.label }} />
         <Tabs.Screen name="settings" options={{ title: tabConfig.settings.label }} />
-      </Tabs>
+      </UniTabs>
     </QueryClientProvider>
   );
 }
 
-const styles = StyleSheet.create(() => ({
+const styles = StyleSheet.create((theme) => ({
   tabBar: {
     flexDirection: "row",
     alignItems: "flex-start",

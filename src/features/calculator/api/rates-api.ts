@@ -1,7 +1,4 @@
-import { SymbolView } from "expo-symbols";
-import type { ComponentProps } from "react";
-
-type SymbolName = ComponentProps<typeof SymbolView>["name"];
+import { IconName } from "react-native-remix-icon";
 
 export type ExchangeRateId = "bcv" | "usdt" | "eur";
 
@@ -10,7 +7,7 @@ export type ExchangeRate = {
   label: string;
   value: number;
   updatedAt?: string;
-  icon: SymbolName;
+  icon: IconName;
 };
 
 type DolarApiRate = {
@@ -28,24 +25,15 @@ const endpoints = {
 const rateMetadata = {
   bcv: {
     label: "BCV USD",
-    icon: {
-      ios: "dollarsign.circle",
-      android: "attach_money",
-    },
+    icon: "money-dollar-circle-line",
   },
   usdt: {
     label: "Binance USDT",
-    icon: {
-      ios: "bitcoinsign.circle",
-      android: "currency_bitcoin",
-    },
+    icon: "copper-coin-line",
   },
   eur: {
     label: "EUR BCV",
-    icon: {
-      ios: "eurosign.circle",
-      android: "euro_symbol",
-    },
+    icon: "money-euro-circle-line",
   },
 } as const;
 

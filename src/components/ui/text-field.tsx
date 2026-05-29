@@ -1,39 +1,41 @@
-import { SymbolView } from "expo-symbols";
-import type { ComponentProps } from "react";
 import { forwardRef } from "react";
 import { TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from "react-native";
 import Animated, { type AnimatedStyle } from "react-native-reanimated";
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
-import { appTheme as theme } from "@/theme/app-theme";
+import RemixIcon, { IconName } from "react-native-remix-icon";
 import { AppText } from "./app-text";
 
 type AppTextFieldProps = TextInputProps & {
   label: string;
   prefix?: string;
-  icon?: ComponentProps<typeof SymbolView>["name"];
+  icon?: IconName;
   inputContainerStyle?: StyleProp<ViewStyle> | AnimatedStyle<ViewStyle>;
 };
 
+const UniTextInput = withUnistyles(TextInput);
+const UniRemixIcon = withUnistyles(RemixIcon)
 export const AppTextField = forwardRef<TextInput, AppTextFieldProps>(
   ({ label, prefix, icon, style, inputContainerStyle, placeholderTextColor, ...rest }, ref) => {
     return (
       <View style={styles.wrapper}>
         <AppText variant="label">{label}</AppText>
         <Animated.View style={[styles.inputContainer, inputContainerStyle]}>
-          {icon ? <SymbolView name={icon} size={24} tintColor={theme.colors.textSecondary} /> : null}
+          {icon ? <UniRemixIcon name={icon} size={24} uniProps={(theme:any) => ({ color: theme.colors.textSecondary })} /> : null}
           {prefix ? (
             <AppText variant="body" style={styles.prefix}>
               {prefix}
             </AppText>
           ) : null}
 
-          <TextInput
+          <UniTextInput
             ref={ref}
             {...rest}
-            placeholderTextColor={placeholderTextColor ?? theme.colors.textMuted}
-            selectionColor={theme.colors.primary}
             style={[styles.input, style]}
+            uniProps={(theme) => ({
+              placeholderTextColor: placeholderTextColor ?? theme.colors.textMuted,
+              selectionColor: theme.colors.primary,
+            })}
           />
         </Animated.View>
       </View>
@@ -43,7 +45,7 @@ export const AppTextField = forwardRef<TextInput, AppTextFieldProps>(
 
 AppTextField.displayName = "AppTextField";
 
-const styles = StyleSheet.create(() => ({
+const styles = StyleSheet.create((theme) => ({
   wrapper: {
     gap: theme.spacing.xs,
   },

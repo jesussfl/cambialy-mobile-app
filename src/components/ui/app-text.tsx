@@ -2,8 +2,6 @@ import type { PropsWithChildren } from "react";
 import { Text, type TextProps } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
-import { appTheme as theme } from "@/theme/app-theme";
-
 type AppTextVariant = "title" | "subtitle" | "sectionTitle" | "cardTitle" | "label" | "body" | "value" | "button" | "tab";
 
 type AppTextProps = PropsWithChildren<
@@ -21,7 +19,7 @@ export function AppText({ children, style, variant = "body", color, ...rest }: A
   );
 }
 
-const styles = StyleSheet.create(() => ({
+const styles = StyleSheet.create((theme) => ({
   base: {
     color: theme.colors.textPrimary,
     fontFamily: theme.typography.fontFamily.regular,

@@ -3,7 +3,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { AppText } from '@/components/ui/app-text';
-import { appTheme as theme } from '@/theme/app-theme';
 
 export default function SettingsScreen() {
   return (
@@ -37,7 +36,7 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create(() => ({
+const styles = StyleSheet.create((theme) => ({
   safeArea: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -86,4 +85,3 @@ const styles = StyleSheet.create(() => ({
     color: theme.colors.textMuted,
   },
 }));
-

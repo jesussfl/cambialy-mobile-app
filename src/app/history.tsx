@@ -3,7 +3,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { AppText } from '@/components/ui/app-text';
-import { appTheme as theme } from '@/theme/app-theme';
 
 export default function HistoryScreen() {
   return (
@@ -16,7 +15,7 @@ export default function HistoryScreen() {
   );
 }
 
-const styles = StyleSheet.create(() => ({
+const styles = StyleSheet.create((theme) => ({
   safeArea: {
     flex: 1,
     backgroundColor: theme.colors.background,

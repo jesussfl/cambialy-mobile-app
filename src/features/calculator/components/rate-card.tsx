@@ -1,23 +1,29 @@
-import { SymbolView } from "expo-symbols";
-import type { ComponentProps } from "react";
 import { View } from "react-native";
-import { StyleSheet } from "react-native-unistyles";
+import RemixIcon from "react-native-remix-icon";
+import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 import { Card } from "@/components/ui/card";
-import { appTheme as theme } from "@/theme/app-theme";
 
 type RateCardProps = {
   label: string;
   value: string;
-  icon: ComponentProps<typeof SymbolView>["name"];
+  icon: string;
 };
+
+const UniRemixIcon = withUnistyles(RemixIcon);
 
 export function RateCard({ label, value, icon }: RateCardProps) {
   return (
     <Card style={styles.card}>
       <View style={styles.iconWrap}>
-        <SymbolView name={icon} size={28} tintColor={theme.colors.textPrimary} />
+        <UniRemixIcon
+          name={icon}
+          size={28}
+          uniProps={(theme: any) => ({
+            color: theme.colors.textPrimary,
+          })}
+        />
       </View>
       <AppText variant="body" style={styles.label}>
         {label}
@@ -27,7 +33,7 @@ export function RateCard({ label, value, icon }: RateCardProps) {
   );
 }
 
-const styles = StyleSheet.create(() => ({
+const styles = StyleSheet.create((theme) => ({
   card: {
     flex: 1,
     minWidth: 0,
