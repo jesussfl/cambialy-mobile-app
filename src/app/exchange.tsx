@@ -1,15 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
+import { Popover } from "heroui-native";
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Pressable, ScrollView, TextInput, View } from "react-native";
+import Animated, { useAnimatedStyle, useDerivedValue, withTiming } from "react-native-reanimated";
 import RemixIcon, { type IconName } from "react-native-remix-icon";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
-import { Card } from "@/components/ui/card";
-import { AppTextField } from "@/components/ui/text-field";
 import { fetchExchangeRates, type ExchangeRate, type ExchangeRateId } from "@/features/calculator/api/rates-api";
-
 const fallbackRates: ExchangeRate[] = [
   {
     id: "usdt",
@@ -31,30 +30,65 @@ const fallbackRates: ExchangeRate[] = [
   },
 ];
 
-const currencyMeta: Record<ExchangeRateId, { code: string; shortLabel: string; symbol: string }> = {
+type CurrencyOption = {
+  code: string;
+  icon: IconName;
+  id: string;
+  name: string;
+  symbol: string;
+};
+
+type TargetCurrencyId = "ves" | "bcv";
+
+const currencyMeta: Record<ExchangeRateId, CurrencyOption> = {
   usdt: {
+    id: "usdt",
     code: "USDT",
-    shortLabel: "Binance",
-    symbol: "USDT",
+    name: "Binance",
+    symbol: "$",
+    icon: "copper-coin-line",
   },
   bcv: {
-    code: "USD",
-    shortLabel: "BCV",
+    id: "bcv",
+    code: "BCV",
+    name: "Dólar BCV",
     symbol: "$",
+    icon: "money-dollar-circle-line",
   },
   eur: {
+    id: "eur",
     code: "EUR",
-    shortLabel: "Euro",
-    symbol: "EUR",
+    name: "Euro",
+    symbol: "€",
+    icon: "money-euro-circle-line",
   },
 };
 
-const quickAmounts = ["1", "5", "10", "20", "50", "100"];
+const targetCurrencyMeta: Record<TargetCurrencyId, CurrencyOption> = {
+  ves: {
+    id: "ves",
+    code: "VES",
+    name: "Bolívares",
+    symbol: "Bs.",
+    icon: "bank-line",
+  },
+  bcv: {
+    id: "bcv",
+    code: "BCV",
+    name: "Dólar BCV",
+    symbol: "$",
+    icon: "money-dollar-circle-line",
+  },
+};
+
 const RATES_CACHE_TIME = 1000 * 60 * 10;
 const RATES_STALE_TIME = 1000 * 60 * 5;
+const QUICK_AMOUNTS = ["5", "10", "15", "20", "30", "50", "100"];
+const AMOUNT_FONT_SIZE = 34;
+const MIN_AMOUNT_FONT_SIZE = 25;
 
 const UniRemixIcon = withUnistyles(RemixIcon);
-const UniAppText = withUnistyles(AppText);
+const UniTextInput = withUnistyles(TextInput);
 
 const parseCurrencyAmount = (value: string) => {
   const trimmedValue = value.trim();
@@ -63,19 +97,22 @@ const parseCurrencyAmount = (value: string) => {
   return Number(normalizedValue);
 };
 
-const formatNumber = (value: number) =>
+const formatNumber = (value: number, digits = 2) =>
   new Intl.NumberFormat("es-VE", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
   }).format(value);
 
-const formatVes = (value: number) =>
-  new Intl.NumberFormat("es-VE", {
-    style: "currency",
-    currency: "VES",
-    minimumFractionDigits: 2,
+const formatCompactAmount = (value: number) => {
+  if (!Number.isFinite(value)) {
+    return "0";
+  }
+
+  return new Intl.NumberFormat("es-VE", {
+    minimumFractionDigits: value % 1 === 0 ? 0 : 2,
     maximumFractionDigits: 2,
   }).format(value);
+};
 
 const formatRate = (value: number) => (value > 0 ? `${formatNumber(value)} Bs.` : "Sin datos");
 
@@ -98,9 +135,32 @@ const formatUpdatedAt = (value?: string) => {
   }).format(date)}`;
 };
 
+const getDisplayAmount = (amount: string) => {
+  if (!amount) {
+    return "";
+  }
+
+  return amount.replace(".", ",");
+};
+
+const sanitizeAmountInput = (value: string) => {
+  const normalizedValue = value.replace(",", ".").replace(/[^\d.]/g, "");
+  const [wholePart = "", ...decimalParts] = normalizedValue.split(".");
+  const decimals = decimalParts.join("").slice(0, 2);
+  const trimmedWholePart = wholePart.replace(/^0+(?=\d)/, "").slice(0, 9);
+
+  if (normalizedValue.includes(".")) {
+    return `${trimmedWholePart || "0"}.${decimals}`;
+  }
+
+  return trimmedWholePart;
+};
+
 export default function ExchangeScreen() {
   const [amount, setAmount] = useState("1");
   const [selectedRateId, setSelectedRateId] = useState<ExchangeRateId>("usdt");
+  const [targetCurrencyId, setTargetCurrencyId] = useState<TargetCurrencyId>("ves");
+
   const ratesQuery = useQuery({
     queryKey: ["exchange-rates"],
     queryFn: fetchExchangeRates,
@@ -109,13 +169,6 @@ export default function ExchangeScreen() {
   });
 
   const rates = ratesQuery.data ?? fallbackRates;
-  const selectedRate = rates.find((rate) => rate.id === selectedRateId) ?? rates[0];
-  const parsedAmount = parseCurrencyAmount(amount);
-  const hasValidAmount = Number.isFinite(parsedAmount) && parsedAmount > 0;
-  const selectedTotal = hasValidAmount && selectedRate.value > 0 ? parsedAmount * selectedRate.value : 0;
-  const ratesError = ratesQuery.isError ? "No se pudieron cargar las tasas actualizadas." : null;
-  const inputPrefix = selectedRate ? currencyMeta[selectedRate.id].symbol : "$";
-
   const sortedRates = useMemo(
     () =>
       [...rates].sort((leftRate, rightRate) => {
@@ -125,199 +178,301 @@ export default function ExchangeScreen() {
       }),
     [rates],
   );
+  const selectedRate = sortedRates.find((rate) => rate.id === selectedRateId) ?? sortedRates[0] ?? fallbackRates[0];
+  const selectedMeta = currencyMeta[selectedRate.id];
+  const targetMeta = targetCurrencyMeta[targetCurrencyId];
+  const bcvRate = sortedRates.find((rate) => rate.id === "bcv")?.value ?? fallbackRates.find((rate) => rate.id === "bcv")?.value ?? 0;
+  const parsedAmount = parseCurrencyAmount(amount);
+  const safeAmount = Number.isFinite(parsedAmount) && parsedAmount > 0 ? parsedAmount : 0;
+  const convertedAmount =
+    selectedRate.value > 0 ? (targetCurrencyId === "ves" ? safeAmount * selectedRate.value : bcvRate > 0 ? (safeAmount * selectedRate.value) / bcvRate : 0) : 0;
+  const targetRateValue = targetCurrencyId === "ves" ? selectedRate.value : bcvRate > 0 ? selectedRate.value / bcvRate : 0;
+  const ratesError = ratesQuery.isError ? "No se pudieron cargar las tasas actualizadas." : null;
+
+  const handleChangeAmount = (value: string) => {
+    setAmount(sanitizeAmountInput(value));
+  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
         <View style={styles.header}>
-          <AppText variant="title">Convertidor</AppText>
-          <AppText variant="subtitle">Convierte divisas a bolivares al instante</AppText>
+          <View style={styles.headerButton}>
+            <UniRemixIcon
+              name="exchange-2-line"
+              size={22}
+              uniProps={(theme: any) => ({
+                color: theme.colors.primary,
+              })}
+            />
+          </View>
+          <View style={styles.headerTitleGroup}>
+            <AppText variant="cardTitle" style={styles.headerTitle}>
+              Intercambio
+            </AppText>
+            <AppText variant="tab" style={styles.headerSubtitle}>
+              {ratesQuery.isFetching ? "Actualizando tasas" : "Tasas en vivo"}
+            </AppText>
+          </View>
+          <View style={styles.headerButton}>
+            <View style={[styles.statusDot, ratesQuery.isFetching ? styles.statusDotLoading : null]} />
+          </View>
         </View>
 
-        <Card elevated style={styles.converterCard}>
-          <View style={styles.cardHeader}>
-            <View style={styles.cardTitleGroup}>
-              <AppText variant="cardTitle">Monto a convertir</AppText>
-              <AppText variant="body">Elige la moneda y compara el resultado en Bs.</AppText>
-            </View>
-            <View style={styles.statusPill}>
-              <View style={[styles.statusDot, ratesQuery.isFetching ? styles.statusDotLoading : null]} />
-              <AppText variant="tab">{ratesQuery.isFetching ? "Cargando" : "En vivo"}</AppText>
-            </View>
-          </View>
-
-          <View style={styles.currencySelector}>
-            {sortedRates.map((rate) => (
-              <CurrencyOption
-                key={rate.id}
-                icon={rate.icon}
-                code={currencyMeta[rate.id].code}
-                label={currencyMeta[rate.id].shortLabel}
-                selected={rate.id === selectedRateId}
-                onPress={() => setSelectedRateId(rate.id)}
-              />
-            ))}
-          </View>
-
-          <AppTextField
-            label={`Cantidad en ${selectedRate ? currencyMeta[selectedRate.id].code : "divisa"}`}
-            value={amount}
-            onChangeText={setAmount}
-            keyboardType="decimal-pad"
-            autoCapitalize="none"
-            autoCorrect={false}
-            prefix={inputPrefix}
-            placeholder="0,00"
+        <View style={styles.swapPanel}>
+          <SwapAmountBlock
+            amount={getDisplayAmount(amount)}
+            code={selectedMeta.code}
+            editable
+            icon={selectedRate.icon}
+            label="Monto"
+            name={selectedMeta.name}
+            onAmountChange={handleChangeAmount}
+            onCurrencySelect={(optionId) => setSelectedRateId(optionId as ExchangeRateId)}
+            onQuickAmountSelect={setAmount}
+            options={sortedRates.map((rate) => currencyMeta[rate.id])}
+            quickAmounts={QUICK_AMOUNTS}
+            selectedOptionId={selectedRate.id}
+            sideValue={`${safeAmount > 0 ? formatCompactAmount(safeAmount) : "0"} ${selectedMeta.code}`}
+            symbol={selectedMeta.symbol}
           />
 
-          <View style={styles.quickAmountList}>
-            {quickAmounts.map((quickAmount) => (
-              <Pressable key={quickAmount} accessibilityRole="button" onPress={() => setAmount(quickAmount)} style={styles.quickAmountButton}>
-                <AppText variant="tab">
-                  {quickAmount} {selectedRate ? currencyMeta[selectedRate.id].code : ""}
-                </AppText>
-              </Pressable>
-            ))}
+          <View style={styles.swapDividerRow}>
+            <View style={styles.dividerLine} />
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setTargetCurrencyId((currentValue) => (currentValue === "ves" ? "bcv" : "ves"))}
+              style={styles.swapButton}
+            >
+              <UniRemixIcon
+                name="arrow-up-down-line"
+                size={22}
+                uniProps={(theme: any) => ({
+                  color: theme.colors.primaryText,
+                })}
+              />
+            </Pressable>
+            <View style={styles.dividerLine} />
           </View>
 
-          <View style={styles.totalPanel}>
-            <AppText variant="label">Resultado principal</AppText>
-            <AppText variant="title" style={styles.totalAmount} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
-              {selectedTotal > 0 ? formatVes(selectedTotal) : "Bs. 0,00"}
-            </AppText>
-            <AppText variant="body">
-              {selectedRate ? `${formatRate(selectedRate.value)} por ${currencyMeta[selectedRate.id].code}` : "Selecciona una moneda"}
-            </AppText>
-          </View>
+          <SwapAmountBlock
+            amount={formatCompactAmount(convertedAmount)}
+            code={targetMeta.code}
+            icon={targetMeta.icon}
+            label="Cambio estimado"
+            name={targetMeta.name}
+            onCurrencySelect={(optionId) => setTargetCurrencyId(optionId as TargetCurrencyId)}
+            options={Object.values(targetCurrencyMeta)}
+            selectedOptionId={targetCurrencyId}
+            sideValue={
+              targetRateValue > 0
+                ? `1 ${selectedMeta.code} = ${targetCurrencyId === "ves" ? formatRate(targetRateValue) : `${formatNumber(targetRateValue)} BCV`}`
+                : "Tasa no disponible"
+            }
+            symbol={targetMeta.symbol}
+          />
+        </View>
 
+        <View style={styles.rateMeta}>
+          <AppText variant="tab" style={styles.rateMetaText} numberOfLines={1}>
+            {selectedRate.label} · {formatUpdatedAt(selectedRate.updatedAt)}
+          </AppText>
           {ratesError ? (
-            <AppText variant="body" style={styles.errorText}>
+            <AppText variant="tab" style={styles.errorText} numberOfLines={1}>
               {ratesError}
             </AppText>
           ) : null}
-        </Card>
-
-        <View style={styles.resultsSection}>
-          <View style={styles.sectionHeader}>
-            <AppText variant="sectionTitle">Todas las conversiones</AppText>
-            <AppText variant="body">{hasValidAmount ? `${formatNumber(parsedAmount)} por moneda` : "Ingresa un monto valido"}</AppText>
-          </View>
-
-          <Card style={styles.resultsCard}>
-            {sortedRates.map((rate, index) => (
-              <ConversionRow
-                key={rate.id}
-                amount={hasValidAmount ? parsedAmount : 0}
-                code={currencyMeta[rate.id].code}
-                icon={rate.icon}
-                isLast={index === sortedRates.length - 1}
-                label={rate.label}
-                rate={rate.value}
-                updatedAt={rate.updatedAt}
-                selected={rate.id === selectedRateId}
-                onPress={() => setSelectedRateId(rate.id)}
-              />
-            ))}
-          </Card>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-type CurrencyOptionProps = {
-  icon: IconName;
+type SwapAmountBlockProps = {
+  amount: string;
   code: string;
+  editable?: boolean;
+  icon: IconName;
   label: string;
-  selected: boolean;
-  onPress: () => void;
+  name: string;
+  onAmountChange?: (value: string) => void;
+  onCurrencySelect: (optionId: string) => void;
+  onQuickAmountSelect?: (value: string) => void;
+  options: CurrencyOption[];
+  quickAmounts?: string[];
+  selectedOptionId: string;
+  sideValue: string;
+  symbol: string;
 };
 
-function CurrencyOption({ icon, code, label, selected, onPress }: CurrencyOptionProps) {
-  return (
-    <Pressable accessibilityRole="button" accessibilityState={selected ? { selected: true } : undefined} onPress={onPress} style={[styles.currencyOption, selected ? styles.selectedCurrencyOption : null]}>
-      <UniRemixIcon
-        name={icon}
-        size={22}
-        uniProps={(theme: any) => ({
-          color: selected ? theme.colors.primaryText : theme.colors.textSecondary,
-        })}
-      />
-      <View style={styles.currencyCopy}>
-        <UniAppText
-          variant="button"
-          uniProps={(theme) => ({
-            color: selected ? theme.colors.primaryText : undefined,
-          })}
-        >
-          {code}
-        </UniAppText>
-        <UniAppText
-          variant="tab"
-          numberOfLines={1}
-          uniProps={(theme) => ({
-            color: selected ? theme.colors.primaryText : theme.colors.textMuted,
-          })}
-        >
-          {label}
-        </UniAppText>
-      </View>
-    </Pressable>
-  );
-}
+function SwapAmountBlock({
+  amount,
+  code,
+  editable = false,
+  icon,
+  label,
+  name,
+  onAmountChange,
+  onCurrencySelect,
+  onQuickAmountSelect,
+  options,
+  quickAmounts,
+  selectedOptionId,
+  sideValue,
+  symbol,
+}: SwapAmountBlockProps) {
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const amountFontSize = useDerivedValue(() => {
+    const compactLength = amount.replace(/[^\d]/g, "").length;
+    const nextFontSize = compactLength <= 5 ? AMOUNT_FONT_SIZE : Math.max(MIN_AMOUNT_FONT_SIZE, AMOUNT_FONT_SIZE - (compactLength - 5) * 2);
 
-type ConversionRowProps = {
-  amount: number;
-  code: string;
-  icon: IconName;
-  isLast: boolean;
-  label: string;
-  rate: number;
-  selected: boolean;
-  updatedAt?: string;
-  onPress: () => void;
-};
+    return withTiming(nextFontSize, { duration: 160 });
+  }, [amount]);
+  const animatedAmountStyle = useAnimatedStyle(() => ({
+    fontSize: amountFontSize.value,
+    lineHeight: amountFontSize.value + 6,
+  }));
 
-function ConversionRow({ amount, code, icon, isLast, label, rate, selected, updatedAt, onPress }: ConversionRowProps) {
-  const convertedAmount = amount > 0 && rate > 0 ? amount * rate : 0;
+  const handleSelectOption = (optionId: string) => {
+    onCurrencySelect(optionId);
+    setIsPickerOpen(false);
+  };
 
   return (
-    <Pressable accessibilityRole="button" accessibilityState={selected ? { selected: true } : undefined} onPress={onPress} style={[styles.conversionRow, isLast ? null : styles.rowDivider]}>
-      <View style={[styles.conversionIconWrap, selected ? styles.selectedConversionIconWrap : null]}>
-        <UniRemixIcon
-          name={icon}
-          size={22}
-          uniProps={(theme: any) => ({
-            color: selected ? theme.colors.primaryText : theme.colors.primary,
-          })}
-        />
-      </View>
-
-      <View style={styles.conversionMeta}>
-        <AppText variant="button" numberOfLines={1}>
-          {label}
-        </AppText>
-        <AppText variant="body" numberOfLines={1}>
-          1 {code} = {formatRate(rate)}
-        </AppText>
-        <AppText variant="tab" style={styles.updatedText} numberOfLines={1}>
-          {formatUpdatedAt(updatedAt)}
-        </AppText>
-      </View>
-
-      <View style={styles.conversionValueGroup}>
-        <AppText variant="value" style={styles.conversionValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78}>
-          {convertedAmount > 0 ? formatVes(convertedAmount) : "Bs. 0,00"}
-        </AppText>
-        {selected ? (
-          <View style={styles.selectedPill}>
-            <AppText variant="tab" style={styles.selectedPillText}>
-              Activo
+    <View style={styles.amountBlock}>
+      <View style={styles.amountTopRow}>
+        <View style={styles.amountValueGroup}>
+          <AppText variant="tab" style={styles.blockLabel}>
+            {label}
+          </AppText>
+          <View style={styles.amountRow}>
+            <AppText variant="title" style={styles.amountSymbol}>
+              {symbol}
             </AppText>
+            {editable ? (
+              <UniTextInput
+                value={amount}
+                onChangeText={onAmountChange}
+                keyboardType="decimal-pad"
+                autoCapitalize="none"
+                autoCorrect={false}
+                placeholder="0"
+                style={styles.amountInput}
+                uniProps={(theme) => ({
+                  placeholderTextColor: theme.colors.textMuted,
+                  selectionColor: theme.colors.primary,
+                })}
+              />
+            ) : (
+              <Animated.Text style={[styles.amountValue, animatedAmountStyle]} numberOfLines={1}>
+                {amount}
+              </Animated.Text>
+            )}
           </View>
-        ) : null}
+        </View>
+
+        <Popover isOpen={isPickerOpen} onOpenChange={setIsPickerOpen}>
+          <Popover.Trigger asChild>
+            <Pressable accessibilityRole="button" style={styles.currencyPill}>
+              <View style={styles.currencyIcon}>
+                <UniRemixIcon
+                  name={icon}
+                  size={18}
+                  uniProps={(theme: any) => ({
+                    color: theme.colors.primary,
+                  })}
+                />
+              </View>
+              <AppText variant="button" numberOfLines={1}>
+                {code}
+              </AppText>
+              <UniRemixIcon
+                name="arrow-down-s-line"
+                size={18}
+                uniProps={(theme: any) => ({
+                  color: theme.colors.textSecondary,
+                })}
+              />
+            </Pressable>
+          </Popover.Trigger>
+          <Popover.Portal>
+            <Popover.Overlay />
+            <Popover.Content presentation="popover" placement="bottom" align="end" width={220} style={styles.currencyPopover}>
+              {options.map((option) => {
+                const isSelected = option.id === selectedOptionId;
+
+                return (
+                  <Pressable
+                    accessibilityRole="button"
+                    key={option.id}
+                    onPress={() => handleSelectOption(option.id)}
+                    style={[styles.currencyOption, isSelected ? styles.currencyOptionSelected : null]}
+                  >
+                    <View style={styles.currencyIcon}>
+                      <UniRemixIcon
+                        name={option.icon}
+                        size={18}
+                        uniProps={(theme: any) => ({
+                          color: theme.colors.primary,
+                        })}
+                      />
+                    </View>
+                    <View style={styles.currencyOptionText}>
+                      <AppText variant="button" numberOfLines={1}>
+                        {option.code}
+                      </AppText>
+                      <AppText variant="tab" style={styles.currencyOptionName} numberOfLines={1}>
+                        {option.name}
+                      </AppText>
+                    </View>
+                    {isSelected ? (
+                      <UniRemixIcon
+                        name="check-line"
+                        size={18}
+                        uniProps={(theme: any) => ({
+                          color: theme.colors.primary,
+                        })}
+                      />
+                    ) : null}
+                  </Pressable>
+                );
+              })}
+            </Popover.Content>
+          </Popover.Portal>
+        </Popover>
       </View>
-    </Pressable>
+
+      {editable && quickAmounts?.length && onQuickAmountSelect ? (
+        <View style={styles.quickAmountList}>
+          {quickAmounts.map((quickAmount) => {
+            const isSelected = amount === quickAmount;
+
+            return (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={isSelected ? { selected: true } : undefined}
+                key={quickAmount}
+                onPress={() => onQuickAmountSelect(quickAmount)}
+                style={[styles.quickAmountPill, isSelected ? styles.quickAmountPillSelected : null]}
+              >
+                <AppText variant="tab" style={isSelected ? styles.quickAmountTextSelected : styles.quickAmountText}>
+                  {quickAmount}
+                </AppText>
+              </Pressable>
+            );
+          })}
+        </View>
+      ) : null}
+
+      <View style={styles.amountFooterRow}>
+        <AppText variant="body" numberOfLines={1}>
+          {name}
+        </AppText>
+        <AppText variant="body" style={styles.amountSideValue} numberOfLines={1}>
+          {sideValue}
+        </AppText>
+      </View>
+    </View>
   );
 }
 
@@ -327,156 +482,218 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.background,
   },
   content: {
+    flexGrow: 1,
     paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing["2xl"],
+    paddingTop: theme.spacing.lg,
     paddingBottom: theme.spacing["3xl"],
-    gap: theme.spacing["2xl"],
+    gap: theme.spacing.lg,
   },
   header: {
-    gap: theme.spacing.xs,
-    paddingTop: theme.spacing.xs,
-  },
-  converterCard: {
-    padding: theme.spacing.md,
-    gap: theme.spacing.lg,
-    backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.borderSubtle,
-  },
-  cardHeader: {
+    minHeight: 48,
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     justifyContent: "space-between",
     gap: theme.spacing.md,
   },
-  cardTitleGroup: {
+  headerButton: {
+    width: 44,
+    height: 44,
+    borderRadius: theme.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
+  },
+  headerTitleGroup: {
     flex: 1,
-    minWidth: 0,
+    alignItems: "center",
     gap: theme.spacing.xxs,
   },
-  statusPill: {
-    minHeight: 30,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.sm,
-    borderRadius: theme.radius.pill,
-    backgroundColor: theme.colors.secondarySurface,
+  headerTitle: {
+    textAlign: "center",
+  },
+  headerSubtitle: {
+    color: theme.colors.textMuted,
+    textAlign: "center",
   },
   statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: theme.colors.accent,
   },
   statusDotLoading: {
     opacity: 0.45,
   },
-  currencySelector: {
+  swapPanel: {
+    gap: theme.spacing.md,
+    paddingVertical: theme.spacing.lg,
+  },
+  amountBlock: {
+    minHeight: 142,
+    justifyContent: "center",
+    gap: theme.spacing.md,
+  },
+  amountTopRow: {
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     gap: theme.spacing.sm,
   },
-  currencyOption: {
+  amountValueGroup: {
     flex: 1,
-    minHeight: 74,
     minWidth: 0,
-    justifyContent: "center",
     gap: theme.spacing.xs,
-    padding: theme.spacing.sm,
-    borderRadius: theme.radius.sm,
-    backgroundColor: theme.colors.secondarySurface,
+  },
+  blockLabel: {
+    color: theme.colors.textMuted,
+  },
+  amountRow: {
+    minHeight: 58,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.xs,
+  },
+  amountSymbol: {
+    color: theme.colors.textSecondary,
+    fontSize: 34,
+    lineHeight: 40,
+  },
+  amountValue: {
+    flex: 1,
+    minWidth: 0,
+    color: theme.colors.textPrimary,
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: AMOUNT_FONT_SIZE,
+    fontWeight: theme.typography.fontWeight.bold,
+    lineHeight: AMOUNT_FONT_SIZE + 6,
+  },
+  amountInput: {
+    flex: 1,
+    minWidth: 0,
+    height: 56,
+    padding: 0,
+    color: theme.colors.textPrimary,
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: 34,
+    fontWeight: theme.typography.fontWeight.bold,
+    lineHeight: 40,
+  },
+  currencyPill: {
+    maxWidth: 116,
+    minHeight: 46,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.xxs,
+    paddingHorizontal: theme.spacing.xs,
+    borderRadius: theme.radius.pill,
+    backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.borderSubtle,
   },
-  selectedCurrencyOption: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
+  currencyIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: theme.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.colors.secondarySurface,
   },
-  currencyCopy: {
+  currencyPopover: {
+    gap: theme.spacing.xs,
+    padding: theme.spacing.xs,
+    borderRadius: theme.radius.lg,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
+    ...theme.shadows.card,
+  },
+  currencyOption: {
+    minHeight: 52,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.radius.md,
+  },
+  currencyOptionSelected: {
+    backgroundColor: theme.colors.secondarySurface,
+  },
+  currencyOptionText: {
+    flex: 1,
     minWidth: 0,
+  },
+  currencyOptionName: {
+    color: theme.colors.textMuted,
   },
   quickAmountList: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: theme.spacing.xs,
   },
-  quickAmountButton: {
-    minHeight: 34,
+  quickAmountPill: {
+    minWidth: 44,
+    minHeight: 32,
+    alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: theme.spacing.sm,
     borderRadius: theme.radius.pill,
-    backgroundColor: theme.colors.inputSurface,
+    backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.borderSubtle,
   },
-  totalPanel: {
-    gap: theme.spacing.xs,
-    padding: theme.spacing.md,
-    borderRadius: theme.radius.sm,
-    backgroundColor: theme.colors.backgroundAccent,
+  quickAmountPillSelected: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
   },
-  totalAmount: {
-    color: theme.colors.textPrimary,
+  quickAmountText: {
+    color: theme.colors.textSecondary,
   },
-  errorText: {
-    color: theme.colors.error,
+  quickAmountTextSelected: {
+    color: theme.colors.primaryText,
   },
-  resultsSection: {
+  amountFooterRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     gap: theme.spacing.md,
   },
-  sectionHeader: {
-    gap: theme.spacing.xxs,
+  amountSideValue: {
+    maxWidth: "58%",
+    color: theme.colors.textSecondary,
+    textAlign: "right",
   },
-  resultsCard: {
-    overflow: "hidden",
-    backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.borderSubtle,
-  },
-  conversionRow: {
-    minHeight: 92,
+  swapDividerRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
   },
-  rowDivider: {
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.borderSubtle,
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: theme.colors.borderSubtle,
   },
-  conversionIconWrap: {
-    width: 42,
-    height: 42,
+  swapButton: {
+    width: 52,
+    height: 52,
     borderRadius: theme.radius.pill,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: theme.colors.secondarySurface,
-  },
-  selectedConversionIconWrap: {
     backgroundColor: theme.colors.primary,
+    ...theme.shadows.card,
   },
-  conversionMeta: {
-    flex: 1,
-    minWidth: 0,
+  rateMeta: {
+    minHeight: 22,
     gap: theme.spacing.xxs,
   },
-  updatedText: {
+  rateMetaText: {
     color: theme.colors.textMuted,
+    textAlign: "center",
   },
-  conversionValueGroup: {
-    maxWidth: "42%",
-    alignItems: "flex-end",
-    gap: theme.spacing.xs,
-  },
-  conversionValue: {
-    textAlign: "right",
-  },
-  selectedPill: {
-    paddingHorizontal: theme.spacing.xs,
-    paddingVertical: theme.spacing.xxs,
-    borderRadius: theme.radius.pill,
-    backgroundColor: theme.colors.accent,
-  },
-  selectedPillText: {
-    color: theme.colors.accentText,
+  errorText: {
+    color: theme.colors.error,
+    textAlign: "center",
   },
 }));

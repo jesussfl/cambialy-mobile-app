@@ -1,10 +1,15 @@
+// eslint-disable-sort-imports
+import "../../global.css";
+// Must be imported before any other file that uses unistyles
 import "@/theme/unistyles";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Tabs } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { HeroUINativeProvider } from "heroui-native";
 import type { ComponentProps } from "react";
 import { Pressable, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import RemixIcon, { type IconName } from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
@@ -19,14 +24,15 @@ type TabConfig = {
 };
 
 const tabConfig: Record<string, TabConfig> = {
-  index: {
-    icon: "calculator-line",
-    label: "Calcular",
-  },
   exchange: {
     icon: "exchange-2-line",
     label: "Intercambio",
   },
+  index: {
+    icon: "calculator-line",
+    label: "Calcular",
+  },
+
   settings: {
     icon: "settings-3-line",
     label: "Ajustes",
@@ -114,30 +120,37 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
-      <StatusBar style="dark" />
-      <UniTabs
-        tabBar={(props) => <CustomTabBar {...props} />}
-        screenOptions={{
-          headerShown: false,
-          tabBarHideOnKeyboard: true,
-        }}
-        uniProps={(theme) => ({
-          screenOptions: {
-            sceneStyle: {
-              backgroundColor: theme.colors.background,
-            },
-          },
-        })}
-      >
-        <Tabs.Screen name="index" options={{ title: tabConfig.index.label }} />
-        <Tabs.Screen name="exchange" options={{ title: tabConfig.exchange.label }} />
-        <Tabs.Screen name="settings" options={{ title: tabConfig.settings.label }} />
-      </UniTabs>
+      <GestureHandlerRootView style={styles.root}>
+        <HeroUINativeProvider>
+          <StatusBar style="dark" />
+          <UniTabs
+            tabBar={(props) => <CustomTabBar {...props} />}
+            screenOptions={{
+              headerShown: false,
+              tabBarHideOnKeyboard: true,
+            }}
+            uniProps={(theme) => ({
+              screenOptions: {
+                sceneStyle: {
+                  backgroundColor: theme.colors.background,
+                },
+              },
+            })}
+          >
+            <Tabs.Screen name="exchange" options={{ title: tabConfig.exchange.label }} />
+            <Tabs.Screen name="index" options={{ title: tabConfig.index.label }} />
+            <Tabs.Screen name="settings" options={{ title: tabConfig.settings.label }} />
+          </UniTabs>
+        </HeroUINativeProvider>
+      </GestureHandlerRootView>
     </QueryClientProvider>
   );
 }
 
 const styles = StyleSheet.create((theme, rt) => ({
+  root: {
+    flex: 1,
+  },
   tabBar: {
     flexDirection: "row",
     alignItems: "flex-start",
