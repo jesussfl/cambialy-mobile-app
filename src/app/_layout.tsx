@@ -28,9 +28,9 @@ const tabConfig: Record<string, TabConfig> = {
     icon: "exchange-2-line",
     label: "Intercambio",
   },
-  index: {
+  compare: {
     icon: "calculator-line",
-    label: "Calcular",
+    label: "Comparar",
   },
 
   settings: {
@@ -124,6 +124,7 @@ export default function RootLayout() {
         <HeroUINativeProvider>
           <StatusBar style="dark" />
           <UniTabs
+            initialRouteName="exchange"
             tabBar={(props) => <CustomTabBar {...props} />}
             screenOptions={{
               headerShown: false,
@@ -138,7 +139,7 @@ export default function RootLayout() {
             })}
           >
             <Tabs.Screen name="exchange" options={{ title: tabConfig.exchange.label }} />
-            <Tabs.Screen name="index" options={{ title: tabConfig.index.label }} />
+            <Tabs.Screen name="compare" options={{ title: tabConfig.compare.label }} />
             <Tabs.Screen name="settings" options={{ title: tabConfig.settings.label }} />
           </UniTabs>
         </HeroUINativeProvider>

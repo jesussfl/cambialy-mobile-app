@@ -1,433 +1,348 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import type { ComponentProps } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
-import { Modal, Pressable, ScrollView, View } from "react-native";
-import { interpolateColor, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import { ScrollView, TextInput, View } from "react-native";
 import RemixIcon from "react-native-remix-icon";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet, useUnistyles, withUnistyles } from "react-native-unistyles";
-import { z } from "zod";
+import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
-import { AppButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { AppTextField } from "@/components/ui/text-field";
+import { CurrencyPicker } from "@/features/exchange/components/currency-picker";
+import { currencyMeta, fallbackRates, RATE_ORDER, RATES_CACHE_TIME, RATES_STALE_TIME } from "@/features/exchange/constants";
+import type { CurrencyOption } from "@/features/exchange/types";
+import { formatCompactAmount, formatNumber, formatUpdatedAt, parseCurrencyAmount, sanitizeAmountInput } from "@/features/exchange/utils";
 
-import { fetchExchangeRates, type ExchangeRate } from "../api/rates-api";
+import { fetchExchangeRates, type ExchangeRateId } from "../api/rates-api";
 
-const parseCurrencyAmount = (value: string) => {
-  const trimmedValue = value.trim();
-  const normalizedValue = trimmedValue.includes(",") && trimmedValue.includes(".") ? trimmedValue.replace(/,/g, "") : trimmedValue.replace(",", ".");
+type PriceCurrencyId = ExchangeRateId | "ves";
+type PriceSide = "first" | "second";
 
-  return Number(normalizedValue);
+type PriceInputState = {
+  amount: string;
+  currencyId: PriceCurrencyId;
 };
 
-const currencyAmountSchema = z
-  .string()
-  .trim()
-  .min(1, "Ingresa un precio")
-  .refine((value) => Number.isFinite(parseCurrencyAmount(value)), "Ingresa un numero valido")
-  .refine((value) => parseCurrencyAmount(value) > 0, "Ingresa un precio mayor a cero");
-
-const isValidCurrencyAmount = (value?: string) => {
-  if (!value?.trim()) {
-    return false;
-  }
-
-  const parsedValue = parseCurrencyAmount(value);
-
-  return Number.isFinite(parsedValue) && parsedValue > 0;
+type ComparisonOption = {
+  amount: number;
+  currency: CurrencyOption;
+  rate: number;
+  valueInVes: number;
 };
 
-const calculatorSchema = z.object({
-  usdValue: currencyAmountSchema,
-  comparisonValue: currencyAmountSchema,
-});
-
-type CalculatorFormValues = z.infer<typeof calculatorSchema>;
-type CalculatorTextFieldProps = ComponentProps<typeof AppTextField>;
-
-type CalculationResult = {
-  usdAmount: number;
-  comparisonAmount: number;
-  comparisonMode: ComparisonMode;
-  referenceRate: number;
-  currencyRate: number;
-  currencyPaymentVes: number;
-  bcvPaymentVes: number;
-  bcvPaymentUsd: number;
-  differenceVes: number;
-  recommendation: string;
-  bcvLabel: "Mejor opcion" | "Mas caro" | "Equivalente";
-  currencyLabel: "Mejor opcion" | "Mas caro" | "Equivalente";
-};
-
-type ComparisonMode = "ves" | "bcvUsd";
-
-const fallbackRates: ExchangeRate[] = [
-  {
+const priceCurrencyMeta: Record<PriceCurrencyId, CurrencyOption> = {
+  ...currencyMeta,
+  usdt: {
     id: "usdt",
-    label: "Binance USDT",
-    value: 0,
+    symbol: "$",
+    name: "Tasa USDT",
+    code: "Divisa",
     icon: "copper-coin-line",
   },
-  {
-    id: "bcv",
-    label: "BCV USD",
-    value: 0,
-    icon: "money-dollar-circle-line",
+  ves: {
+    id: "ves",
+    code: "VES",
+    name: "Bolivares",
+    symbol: "Bs.",
+    icon: "bank-line",
   },
-  {
-    id: "eur",
-    label: "EUR BCV",
-    value: 0,
-    icon: "money-euro-circle-line",
-  },
-];
+};
 
-const formatVes = (value: number) =>
-  new Intl.NumberFormat("es-VE", {
-    style: "currency",
-    currency: "VES",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
+const priceCurrencyOrder: PriceCurrencyId[] = ["ves", "usdt", "bcv", "eur"];
 
-const formatUsd = (value: number) =>
-  new Intl.NumberFormat("es-VE", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-
-const formatRate = (value: number) =>
-  value > 0
-    ? `${new Intl.NumberFormat("es-VE", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(value)} Bs.`
-    : "Sin datos";
-
-const RATES_CACHE_TIME = 1000 * 60 * 10;
-const RATES_STALE_TIME = 1000 * 60 * 5;
-
-const UniAppText = withUnistyles(AppText);
+const UniTextInput = withUnistyles(TextInput);
 const UniRemixIcon = withUnistyles(RemixIcon);
 
 export function CalculatorScreen() {
-  const [result, setResult] = useState<CalculationResult | null>(null);
-  const [comparisonMode, setComparisonMode] = useState<ComparisonMode>("ves");
+  const [firstPrice, setFirstPrice] = useState<PriceInputState>({ amount: "1", currencyId: "usdt" });
+  const [secondPrice, setSecondPrice] = useState<PriceInputState>({ amount: "", currencyId: "bcv" });
+
   const ratesQuery = useQuery({
     queryKey: ["exchange-rates"],
     queryFn: fetchExchangeRates,
     staleTime: RATES_STALE_TIME,
     gcTime: RATES_CACHE_TIME,
   });
+
   const rates = ratesQuery.data ?? fallbackRates;
-  const isLoadingRates = ratesQuery.isPending;
+  const sortedRates = useMemo(() => [...rates].sort((leftRate, rightRate) => RATE_ORDER[leftRate.id] - RATE_ORDER[rightRate.id]), [rates]);
+  const ratesById = useMemo(() => new Map(sortedRates.map((rate) => [rate.id, rate])), [sortedRates]);
+  const currencyOptions = useMemo(() => priceCurrencyOrder.map((currencyId) => priceCurrencyMeta[currencyId]), []);
+  const latestUpdate = sortedRates.find((rate) => rate.updatedAt)?.updatedAt;
   const ratesError = ratesQuery.isError ? "No se pudieron cargar las tasas actualizadas." : null;
 
-  const {
-    control,
-    handleSubmit,
-    getValues,
-    setValue,
-    formState: { errors },
-  } = useForm<CalculatorFormValues>({
-    resolver: zodResolver(calculatorSchema),
-  });
+  const firstOption = getComparisonOption(firstPrice, ratesById);
+  const secondOption = getComparisonOption(secondPrice, ratesById);
+  const result = getComparisonResult(firstOption, secondOption);
 
-  const usdValue = useWatch({ control, name: "usdValue" });
-  const comparisonValue = useWatch({ control, name: "comparisonValue" });
+  const handleAmountChange = (side: PriceSide, value: string) => {
+    const sanitizedValue = sanitizeAmountInput(value);
 
-  const bcvRate = useMemo(() => rates.find((rate) => rate.id === "bcv")?.value ?? 0, [rates]);
-  const usdtRate = useMemo(() => rates.find((rate) => rate.id === "usdt")?.value ?? 0, [rates]);
-  const canCalculate = isValidCurrencyAmount(usdValue) && isValidCurrencyAmount(comparisonValue) && !isLoadingRates && bcvRate > 0 && usdtRate > 0;
-
-  const handleToggleComparisonMode = () => {
-    if (bcvRate <= 0) {
+    if (side === "first") {
+      setFirstPrice((currentValue) => ({ ...currentValue, amount: sanitizedValue }));
       return;
     }
 
-    const comparisonValue = getValues("comparisonValue");
-    const currentAmount = parseCurrencyAmount(comparisonValue ?? "");
-
-    if (Number.isFinite(currentAmount) && currentAmount > 0) {
-      const convertedAmount = comparisonMode === "ves" ? currentAmount / bcvRate : currentAmount * bcvRate;
-      setValue("comparisonValue", convertedAmount.toFixed(2), { shouldValidate: true });
-    }
-
-    setComparisonMode((currentMode) => (currentMode === "ves" ? "bcvUsd" : "ves"));
+    setSecondPrice((currentValue) => ({ ...currentValue, amount: sanitizedValue }));
   };
 
-  const handleCalculate = (values: CalculatorFormValues) => {
-    const usdAmount = parseCurrencyAmount(values.usdValue);
-    const comparisonAmount = parseCurrencyAmount(values.comparisonValue);
-    const referenceRate = bcvRate;
-    const currencyRate = usdtRate;
-    const currencyPaymentVes = usdAmount * currencyRate;
-    const bcvPaymentVes = comparisonMode === "ves" ? comparisonAmount : comparisonAmount * referenceRate;
-    const bcvPaymentUsd = comparisonMode === "ves" ? comparisonAmount / referenceRate : comparisonAmount;
-    const differenceVes = Math.abs(bcvPaymentVes - currencyPaymentVes);
-    const isEquivalent = differenceVes < 0.01;
-    const isBcvCheaper = bcvPaymentVes < currencyPaymentVes;
-    const recommendation = isEquivalent ? "Ambas opciones son equivalentes" : isBcvCheaper ? "Conviene pagar a tasa BCV" : "Conviene pagar en divisas";
+  const handleCurrencySelect = (side: PriceSide, currencyId: string) => {
+    if (side === "first") {
+      setFirstPrice((currentValue) => ({ ...currentValue, currencyId: currencyId as PriceCurrencyId }));
+      return;
+    }
 
-    setResult({
-      usdAmount,
-      comparisonAmount,
-      comparisonMode,
-      referenceRate,
-      currencyRate,
-      currencyPaymentVes,
-      bcvPaymentVes,
-      bcvPaymentUsd,
-      differenceVes,
-      recommendation,
-      bcvLabel: isEquivalent ? "Equivalente" : isBcvCheaper ? "Mejor opcion" : "Mas caro",
-      currencyLabel: isEquivalent ? "Equivalente" : isBcvCheaper ? "Mas caro" : "Mejor opcion",
-    });
+    setSecondPrice((currentValue) => ({ ...currentValue, currencyId: currencyId as PriceCurrencyId }));
   };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
         <View style={styles.header}>
-          <AppText variant="title">Paga Claro</AppText>
-          <AppText variant="subtitle">Compara precios en bolivares y divisas</AppText>
-        </View>
-
-        <View style={styles.ratesSection}>
-          <AppText variant="sectionTitle" style={styles.centeredTitle}>
-            Precios de hoy
-          </AppText>
-
-          <Card style={styles.ratesCard}>
-            {rates.map((rate, index) => (
-              <RateRow key={rate.id} label={rate.label} value={formatRate(rate.value)} icon={rate.icon} isLast={index === rates.length - 1} />
-            ))}
-          </Card>
-
-          {isLoadingRates ? <AppText variant="body">Cargando tasas actualizadas...</AppText> : null}
-          {ratesError ? (
-            <AppText variant="body" style={styles.errorText}>
-              {ratesError}
+          <View style={styles.headerButton}>
+            <UniRemixIcon
+              name="calculator-line"
+              size={22}
+              uniProps={(theme: any) => ({
+                color: theme.colors.primary,
+              })}
+            />
+          </View>
+          <View style={styles.headerTitleGroup}>
+            <AppText variant="cardTitle" style={styles.headerTitle}>
+              Comparar precios
             </AppText>
-          ) : null}
+            <AppText variant="tab" style={styles.headerSubtitle} numberOfLines={1}>
+              {ratesQuery.isFetching ? "Actualizando tasas" : formatUpdatedAt(latestUpdate)}
+            </AppText>
+          </View>
+          <View style={styles.headerButton}>
+            <View style={[styles.statusDot, ratesQuery.isFetching ? styles.statusDotLoading : null]} />
+          </View>
         </View>
 
-        <Card elevated style={styles.formCard}>
-          <AppText variant="cardTitle">Ingresa los precios a comparar</AppText>
-
-          <View style={styles.formFields}>
-            <Controller
-              control={control}
-              name="usdValue"
-              render={({ field: { onBlur, onChange, value } }) => (
-                <View style={styles.fieldGroup}>
-                  <CalculatorTextField
-                    label="Precio en Divisa (USD)"
-                    value={value ?? ""}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    keyboardType="decimal-pad"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    icon="money-dollar-circle-line"
-                  />
-                  {errors.usdValue ? (
-                    <AppText variant="body" style={styles.errorText}>
-                      {errors.usdValue.message}
-                    </AppText>
-                  ) : null}
-                </View>
-              )}
-            />
-
-            <Controller
-              control={control}
-              name="comparisonValue"
-              render={({ field: { onBlur, onChange, value } }) => (
-                <View style={styles.fieldGroup}>
-                  <CalculatorTextField
-                    label={comparisonMode === "ves" ? "Precio en Bolivares (Bs.)" : "Precio en Dolares (BCV)"}
-                    value={value ?? ""}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    keyboardType="decimal-pad"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    prefix={comparisonMode === "ves" ? "Bs." : "$"}
-                  />
-                  {errors.comparisonValue ? (
-                    <AppText variant="body" style={styles.errorText}>
-                      {errors.comparisonValue.message}
-                    </AppText>
-                  ) : null}
-                </View>
-              )}
-            />
-          </View>
-
-          <AppButton
-            label={comparisonMode === "ves" ? "Cambiar a dolares (BCV)" : "Volver a bolivares"}
-            variant="secondary"
-            onPress={handleToggleComparisonMode}
-            disabled={isLoadingRates || bcvRate <= 0}
+        <View style={styles.comparePanel}>
+          <PriceComparisonBlock
+            amount={firstPrice.amount}
+            currency={priceCurrencyMeta[firstPrice.currencyId]}
+            label="Precio A"
+            onAmountChange={(value) => handleAmountChange("first", value)}
+            onCurrencySelect={(currencyId) => handleCurrencySelect("first", currencyId)}
+            options={currencyOptions}
+            rate={firstOption.rate}
+            selectedCurrencyId={firstPrice.currencyId}
+            valueInVes={firstOption.valueInVes}
           />
-          <AppButton label="Calcular" variant="primary" onPress={handleSubmit(handleCalculate)} disabled={!canCalculate} />
-        </Card>
-      </ScrollView>
 
-      <Modal animationType="fade" transparent visible={Boolean(result)} onRequestClose={() => setResult(null)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <View style={styles.modalHeader}>
-              <View>
-                <AppText variant="cardTitle">Comparacion de pago</AppText>
-                <AppText variant="body">BCV {result ? formatRate(result.referenceRate) : ""} | USDT {result ? formatRate(result.currencyRate) : ""}</AppText>
-              </View>
-              <Pressable accessibilityRole="button" onPress={() => setResult(null)} style={styles.closeButton}>
-                <AppText variant="button">X</AppText>
-              </Pressable>
+          <View style={styles.dividerRow}>
+            <View style={styles.dividerLine} />
+            <View style={styles.compareIcon}>
+              <UniRemixIcon
+                name="arrow-left-right-line"
+                size={22}
+                uniProps={(theme: any) => ({
+                  color: theme.colors.primaryText,
+                })}
+              />
             </View>
-
-            {result ? (
-              <>
-                <View style={styles.optionGrid}>
-                  <PaymentOptionCard
-                    title={result.comparisonMode === "ves" ? "Pagar en bolivares" : "Pagar a tasa BCV"}
-                    amount={result.comparisonMode === "ves" ? formatVes(result.comparisonAmount) : formatUsd(result.comparisonAmount)}
-                    detail={
-                      result.comparisonMode === "ves"
-                        ? `Equivale a ${formatUsd(result.bcvPaymentUsd)} usando BCV`
-                        : `Equivale a ${formatVes(result.bcvPaymentVes)} usando BCV`
-                    }
-                    label={result.bcvLabel}
-                  />
-                  <PaymentOptionCard
-                    title="Pagar en divisa"
-                    amount={formatUsd(result.usdAmount)}
-                    detail={`Equivale a ${formatVes(result.currencyPaymentVes)} usando Binance USDT`}
-                    label={result.currencyLabel}
-                  />
-                </View>
-
-                <View style={styles.recommendationBox}>
-                  <AppText variant="label">Recomendacion</AppText>
-                  <AppText variant="cardTitle">{result.recommendation}</AppText>
-                  <AppText variant="body">Diferencia: {formatVes(result.differenceVes)}</AppText>
-                </View>
-
-                <AppButton label="Cerrar" variant="secondary" icon="close-line" onPress={() => setResult(null)} />
-              </>
-            ) : null}
+            <View style={styles.dividerLine} />
           </View>
+
+          <PriceComparisonBlock
+            amount={secondPrice.amount}
+            currency={priceCurrencyMeta[secondPrice.currencyId]}
+            label="Precio B"
+            onAmountChange={(value) => handleAmountChange("second", value)}
+            onCurrencySelect={(currencyId) => handleCurrencySelect("second", currencyId)}
+            options={currencyOptions}
+            rate={secondOption.rate}
+            selectedCurrencyId={secondPrice.currencyId}
+            valueInVes={secondOption.valueInVes}
+          />
         </View>
-      </Modal>
+
+        <ComparisonSummary firstOption={firstOption} secondOption={secondOption} result={result} />
+
+        {ratesError ? (
+          <AppText variant="tab" style={styles.errorText} numberOfLines={1}>
+            {ratesError}
+          </AppText>
+        ) : null}
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
-type RateRowProps = {
+function getComparisonOption(price: PriceInputState, ratesById: Map<ExchangeRateId, { value: number }>): ComparisonOption {
+  const amount = parseCurrencyAmount(price.amount);
+  const safeAmount = Number.isFinite(amount) && amount > 0 ? amount : 0;
+  const rate = price.currencyId === "ves" ? 1 : (ratesById.get(price.currencyId)?.value ?? 0);
+
+  return {
+    amount: safeAmount,
+    currency: priceCurrencyMeta[price.currencyId],
+    rate,
+    valueInVes: safeAmount > 0 && rate > 0 ? safeAmount * rate : 0,
+  };
+}
+
+function getComparisonResult(firstOption: ComparisonOption, secondOption: ComparisonOption) {
+  if (firstOption.valueInVes <= 0 || secondOption.valueInVes <= 0) {
+    return null;
+  }
+
+  const differenceVes = Math.abs(firstOption.valueInVes - secondOption.valueInVes);
+  const isEquivalent = differenceVes < 0.01;
+  const betterSide = isEquivalent ? null : firstOption.valueInVes < secondOption.valueInVes ? "first" : "second";
+  const cheaperValue = betterSide === "first" ? firstOption.valueInVes : secondOption.valueInVes;
+  const expensiveValue = betterSide === "first" ? secondOption.valueInVes : firstOption.valueInVes;
+  const savingPercent = betterSide && expensiveValue > 0 ? (differenceVes / expensiveValue) * 100 : 0;
+
+  return {
+    betterSide,
+    differenceVes,
+    isEquivalent,
+    savingPercent,
+    cheaperValue,
+  };
+}
+
+type PriceComparisonBlockProps = {
+  amount: string;
+  currency: CurrencyOption;
   label: string;
-  value: string;
-  icon: string;
-  isLast: boolean;
+  onAmountChange: (value: string) => void;
+  onCurrencySelect: (currencyId: string) => void;
+  options: CurrencyOption[];
+  rate: number;
+  selectedCurrencyId: PriceCurrencyId;
+  valueInVes: number;
 };
 
-function RateRow({ label, value, icon, isLast }: RateRowProps) {
+function PriceComparisonBlock({
+  amount,
+  currency,
+  label,
+  onAmountChange,
+  onCurrencySelect,
+  options,
+  rate,
+  selectedCurrencyId,
+  valueInVes,
+}: PriceComparisonBlockProps) {
+  const rateText = selectedCurrencyId === "ves" ? "Precio directo en bolivares" : `1 ${currency.code} equivale Bs. ${formatNumber(rate)}`;
+  const amountPlaceholder = selectedCurrencyId === "ves" ? "0,00" : "0";
+
   return (
-    <View style={[styles.rateRow, isLast ? null : styles.rateRowDivider]}>
-      <View style={styles.rateMeta}>
-        <View style={styles.rateIconWrap}>
-          <UniRemixIcon
-            name={icon}
-            size={22}
-            uniProps={(theme: any) => ({
-              color: theme.colors.primary,
-            })}
-          />
+    <View style={styles.priceBlock}>
+      <View style={styles.priceTopRow}>
+        <View style={styles.priceValueGroup}>
+          <AppText variant="tab" style={styles.blockLabel}>
+            {label}
+          </AppText>
+          <View style={styles.amountRow}>
+            <AppText variant="title" style={styles.amountSymbol}>
+              {currency.symbol}
+            </AppText>
+            <UniTextInput
+              value={amount.replace(".", ",")}
+              onChangeText={onAmountChange}
+              keyboardType="decimal-pad"
+              autoCapitalize="none"
+              autoCorrect={false}
+              placeholder={amountPlaceholder}
+              style={styles.amountInput}
+              uniProps={(theme) => ({
+                placeholderTextColor: theme.colors.textMuted,
+                selectionColor: theme.colors.primary,
+              })}
+            />
+          </View>
         </View>
-        <AppText variant="label" style={styles.rateLabel} numberOfLines={1}>
-          {label}
+
+        <CurrencyPicker code={currency.code} icon={currency.icon} onSelect={onCurrencySelect} options={options} selectedOptionId={selectedCurrencyId} />
+      </View>
+
+      <View style={styles.priceFooter}>
+        <AppText variant="tab" style={styles.rateHint} numberOfLines={1}>
+          {rate > 0 ? rateText : "Tasa no disponible"}
+        </AppText>
+        <AppText variant="tab" style={styles.vesValue} numberOfLines={1}>
+          Bs. {formatCompactAmount(valueInVes)}
         </AppText>
       </View>
-      <AppText variant="value" style={styles.rateValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82}>
-        {value}
-      </AppText>
     </View>
   );
 }
 
-function CalculatorTextField({ onBlur, onFocus, onPointerEnter, onPointerLeave, ...props }: CalculatorTextFieldProps) {
-  const focusProgress = useSharedValue(0);
-  const hoverProgress = useSharedValue(0);
-  const { theme } = useUnistyles();
+type ComparisonSummaryProps = {
+  firstOption: ComparisonOption;
+  secondOption: ComparisonOption;
+  result: ReturnType<typeof getComparisonResult>;
+};
 
-  const animatedInputContainerStyle = useAnimatedStyle(() => {
-    const activeProgress = Math.max(focusProgress.value, hoverProgress.value);
-
-    return {
-      borderWidth: 1,
-      borderColor: interpolateColor(activeProgress, [0, 1], [theme.colors.borderSubtle, theme.colors.primary]),
-    };
-  });
+function ComparisonSummary({ firstOption, secondOption, result }: ComparisonSummaryProps) {
+  const hasValues = firstOption.valueInVes > 0 || secondOption.valueInVes > 0;
+  const winnerLabel = result?.isEquivalent ? "Precios equivalentes" : result?.betterSide === "first" ? "Precio A conviene mas" : "Precio B conviene mas";
 
   return (
-    <AppTextField
-      {...props}
-      inputContainerStyle={animatedInputContainerStyle}
-      onFocus={(event) => {
-        focusProgress.value = withTiming(1, { duration: 180 });
-        onFocus?.(event);
-      }}
-      onBlur={(event) => {
-        focusProgress.value = withTiming(0, { duration: 180 });
-        onBlur?.(event);
-      }}
-      onPointerEnter={(event) => {
-        hoverProgress.value = withTiming(1, { duration: 180 });
-        onPointerEnter?.(event);
-      }}
-      onPointerLeave={(event) => {
-        hoverProgress.value = withTiming(0, { duration: 180 });
-        onPointerLeave?.(event);
-      }}
-    />
+    <Card elevated style={styles.summaryCard}>
+      <View style={styles.summaryHeader}>
+        <View>
+          <AppText variant="tab" style={styles.summaryEyebrow}>
+            Resultado
+          </AppText>
+          <AppText variant="cardTitle">{result ? winnerLabel : "Ingresa ambos precios"}</AppText>
+        </View>
+        <View style={styles.summaryBadge}>
+          <UniRemixIcon
+            name={result?.isEquivalent ? "equal-line" : "price-tag-3-line"}
+            size={18}
+            uniProps={(theme: any) => ({
+              color: theme.colors.accentText,
+            })}
+          />
+        </View>
+      </View>
+
+      <View style={styles.summaryGrid}>
+        <SummaryMetric label="Precio A en Bs." value={`Bs. ${formatCompactAmount(firstOption.valueInVes)}`} isActive={result?.betterSide === "first"} />
+        <SummaryMetric label="Precio B en Bs." value={`Bs. ${formatCompactAmount(secondOption.valueInVes)}`} isActive={result?.betterSide === "second"} />
+      </View>
+
+      <View style={styles.differenceBox}>
+        <AppText variant="label">Diferencia</AppText>
+        <AppText variant="title" style={styles.differenceValue} numberOfLines={1}>
+          {result ? `Bs. ${formatCompactAmount(result.differenceVes)}` : "Bs. 0"}
+        </AppText>
+        <AppText variant="body">
+          {result
+            ? result.isEquivalent
+              ? "Ambos precios tienen el mismo costo en bolivares."
+              : `Ahorras ${formatNumber(result.savingPercent)}% frente a la opcion mas cara.`
+            : hasValues
+              ? "Falta completar uno de los precios para comparar."
+              : "Compara precios usando VES, BCV, Divisa (USDT) o EUR."}
+        </AppText>
+      </View>
+    </Card>
   );
 }
 
-type PaymentOptionCardProps = {
-  title: string;
-  amount: string;
-  detail: string;
-  label: CalculationResult["bcvLabel"];
+type SummaryMetricProps = {
+  isActive: boolean;
+  label: string;
+  value: string;
 };
 
-function PaymentOptionCard({ title, amount, detail, label }: PaymentOptionCardProps) {
-  const isBestOption = label === "Mejor opcion";
-
+function SummaryMetric({ isActive, label, value }: SummaryMetricProps) {
   return (
-    <View style={[styles.optionCard, isBestOption ? styles.bestOptionCard : null]}>
-      <View style={[styles.resultBadge, isBestOption ? styles.bestBadge : styles.expensiveBadge]}>
-        <UniAppText
-          variant="tab"
-          uniProps={(theme) => ({
-            color: isBestOption ? theme.colors.accentText : theme.colors.textSecondary,
-          })}
-        >
-          {label}
-        </UniAppText>
-      </View>
-      <AppText variant="label">{title}</AppText>
-      <AppText variant="value" style={styles.optionAmount}>
-        {amount}
+    <View style={[styles.summaryMetric, isActive ? styles.summaryMetricActive : null]}>
+      <AppText variant="tab" style={styles.summaryMetricLabel}>
+        {label}
       </AppText>
-      <AppText variant="body">{detail}</AppText>
+      <AppText variant="value" style={styles.summaryMetricValue} numberOfLines={1}>
+        {value}
+      </AppText>
     </View>
   );
 }
@@ -438,141 +353,221 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.background,
   },
   content: {
+    flexGrow: 1,
     paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing["2xl"],
+    paddingTop: theme.spacing.lg,
     paddingBottom: theme.spacing["3xl"],
-    gap: theme.spacing["3xl"],
-  },
-  header: {
-    gap: theme.spacing.xs,
-    paddingTop: theme.spacing.xs,
-  },
-  ratesSection: {
     gap: theme.spacing.lg,
   },
-  centeredTitle: {
-    textAlign: "center",
-  },
-  ratesCard: {
-    overflow: "hidden",
-    backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.borderSubtle,
-  },
-  rateRow: {
-    minHeight: 64,
+  header: {
+    minHeight: 48,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: theme.spacing.md,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
   },
-  rateRowDivider: {
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.borderSubtle,
+  headerButton: {
+    width: 44,
+    height: 44,
+    borderRadius: theme.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
+  },
+  headerTitleGroup: {
+    flex: 1,
+    alignItems: "center",
+    gap: theme.spacing.xxs,
+  },
+  headerTitle: {
+    textAlign: "center",
+  },
+  headerSubtitle: {
+    color: theme.colors.textMuted,
+    textAlign: "center",
+  },
+  statusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: theme.colors.accent,
+  },
+  statusDotLoading: {
+    opacity: 0.45,
+  },
+  comparePanel: {
+    gap: theme.spacing.md,
+    paddingVertical: theme.spacing.lg,
+  },
+  priceBlock: {
+    minHeight: 142,
+    justifyContent: "center",
+    gap: theme.spacing.md,
+  },
+  priceTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: theme.spacing.sm,
+  },
+  priceValueGroup: {
+    flex: 1,
+    minWidth: 0,
+    gap: theme.spacing.xs,
+  },
+  blockLabel: {
+    color: theme.colors.textMuted,
+  },
+  amountRow: {
+    minHeight: 58,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.xs,
+  },
+  amountSymbol: {
+    color: theme.colors.textSecondary,
+    fontSize: 34,
+    lineHeight: 40,
+  },
+  amountInput: {
+    flex: 1,
+    minWidth: 0,
+    height: 56,
+    padding: 0,
+    color: theme.colors.textPrimary,
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: 34,
+    fontWeight: theme.typography.fontWeight.bold,
+    lineHeight: 40,
+  },
+  priceFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: theme.spacing.md,
+  },
+  rateHint: {
+    flex: 1,
+    minWidth: 0,
+    color: theme.colors.textMuted,
+  },
+  vesValue: {
+    maxWidth: "42%",
+    color: theme.colors.textPrimary,
+    textAlign: "right",
+  },
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.sm,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: theme.colors.borderSubtle,
+  },
+  compareIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: theme.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.colors.primary,
+    ...theme.shadows.card,
+  },
+  summaryCard: {
+    gap: theme.spacing.md,
+    padding: theme.spacing.md,
+  },
+  summaryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: theme.spacing.md,
+  },
+  summaryEyebrow: {
+    color: theme.colors.textMuted,
+  },
+  summaryBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: theme.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.colors.accent,
+  },
+  summaryGrid: {
+    gap: theme.spacing.sm,
+  },
+  summaryMetric: {
+    gap: theme.spacing.xxs,
+    padding: theme.spacing.md,
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.surfaceSoft,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
+  },
+  summaryMetricActive: {
+    borderColor: theme.colors.accent,
+  },
+  summaryMetricLabel: {
+    color: theme.colors.textMuted,
+  },
+  summaryMetricValue: {
+    fontSize: theme.typography.fontSize.md,
+  },
+  differenceBox: {
+    gap: theme.spacing.xs,
+    padding: theme.spacing.md,
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.backgroundAccent,
+  },
+  differenceValue: {
+    color: theme.colors.textPrimary,
+  },
+  rateList: {
+    gap: theme.spacing.xs,
+    padding: theme.spacing.xs,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.surfaceSoft,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
+  },
+  rateRow: {
+    minHeight: 38,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.xs,
   },
   rateMeta: {
     flex: 1,
     minWidth: 0,
     flexDirection: "row",
     alignItems: "center",
-    gap: theme.spacing.sm,
+    gap: theme.spacing.xs,
   },
-  rateIconWrap: {
-    width: 40,
-    height: 40,
+  rateIcon: {
+    width: 26,
+    height: 26,
     borderRadius: theme.radius.pill,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: theme.colors.backgroundAccent,
+    backgroundColor: theme.colors.secondarySurface,
   },
   rateLabel: {
-    flex: 1,
-    minWidth: 0,
     color: theme.colors.textSecondary,
   },
   rateValue: {
-    flexShrink: 1,
-    maxWidth: "46%",
+    maxWidth: "58%",
+    color: theme.colors.textPrimary,
     textAlign: "right",
-  },
-  formCard: {
-    padding: theme.spacing.md,
-    gap: theme.spacing.xl,
-    backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.borderSubtle,
-  },
-  formFields: {
-    gap: theme.spacing.xl,
-  },
-  fieldGroup: {
-    gap: theme.spacing.xs,
   },
   errorText: {
     color: theme.colors.error,
-  },
-  modalOverlay: {
-    flex: 1,
-    padding: theme.spacing.md,
-    backgroundColor: "rgba(16, 24, 40, 0.34)",
-    justifyContent: "center",
-  },
-  modalCard: {
-    borderRadius: theme.radius.md,
-    padding: theme.spacing.md,
-    gap: theme.spacing.lg,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.borderSubtle,
-    ...theme.shadows.floating,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: theme.spacing.md,
-  },
-  closeButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: theme.colors.secondarySurface,
-  },
-  optionGrid: {
-    gap: theme.spacing.sm,
-  },
-  optionCard: {
-    gap: theme.spacing.xs,
-    padding: theme.spacing.md,
-    borderRadius: theme.radius.sm,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.borderSubtle,
-  },
-  bestOptionCard: {
-    borderColor: theme.colors.accent,
-  },
-  resultBadge: {
-    alignSelf: "flex-start",
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xxs,
-    borderRadius: theme.radius.pill,
-  },
-  bestBadge: {
-    backgroundColor: theme.colors.accent,
-  },
-  expensiveBadge: {
-    backgroundColor: theme.colors.secondarySurface,
-  },
-  optionAmount: {
-    fontSize: theme.typography.fontSize.md,
-  },
-  recommendationBox: {
-    gap: theme.spacing.xs,
-    padding: theme.spacing.md,
-    borderRadius: theme.radius.sm,
-    backgroundColor: theme.colors.backgroundAccent,
+    textAlign: "center",
   },
 }));

@@ -1,5 +1,5 @@
-import { CalculatorScreen } from '@/features/calculator/screens/calculator-screen';
+import { Redirect } from "expo-router";
 
-export default function HomeScreen() {
-  return <CalculatorScreen />;
+export default function IndexScreen() {
+  return <Redirect href="/exchange" />;
 }
