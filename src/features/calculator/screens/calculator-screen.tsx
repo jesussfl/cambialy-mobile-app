@@ -5,6 +5,7 @@ import type { ComponentProps } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { Modal, Pressable, ScrollView, View } from "react-native";
 import { interpolateColor, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import RemixIcon from "react-native-remix-icon";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet, useUnistyles, withUnistyles } from "react-native-unistyles";
 import { z } from "zod";
@@ -15,7 +16,6 @@ import { Card } from "@/components/ui/card";
 import { AppTextField } from "@/components/ui/text-field";
 
 import { fetchExchangeRates, type ExchangeRate } from "../api/rates-api";
-import { RateCard } from "../components/rate-card";
 
 const parseCurrencyAmount = (value: string) => {
   const trimmedValue = value.trim();
@@ -115,6 +115,7 @@ const RATES_CACHE_TIME = 1000 * 60 * 10;
 const RATES_STALE_TIME = 1000 * 60 * 5;
 
 const UniAppText = withUnistyles(AppText);
+const UniRemixIcon = withUnistyles(RemixIcon);
 
 export function CalculatorScreen() {
   const [result, setResult] = useState<CalculationResult | null>(null);
@@ -207,11 +208,11 @@ export function CalculatorScreen() {
             Precios de hoy
           </AppText>
 
-          <View style={styles.rateGrid}>
-            {rates.map((rate) => (
-              <RateCard key={rate.id} label={rate.label} value={formatRate(rate.value)} icon={rate.icon} />
+          <Card style={styles.ratesCard}>
+            {rates.map((rate, index) => (
+              <RateRow key={rate.id} label={rate.label} value={formatRate(rate.value)} icon={rate.icon} isLast={index === rates.length - 1} />
             ))}
-          </View>
+          </Card>
 
           {isLoadingRates ? <AppText variant="body">Cargando tasas actualizadas...</AppText> : null}
           {ratesError ? (
@@ -334,6 +335,37 @@ export function CalculatorScreen() {
   );
 }
 
+type RateRowProps = {
+  label: string;
+  value: string;
+  icon: string;
+  isLast: boolean;
+};
+
+function RateRow({ label, value, icon, isLast }: RateRowProps) {
+  return (
+    <View style={[styles.rateRow, isLast ? null : styles.rateRowDivider]}>
+      <View style={styles.rateMeta}>
+        <View style={styles.rateIconWrap}>
+          <UniRemixIcon
+            name={icon}
+            size={22}
+            uniProps={(theme: any) => ({
+              color: theme.colors.primary,
+            })}
+          />
+        </View>
+        <AppText variant="label" style={styles.rateLabel} numberOfLines={1}>
+          {label}
+        </AppText>
+      </View>
+      <AppText variant="value" style={styles.rateValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82}>
+        {value}
+      </AppText>
+    </View>
+  );
+}
+
 function CalculatorTextField({ onBlur, onFocus, onPointerEnter, onPointerLeave, ...props }: CalculatorTextFieldProps) {
   const focusProgress = useSharedValue(0);
   const hoverProgress = useSharedValue(0);
@@ -444,9 +476,48 @@ const styles = StyleSheet.create((theme) => ({
   centeredTitle: {
     textAlign: "center",
   },
-  rateGrid: {
+  ratesCard: {
+    overflow: "hidden",
+    backgroundColor: theme.colors.surfaceSoft,
+    borderColor: theme.colors.border,
+  },
+  rateRow: {
+    minHeight: 64,
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: theme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+  },
+  rateRowDivider: {
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.borderSubtle,
+  },
+  rateMeta: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
+  },
+  rateIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: theme.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.colors.secondarySurface,
+  },
+  rateLabel: {
+    flex: 1,
+    minWidth: 0,
+    color: theme.colors.textSecondary,
+  },
+  rateValue: {
+    flexShrink: 1,
+    maxWidth: "46%",
+    textAlign: "right",
   },
   formCard: {
     padding: theme.spacing.md,

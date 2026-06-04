@@ -6,8 +6,7 @@ import { StatusBar } from "expo-status-bar";
 import type { ComponentProps } from "react";
 import { Pressable, View } from "react-native";
 import RemixIcon, { type IconName } from "react-native-remix-icon";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { StyleSheet, useUnistyles, withUnistyles } from "react-native-unistyles";
+import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 
@@ -24,9 +23,9 @@ const tabConfig: Record<string, TabConfig> = {
     icon: "calculator-line",
     label: "Calcular",
   },
-  history: {
-    icon: "history-line",
-    label: "Historial",
+  exchange: {
+    icon: "exchange-2-line",
+    label: "Intercambio",
   },
   settings: {
     icon: "settings-3-line",
@@ -41,18 +40,8 @@ const UniAppText = withUnistyles(AppText);
 const UniTabs = withUnistyles(Tabs);
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
-  const insets = useSafeAreaInsets();
-  const { theme } = useUnistyles();
-
   return (
-    <View
-      style={[
-        styles.tabBar,
-        {
-          paddingBottom: Math.max(insets.bottom, theme.spacing.sm),
-        },
-      ]}
-    >
+    <View style={styles.tabBar}>
       {state.routes.map((route, index) => {
         const config = tabConfig[route.name];
         const options = descriptors[route.key]?.options;
@@ -109,7 +98,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             <UniAppText
               variant="tab"
               style={styles.tabLabel}
-              uniProps={(theme: any) => ({
+              uniProps={(theme) => ({
                 color: isFocused ? theme.colors.primary : theme.colors.textMuted,
               })}
             >
@@ -132,7 +121,7 @@ export default function RootLayout() {
           headerShown: false,
           tabBarHideOnKeyboard: true,
         }}
-        uniProps={(theme: any) => ({
+        uniProps={(theme) => ({
           screenOptions: {
             sceneStyle: {
               backgroundColor: theme.colors.background,
@@ -141,14 +130,14 @@ export default function RootLayout() {
         })}
       >
         <Tabs.Screen name="index" options={{ title: tabConfig.index.label }} />
-        <Tabs.Screen name="history" options={{ title: tabConfig.history.label }} />
+        <Tabs.Screen name="exchange" options={{ title: tabConfig.exchange.label }} />
         <Tabs.Screen name="settings" options={{ title: tabConfig.settings.label }} />
       </UniTabs>
     </QueryClientProvider>
   );
 }
 
-const styles = StyleSheet.create((theme) => ({
+const styles = StyleSheet.create((theme, rt) => ({
   tabBar: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -159,6 +148,7 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.tabSurface,
     borderTopWidth: 1,
     borderTopColor: theme.colors.tabBorder,
+    paddingBottom: Math.max(rt.insets.bottom, theme.spacing.sm),
   },
   tabButton: {
     flex: 1,
