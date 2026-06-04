@@ -12,11 +12,34 @@ export const spacing = {
 } as const;
 
 export const radius = {
-  sm: 12,
-  md: 18,
-  lg: 24,
+  sm: 8,
+  md: 12,
+  lg: 16,
   xl: 30,
   pill: 999,
+} as const;
+
+export const gray = {
+  0: '#FFFFFF',
+  25: '#FCFCFD',
+  50: '#F9FAFB',
+  100: '#F2F4F7',
+  200: '#EAECF0',
+  300: '#D0D5DD',
+  400: '#98A2B3',
+  500: '#667085',
+  600: '#475467',
+  700: '#344054',
+  800: '#182230',
+  900: '#101828',
+  1000: '#07101F',
+} as const;
+
+export const brand = {
+  blue: '#004FFB',
+  bluePressed: '#003ECC',
+  green: '#9BFF2A',
+  greenPressed: '#84E51D',
 } as const;
 
 export const typography = {
@@ -52,17 +75,17 @@ export const typography = {
 
 export const shadows = {
   card: {
-    shadowColor: '#020912',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.24,
-    shadowRadius: 24,
-    elevation: 10,
+    shadowColor: '#101828',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 4,
   },
   floating: {
-    shadowColor: '#000814',
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.34,
-    shadowRadius: 30,
-    elevation: 16,
+    shadowColor: '#101828',
+    shadowOffset: { width: 0, height: 18 },
+    shadowOpacity: 0.14,
+    shadowRadius: 32,
+    elevation: 10,
   },
 } as const;

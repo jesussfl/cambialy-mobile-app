@@ -23,6 +23,7 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radius.sm,
     borderWidth: 1,
     borderColor: theme.colors.borderSubtle,
+    overflow: "hidden",
   },
   elevated: {
     ...theme.shadows.card,

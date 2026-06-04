@@ -114,7 +114,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <UniTabs
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{
@@ -142,8 +142,8 @@ const styles = StyleSheet.create((theme, rt) => ({
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-around",
-    minHeight: 96,
-    paddingTop: theme.spacing.sm,
+    minHeight: 92,
+    paddingTop: theme.spacing.xs,
     paddingHorizontal: theme.spacing.md,
     backgroundColor: theme.colors.tabSurface,
     borderTopWidth: 1,
@@ -158,9 +158,9 @@ const styles = StyleSheet.create((theme, rt) => ({
     minHeight: 68,
   },
   activeDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 18,
+    height: 3,
+    borderRadius: 2,
     backgroundColor: theme.colors.primary,
   },
   tabLabel: {

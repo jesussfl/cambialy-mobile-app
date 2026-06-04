@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { AppText } from '@/components/ui/app-text';
+import { Card } from '@/components/ui/card';
 
 export default function SettingsScreen() {
   return (
@@ -12,20 +13,20 @@ export default function SettingsScreen() {
 
         <View style={styles.section}>
           <AppText variant="sectionTitle" style={styles.sectionHeader}>Acerca de la aplicación</AppText>
-          <View style={styles.card}>
+          <Card style={styles.card}>
             <AppText variant="body" style={styles.description}>
               Paga Claro te ayuda a comparar y calcular de manera rápida y transparente tus opciones de pago, asegurando decisiones financieras más claras.
             </AppText>
-          </View>
+          </Card>
         </View>
 
         <View style={styles.section}>
           <AppText variant="sectionTitle" style={styles.sectionHeader}>Privacidad y Datos</AppText>
-          <View style={styles.card}>
+          <Card style={styles.card}>
             <AppText variant="body" style={styles.privacyText}>
               Valoramos tu privacidad. No recopilamos, almacenamos ni compartimos ningún tipo de información personal o datos financieros. Todos los cálculos se realizan localmente en tu dispositivo.
             </AppText>
-          </View>
+          </Card>
         </View>
 
         <View style={styles.footer}>
@@ -44,7 +45,7 @@ const styles = StyleSheet.create((theme) => ({
   content: {
     flex: 1,
     paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing['3xl'],
+    paddingTop: theme.spacing['2xl'],
     gap: theme.spacing.xl,
   },
   title: {
@@ -58,15 +59,11 @@ const styles = StyleSheet.create((theme) => ({
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.textMuted,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0,
     paddingLeft: theme.spacing.xxs,
   },
   card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.md,
     padding: theme.spacing.md,
-    borderWidth: 1,
-    borderColor: theme.colors.borderSubtle,
   },
   description: {
     color: theme.colors.textPrimary,

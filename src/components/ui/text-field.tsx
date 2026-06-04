@@ -21,7 +21,7 @@ export const AppTextField = forwardRef<TextInput, AppTextFieldProps>(
       <View style={styles.wrapper}>
         <AppText variant="label">{label}</AppText>
         <Animated.View style={[styles.inputContainer, inputContainerStyle]}>
-          {icon ? <UniRemixIcon name={icon} size={24} uniProps={(theme:any) => ({ color: theme.colors.textSecondary })} /> : null}
+          {icon ? <UniRemixIcon name={icon} size={24} uniProps={(theme:any) => ({ color: theme.colors.icon })} /> : null}
           {prefix ? (
             <AppText variant="body" style={styles.prefix}>
               {prefix}
@@ -53,6 +53,8 @@ const styles = StyleSheet.create((theme) => ({
     minHeight: 48,
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.inputSurface,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
     paddingHorizontal: theme.spacing.md,
     flexDirection: "row",
     alignItems: "center",

@@ -194,9 +194,6 @@ export function CalculatorScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <View style={styles.backgroundGlowTop} />
-      <View style={styles.backgroundGlowBottom} />
-
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
         <View style={styles.header}>
           <AppText variant="title">Paga Claro</AppText>
@@ -376,7 +373,7 @@ function CalculatorTextField({ onBlur, onFocus, onPointerEnter, onPointerLeave, 
 
     return {
       borderWidth: 1,
-      borderColor: interpolateColor(activeProgress, [0, 1], ["rgba(17, 194, 131, 0)", theme.colors.primary]),
+      borderColor: interpolateColor(activeProgress, [0, 1], [theme.colors.borderSubtle, theme.colors.primary]),
     };
   });
 
@@ -420,7 +417,7 @@ function PaymentOptionCard({ title, amount, detail, label }: PaymentOptionCardPr
         <UniAppText
           variant="tab"
           uniProps={(theme) => ({
-            color: isBestOption ? theme.colors.primaryText : theme.colors.textSecondary,
+            color: isBestOption ? theme.colors.accentText : theme.colors.textSecondary,
           })}
         >
           {label}
@@ -440,29 +437,9 @@ const styles = StyleSheet.create((theme) => ({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  backgroundGlowTop: {
-    position: "absolute",
-    top: -140,
-    left: -80,
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    backgroundColor: theme.colors.backgroundAccent,
-    opacity: 0.32,
-  },
-  backgroundGlowBottom: {
-    position: "absolute",
-    right: -120,
-    bottom: 120,
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: theme.colors.backgroundAccent,
-    opacity: 0.22,
-  },
   content: {
     paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing["3xl"],
+    paddingTop: theme.spacing["2xl"],
     paddingBottom: theme.spacing["3xl"],
     gap: theme.spacing["3xl"],
   },
@@ -478,8 +455,8 @@ const styles = StyleSheet.create((theme) => ({
   },
   ratesCard: {
     overflow: "hidden",
-    backgroundColor: theme.colors.surfaceSoft,
-    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.borderSubtle,
   },
   rateRow: {
     minHeight: 64,
@@ -507,7 +484,7 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radius.pill,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: theme.colors.secondarySurface,
+    backgroundColor: theme.colors.backgroundAccent,
   },
   rateLabel: {
     flex: 1,
@@ -523,7 +500,7 @@ const styles = StyleSheet.create((theme) => ({
     padding: theme.spacing.md,
     gap: theme.spacing.xl,
     backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.borderSubtle,
   },
   formFields: {
     gap: theme.spacing.xl,
@@ -537,16 +514,16 @@ const styles = StyleSheet.create((theme) => ({
   modalOverlay: {
     flex: 1,
     padding: theme.spacing.md,
-    backgroundColor: "rgba(1, 8, 20, 0.72)",
+    backgroundColor: "rgba(16, 24, 40, 0.34)",
     justifyContent: "center",
   },
   modalCard: {
-    borderRadius: theme.radius.lg,
+    borderRadius: theme.radius.md,
     padding: theme.spacing.md,
     gap: theme.spacing.lg,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.borderSubtle,
     ...theme.shadows.floating,
   },
   modalHeader: {
@@ -570,12 +547,12 @@ const styles = StyleSheet.create((theme) => ({
     gap: theme.spacing.xs,
     padding: theme.spacing.md,
     borderRadius: theme.radius.sm,
-    backgroundColor: theme.colors.surfaceSoft,
+    backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.borderSubtle,
   },
   bestOptionCard: {
-    borderColor: theme.colors.primary,
+    borderColor: theme.colors.accent,
   },
   resultBadge: {
     alignSelf: "flex-start",
@@ -584,7 +561,7 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radius.pill,
   },
   bestBadge: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.accent,
   },
   expensiveBadge: {
     backgroundColor: theme.colors.secondarySurface,
@@ -596,6 +573,6 @@ const styles = StyleSheet.create((theme) => ({
     gap: theme.spacing.xs,
     padding: theme.spacing.md,
     borderRadius: theme.radius.sm,
-    backgroundColor: theme.colors.inputSurface,
+    backgroundColor: theme.colors.backgroundAccent,
   },
 }));

@@ -26,19 +26,23 @@ const styles = StyleSheet.create((theme) => ({
     fontWeight: theme.typography.fontWeight.regular,
   },
   title: {
-    fontSize: theme.typography.fontSize["lg"],
+    fontSize: theme.typography.fontSize.xl,
     fontWeight: theme.typography.fontWeight.bold,
+    lineHeight: theme.typography.lineHeight.xl,
   },
   subtitle: {
-    fontSize: theme.typography.fontSize.lg,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.textSecondary,
+    lineHeight: theme.typography.lineHeight.sm,
   },
   sectionTitle: {
     fontSize: theme.typography.fontSize.md,
-    color: theme.colors.textSecondary,
+    color: theme.colors.textPrimary,
+    fontWeight: theme.typography.fontWeight.bold,
   },
   cardTitle: {
     fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.semibold,
   },
   label: {
     fontSize: theme.typography.fontSize.sm,
@@ -51,6 +55,7 @@ const styles = StyleSheet.create((theme) => ({
   value: {
     fontSize: theme.typography.fontSize.sm,
     fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.textPrimary,
   },
   button: {
     fontSize: theme.typography.fontSize.sm,

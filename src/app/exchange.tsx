@@ -128,9 +128,6 @@ export default function ExchangeScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <View style={styles.backgroundGlowTop} />
-      <View style={styles.backgroundGlowBottom} />
-
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <AppText variant="title">Convertidor</AppText>
@@ -329,29 +326,9 @@ const styles = StyleSheet.create((theme) => ({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  backgroundGlowTop: {
-    position: "absolute",
-    top: -140,
-    left: -80,
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    backgroundColor: theme.colors.backgroundAccent,
-    opacity: 0.32,
-  },
-  backgroundGlowBottom: {
-    position: "absolute",
-    right: -120,
-    bottom: 120,
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: theme.colors.backgroundAccent,
-    opacity: 0.22,
-  },
   content: {
     paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing["3xl"],
+    paddingTop: theme.spacing["2xl"],
     paddingBottom: theme.spacing["3xl"],
     gap: theme.spacing["2xl"],
   },
@@ -363,7 +340,7 @@ const styles = StyleSheet.create((theme) => ({
     padding: theme.spacing.md,
     gap: theme.spacing.lg,
     backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.borderSubtle,
   },
   cardHeader: {
     flexDirection: "row",
@@ -389,7 +366,7 @@ const styles = StyleSheet.create((theme) => ({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.accent,
   },
   statusDotLoading: {
     opacity: 0.45,
@@ -435,7 +412,7 @@ const styles = StyleSheet.create((theme) => ({
     gap: theme.spacing.xs,
     padding: theme.spacing.md,
     borderRadius: theme.radius.sm,
-    backgroundColor: theme.colors.inputSurface,
+    backgroundColor: theme.colors.backgroundAccent,
   },
   totalAmount: {
     color: theme.colors.textPrimary,
@@ -451,8 +428,8 @@ const styles = StyleSheet.create((theme) => ({
   },
   resultsCard: {
     overflow: "hidden",
-    backgroundColor: theme.colors.surfaceSoft,
-    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.borderSubtle,
   },
   conversionRow: {
     minHeight: 92,
@@ -497,9 +474,9 @@ const styles = StyleSheet.create((theme) => ({
     paddingHorizontal: theme.spacing.xs,
     paddingVertical: theme.spacing.xxs,
     borderRadius: theme.radius.pill,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.accent,
   },
   selectedPillText: {
-    color: theme.colors.primaryText,
+    color: theme.colors.accentText,
   },
 }));

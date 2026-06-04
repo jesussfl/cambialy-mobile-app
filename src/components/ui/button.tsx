@@ -41,7 +41,7 @@ export function AppButton({ label, variant = "primary", style, disabled, icon, .
           name={resolvedIcon}
           size={22}
           uniProps={(theme:any) => ({
-            color: variant === "primary" ? theme.colors.primaryText : theme.colors.textSecondary,
+            color: variant === "primary" ? theme.colors.primaryText : theme.colors.primary,
           })}
         />
         <UniAppText
@@ -69,13 +69,15 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.primary,
   },
   secondary: {
-    backgroundColor: theme.colors.secondarySurface,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
   },
   primaryPressed: {
     backgroundColor: theme.colors.primaryPressed,
   },
   secondaryPressed: {
-    opacity: 0.92,
+    backgroundColor: theme.colors.secondarySurface,
   },
   disabled: {
     opacity: 0.6,

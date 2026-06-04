@@ -21,7 +21,7 @@ export function RateCard({ label, value, icon }: RateCardProps) {
           name={icon}
           size={28}
           uniProps={(theme: any) => ({
-            color: theme.colors.textPrimary,
+            color: theme.colors.primary,
           })}
         />
       </View>
@@ -39,8 +39,8 @@ const styles = StyleSheet.create((theme) => ({
     minWidth: 0,
     padding: theme.spacing.xs,
     gap: theme.spacing.xs,
-    backgroundColor: theme.colors.surfaceSoft,
-    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.borderSubtle,
   },
   iconWrap: {
     marginBottom: theme.spacing.xs,
