@@ -1,36 +1,45 @@
-import { View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { StyleSheet } from 'react-native-unistyles';
+import { View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native-unistyles";
 
-import { AppText } from '@/components/ui/app-text';
-import { Card } from '@/components/ui/card';
+import { AppText } from "@/components/ui/app-text";
+import { Card } from "@/components/ui/card";
 
 export default function SettingsScreen() {
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.content}>
-        <AppText variant="title" style={styles.title}>Ajustes</AppText>
+        <AppText variant="title" style={styles.title}>
+          Ajustes
+        </AppText>
 
         <View style={styles.section}>
-          <AppText variant="sectionTitle" style={styles.sectionHeader}>Acerca de la aplicación</AppText>
+          <AppText variant="sectionTitle" style={styles.sectionHeader}>
+            Acerca de la aplicación
+          </AppText>
           <Card style={styles.card}>
             <AppText variant="body" style={styles.description}>
-              Paga Claro te ayuda a comparar y calcular de manera rápida y transparente tus opciones de pago, asegurando decisiones financieras más claras.
+              Cambialy te ayuda a comparar y calcular de manera rápida y transparente tus opciones de pago, asegurando decisiones financieras más claras.
             </AppText>
           </Card>
         </View>
 
         <View style={styles.section}>
-          <AppText variant="sectionTitle" style={styles.sectionHeader}>Privacidad y Datos</AppText>
+          <AppText variant="sectionTitle" style={styles.sectionHeader}>
+            Privacidad y Datos
+          </AppText>
           <Card style={styles.card}>
             <AppText variant="body" style={styles.privacyText}>
-              Valoramos tu privacidad. No recopilamos, almacenamos ni compartimos ningún tipo de información personal o datos financieros. Todos los cálculos se realizan localmente en tu dispositivo.
+              Valoramos tu privacidad. No recopilamos, almacenamos ni compartimos ningún tipo de información personal o datos financieros. Todos los cálculos se
+              realizan localmente en tu dispositivo.
             </AppText>
           </Card>
         </View>
 
         <View style={styles.footer}>
-          <AppText variant="label" style={styles.versionText}>Versión 1.0.0</AppText>
+          <AppText variant="label" style={styles.versionText}>
+            Versión 1.0.0
+          </AppText>
         </View>
       </View>
     </SafeAreaView>
@@ -45,7 +54,7 @@ const styles = StyleSheet.create((theme) => ({
   content: {
     flex: 1,
     paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing['2xl'],
+    paddingTop: theme.spacing["2xl"],
     gap: theme.spacing.xl,
   },
   title: {
@@ -58,7 +67,7 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: theme.typography.fontSize.xs,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.textMuted,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 0,
     paddingLeft: theme.spacing.xxs,
   },
@@ -74,8 +83,8 @@ const styles = StyleSheet.create((theme) => ({
     lineHeight: theme.typography.lineHeight.sm,
   },
   footer: {
-    marginTop: 'auto',
-    alignItems: 'center',
+    marginTop: "auto",
+    alignItems: "center",
     paddingBottom: theme.spacing.xl,
   },
   versionText: {
