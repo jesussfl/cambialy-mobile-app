@@ -2,7 +2,7 @@ import type { OnboardingSlide } from "./lib/types";
 
 export const ONBOARDING_STORAGE_KEY = "cambialy:onboarding:v1";
 
-export const DEV_SHOW_ONBOARDING_EVERY_LAUNCH = true;
+export const DEV_SHOW_ONBOARDING_EVERY_LAUNCH = false;
 
 export const ONBOARDING_SLIDES: OnboardingSlide[] = [
   {

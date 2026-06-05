@@ -9,17 +9,18 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/images/cambialy.png",
-      "bundleIdentifier": "com.jesuslopez.cambialy"
+      "bundleIdentifier": "com.cambialy.app"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/cambialy-foreground.png",
+        "foregroundImage": "./assets/images/cambialy-foreground-2.png",
         "backgroundImage": "./assets/images/cambialy-background.png",
         "monochromeImage": "./assets/images/cambialy-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.jesuslopez.cambialy"
+      "package": "com.cambialy.app",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "static",
