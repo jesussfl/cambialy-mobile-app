@@ -4,6 +4,7 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 
+import { AnimatedAmountText } from "./animated-amount-text";
 import type { ConversionDetail } from "../types";
 
 const UniRemixIcon = withUnistyles(RemixIcon);
@@ -46,9 +47,7 @@ export function ConversionDetails({ details, formula }: ConversionDetailsProps) 
               </AppText>
             </View>
           </View>
-          <AppText variant="tab" style={styles.conversionDetailAmount} numberOfLines={1}>
-            {detail.amountText}
-          </AppText>
+          <AnimatedAmountText containerStyle={styles.conversionDetailAmountRow} style={styles.conversionDetailAmount} text={detail.amountText} />
         </View>
       ))}
     </View>
@@ -100,9 +99,15 @@ const styles = StyleSheet.create((theme) => ({
   conversionDetailRate: {
     color: theme.colors.textMuted,
   },
-  conversionDetailAmount: {
+  conversionDetailAmountRow: {
     maxWidth: "44%",
+    justifyContent: "flex-end",
+  },
+  conversionDetailAmount: {
     color: theme.colors.textPrimary,
+    fontFamily: theme.typography.fontFamily.regular,
     textAlign: "right",
+    fontSize: theme.typography.fontSize.xs,
+    fontWeight: theme.typography.fontWeight.semibold,
   },
 }));

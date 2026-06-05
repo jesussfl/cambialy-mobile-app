@@ -23,7 +23,7 @@ import {
 
 export default function ExchangeScreen() {
   const [amount, setAmount] = useState("1");
-  const [selectedRateId, setSelectedRateId] = useState<ExchangeRateId>("usdt");
+  const [selectedRateId, setSelectedRateId] = useState<ExchangeRateId>("bcv");
   const [targetCurrencyId, setTargetCurrencyId] = useState<TargetCurrencyId>("ves");
   const [isReversed, setIsReversed] = useState(false);
 

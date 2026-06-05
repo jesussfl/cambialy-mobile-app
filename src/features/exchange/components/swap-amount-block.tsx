@@ -1,10 +1,11 @@
 import { TextInput, View } from "react-native";
-import Animated, { useAnimatedStyle, useDerivedValue, withTiming } from "react-native-reanimated";
+import { useAnimatedStyle, useDerivedValue, withTiming } from "react-native-reanimated";
 import type { IconName } from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 
+import { AnimatedAmountText } from "./animated-amount-text";
 import { ConversionDetails } from "./conversion-details";
 import { CurrencyPicker } from "./currency-picker";
 import { QuickAmountPills } from "./quick-amount-pills";
@@ -87,9 +88,7 @@ export function SwapAmountBlock({
                 })}
               />
             ) : (
-              <Animated.Text style={[styles.amountValue, animatedAmountStyle]} numberOfLines={1}>
-                {amount}
-              </Animated.Text>
+              <AnimatedAmountText containerStyle={styles.amountValueTextRow} style={[styles.amountValue, animatedAmountStyle]} text={amount} />
             )}
           </View>
         </View>
@@ -144,13 +143,14 @@ const styles = StyleSheet.create((theme) => ({
     lineHeight: 40,
   },
   amountValue: {
-    flex: 1,
-    minWidth: 0,
     color: theme.colors.textPrimary,
     fontFamily: theme.typography.fontFamily.bold,
     fontSize: AMOUNT_FONT_SIZE,
     fontWeight: theme.typography.fontWeight.bold,
     lineHeight: AMOUNT_FONT_SIZE + 6,
+  },
+  amountValueTextRow: {
+    flex: 1,
   },
   amountInput: {
     flex: 1,
