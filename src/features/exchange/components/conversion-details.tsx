@@ -1,12 +1,13 @@
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 import RemixIcon from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 
-import { AnimatedAmountText } from "./animated-amount-text";
+import * as Clipboard from "expo-clipboard";
+import { useEffect, useState } from "react";
 import type { ConversionDetail } from "../types";
-
+import { AnimatedAmountText } from "./animated-amount-text";
 const UniRemixIcon = withUnistyles(RemixIcon);
 
 type ConversionDetailsProps = {
@@ -15,6 +16,29 @@ type ConversionDetailsProps = {
 };
 
 export function ConversionDetails({ details, formula }: ConversionDetailsProps) {
+  const [copiedDetailId, setCopiedDetailId] = useState<string | null>(null);
+
+  const onCopyAmount = async (amount: string, detailId: string) => {
+    if (amount) {
+      await Clipboard.setStringAsync(amount);
+      setCopiedDetailId(detailId);
+    }
+  };
+
+  useEffect(() => {
+    if (!copiedDetailId) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setCopiedDetailId(null);
+    }, 1600);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [copiedDetailId]);
+
   if (!details.length) {
     return null;
   }
@@ -47,7 +71,30 @@ export function ConversionDetails({ details, formula }: ConversionDetailsProps) 
               </AppText>
             </View>
           </View>
-          <AnimatedAmountText containerStyle={styles.conversionDetailAmountRow} style={styles.conversionDetailAmount} text={detail.amountText} />
+
+          <View style={{ flex: 1, maxWidth: "44%", flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: 8 }}>
+            <AnimatedAmountText containerStyle={styles.conversionDetailAmountRow} style={styles.conversionDetailAmount} text={detail.amountText} />
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={copiedDetailId === detail.id ? "Resultado copiado" : "Copiar resultado"}
+              hitSlop={10}
+              onPress={() => onCopyAmount(detail.amountText, detail.id)}
+              style={({ pressed }) => [
+                styles.copyButton,
+                copiedDetailId === detail.id ? styles.copyButtonActive : null,
+                pressed ? styles.copyButtonPressed : null,
+              ]}
+            >
+              <UniRemixIcon
+                name={copiedDetailId === detail.id ? "check-line" : "file-copy-line"}
+                size={18}
+                uniProps={(theme: any) => ({
+                  color: copiedDetailId === detail.id ? theme.colors.primaryText : theme.colors.primary,
+                })}
+              />
+            </Pressable>
+          </View>
         </View>
       ))}
     </View>
@@ -100,7 +147,6 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.textMuted,
   },
   conversionDetailAmountRow: {
-    maxWidth: "44%",
     justifyContent: "flex-end",
   },
   conversionDetailAmount: {
@@ -109,5 +155,22 @@ const styles = StyleSheet.create((theme) => ({
     textAlign: "right",
     fontSize: theme.typography.fontSize.xs,
     fontWeight: theme.typography.fontWeight.semibold,
+  },
+  copyButton: {
+    width: 38,
+    height: 38,
+    borderRadius: theme.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.colors.secondarySurface,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
+  },
+  copyButtonActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  copyButtonPressed: {
+    opacity: 0.75,
   },
 }));

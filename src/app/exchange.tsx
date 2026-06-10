@@ -213,11 +213,8 @@ export default function ExchangeScreen() {
   };
 
   const handleCopyResult = useCallback(async () => {
-    const wasCopied = await Clipboard.setStringAsync(resultCopyText);
-
-    if (wasCopied) {
-      setCopiedResultText(resultCopyText);
-    }
+    await Clipboard.setStringAsync(resultCopyText);
+    setCopiedResultText(resultCopyText);
   }, [resultCopyText]);
 
   useEffect(() => {
