@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/images/cambialy.png",
-      "bundleIdentifier": "com.cambialy.app"
+      "bundleIdentifier": "com.cambialy.app",
+      "appleTeamId": "R28JX6275H"
     },
     "android": {
       "adaptiveIcon": {

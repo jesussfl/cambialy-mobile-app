@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import * as Clipboard from "expo-clipboard";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet } from "react-native-unistyles";
@@ -26,6 +27,7 @@ export default function ExchangeScreen() {
   const [selectedRateId, setSelectedRateId] = useState<ExchangeRateId>("bcv");
   const [targetCurrencyId, setTargetCurrencyId] = useState<TargetCurrencyId>("ves");
   const [isReversed, setIsReversed] = useState(false);
+  const [copiedResultText, setCopiedResultText] = useState<string | null>(null);
 
   const ratesQuery = useQuery({
     queryKey: ["exchange-rates"],
@@ -67,6 +69,9 @@ export default function ExchangeScreen() {
         ? `${formatNumber(selectedRate.value / bcvRate)} ${targetMeta.code}`
         : "Sin datos";
   const selectedRateHint = `1 ${selectedMeta.code} equivale ${selectedEquivalentValue}`;
+  const resultAmountText = formatCompactAmount(convertedAmount);
+  const resultCopyText = `${resultMeta.symbol} ${resultAmountText} ${resultMeta.code}`;
+  const resultCopied = copiedResultText === resultCopyText;
   const conversionDetails = useMemo<ConversionDetail[]>(
     () => {
       if (isReversed) {
@@ -136,6 +141,28 @@ export default function ExchangeScreen() {
     setIsReversed((currentValue) => !currentValue);
   };
 
+  const handleCopyResult = useCallback(async () => {
+    const wasCopied = await Clipboard.setStringAsync(resultCopyText);
+
+    if (wasCopied) {
+      setCopiedResultText(resultCopyText);
+    }
+  }, [resultCopyText]);
+
+  useEffect(() => {
+    if (!copiedResultText) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setCopiedResultText(null);
+    }, 1600);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [copiedResultText]);
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
@@ -160,12 +187,14 @@ export default function ExchangeScreen() {
           <SwapDivider onPress={handleSwapDirection} />
 
           <SwapAmountBlock
-            amount={formatCompactAmount(convertedAmount)}
+            amount={resultAmountText}
             code={resultMeta.code}
             icon={resultMeta.icon}
             label="Cambio estimado"
+            onCopyAmount={handleCopyResult}
             onCurrencySelect={handleResultCurrencySelect}
             options={resultOptions}
+            resultCopied={resultCopied}
             selectedOptionId={resultSelectedOptionId}
             supportingHint={selectedRateHint}
             supportingDetails={conversionDetails}

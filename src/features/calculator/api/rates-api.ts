@@ -10,16 +10,18 @@ export type ExchangeRate = {
   icon: IconName;
 };
 
-type DolarApiRate = {
-  fuente?: string;
-  promedio?: number;
-  fechaActualizacion?: string;
+type AhorraVeRatesResponse = {
+  source?: string;
+  last_updated?: string;
+  rates?: Partial<Record<"USD" | "EUR", number>>;
 };
 
+const API_BASE_URL = "https://ahorrave-api.onrender.com/api/v1";
+
 const endpoints = {
-  bcv: "https://ve.dolarapi.com/v1/dolares/oficial",
-  usdt: "https://ve.dolarapi.com/v1/dolares/paralelo",
-  eur: "https://ve.dolarapi.com/v1/euros",
+  bcv: `${API_BASE_URL}/rates/bcv`,
+  usdt: `${API_BASE_URL}/rates/binance`,
+  eur: `${API_BASE_URL}/rates/bcv`,
 } as const;
 
 const rateMetadata = {
@@ -37,29 +39,39 @@ const rateMetadata = {
   },
 } as const;
 
-async function fetchRate(id: ExchangeRateId): Promise<ExchangeRate> {
+function getRateCurrency(id: ExchangeRateId) {
+  return id === "eur" ? "EUR" : "USD";
+}
+
+function mapRate(id: ExchangeRateId, data: AhorraVeRatesResponse): ExchangeRate {
+  const currency = getRateCurrency(id);
+  const value = data.rates?.[currency];
+
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(`La tasa ${id} no incluye ${currency} valido`);
+  }
+
+  return {
+    id,
+    label: rateMetadata[id].label,
+    value,
+    updatedAt: data.last_updated,
+    icon: rateMetadata[id].icon,
+  };
+}
+
+async function fetchRatePayload(id: ExchangeRateId): Promise<AhorraVeRatesResponse> {
   const response = await fetch(endpoints[id]);
 
   if (!response.ok) {
     throw new Error(`No se pudo cargar la tasa ${id}`);
   }
 
-  const payload = (await response.json()) as DolarApiRate | DolarApiRate[];
-  const data = Array.isArray(payload) ? payload.find((rate) => rate.fuente === "oficial") : payload;
-
-  if (!data || typeof data.promedio !== "number" || !Number.isFinite(data.promedio)) {
-    throw new Error(`La tasa ${id} no incluye promedio valido`);
-  }
-
-  return {
-    id,
-    label: rateMetadata[id].label,
-    value: data.promedio,
-    updatedAt: data.fechaActualizacion,
-    icon: rateMetadata[id].icon,
-  };
+  return (await response.json()) as AhorraVeRatesResponse;
 }
 
-export function fetchExchangeRates() {
-  return Promise.all([fetchRate("usdt"), fetchRate("bcv"), fetchRate("eur")]);
+export async function fetchExchangeRates() {
+  const [binanceRates, bcvRates] = await Promise.all([fetchRatePayload("usdt"), fetchRatePayload("bcv")]);
+
+  return [mapRate("usdt", binanceRates), mapRate("bcv", bcvRates), mapRate("eur", bcvRates)];
 }
