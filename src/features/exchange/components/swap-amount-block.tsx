@@ -70,64 +70,63 @@ export function SwapAmountBlock({
   return (
     <View style={styles.amountBlock}>
       <View style={styles.amountTopRow}>
-        <View style={styles.amountValueGroup}>
+        <View style={styles.amountTitleRow}>
           <AppText variant="tab" style={styles.blockLabel}>
             {label}
           </AppText>
-          <View style={styles.amountRow}>
-            <AppText variant="title" style={styles.amountSymbol}>
-              {symbol}
-            </AppText>
-            {editable ? (
-              <UniTextInput
-                value={amount}
-                onChangeText={onAmountChange}
-                keyboardType="decimal-pad"
-                autoCapitalize="none"
-                autoCorrect={false}
-                placeholder="0"
-                style={styles.amountInput}
-                uniProps={(theme) => ({
-                  placeholderTextColor: theme.colors.textMuted,
-                  selectionColor: theme.colors.primary,
-                })}
-              />
-            ) : (
-              <>
-                <AnimatedAmountText containerStyle={styles.amountValueTextRow} style={[styles.amountValue, animatedAmountStyle]} text={amount} />
-                {onCopyAmount ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={resultCopied ? "Resultado copiado" : "Copiar resultado"}
-                    hitSlop={10}
-                    onPress={onCopyAmount}
-                    style={({ pressed }) => [styles.copyButton, resultCopied ? styles.copyButtonActive : null, pressed ? styles.copyButtonPressed : null]}
-                  >
-                    <UniRemixIcon
-                      name={resultCopied ? "check-line" : "file-copy-line"}
-                      size={18}
-                      uniProps={(theme: any) => ({
-                        color: resultCopied ? theme.colors.primaryText : theme.colors.primary,
-                      })}
-                    />
-                  </Pressable>
-                ) : null}
-              </>
-            )}
-          </View>
+          <CurrencyPicker code={code} icon={icon} onSelect={onCurrencySelect} options={options} selectedOptionId={selectedOptionId} />
         </View>
 
-        <CurrencyPicker code={code} icon={icon} onSelect={onCurrencySelect} options={options} selectedOptionId={selectedOptionId} />
+        <View style={styles.amountRow}>
+          <AppText variant="title" style={styles.amountSymbol}>
+            {symbol}
+          </AppText>
+          {editable ? (
+            <UniTextInput
+              value={amount}
+              onChangeText={onAmountChange}
+              keyboardType="decimal-pad"
+              autoCapitalize="none"
+              autoCorrect={false}
+              placeholder="0"
+              style={styles.amountInput}
+              uniProps={(theme) => ({
+                placeholderTextColor: theme.colors.textMuted,
+                selectionColor: theme.colors.primary,
+              })}
+            />
+          ) : (
+            <>
+              <AnimatedAmountText containerStyle={styles.amountValueTextRow} style={[styles.amountValue, animatedAmountStyle]} text={amount} />
+              {onCopyAmount ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={resultCopied ? "Resultado copiado" : "Copiar resultado"}
+                  hitSlop={10}
+                  onPress={onCopyAmount}
+                  style={({ pressed }) => [styles.copyButton, resultCopied ? styles.copyButtonActive : null, pressed ? styles.copyButtonPressed : null]}
+                >
+                  <UniRemixIcon
+                    name={resultCopied ? "check-line" : "file-copy-line"}
+                    size={18}
+                    uniProps={(theme: any) => ({
+                      color: resultCopied ? theme.colors.primaryText : theme.colors.primary,
+                    })}
+                  />
+                </Pressable>
+              ) : null}
+            </>
+          )}
+        </View>
       </View>
-
-      {editable && quickAmounts?.length && onQuickAmountSelect ? (
-        <QuickAmountPills amount={amount} onSelect={onQuickAmountSelect} values={quickAmounts} />
-      ) : null}
 
       {supportingHint ? (
         <AppText variant="tab" style={styles.supportingHint} numberOfLines={1}>
           {supportingHint}
         </AppText>
+      ) : null}
+      {editable && quickAmounts?.length && onQuickAmountSelect ? (
+        <QuickAmountPills amount={amount} onSelect={onQuickAmountSelect} values={quickAmounts} />
       ) : null}
 
       {supportingDetails?.length ? <ConversionDetails details={supportingDetails} formula={supportingFormula} /> : null}
@@ -142,10 +141,14 @@ const styles = StyleSheet.create((theme) => ({
     gap: theme.spacing.md,
   },
   amountTopRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: "column",
     gap: theme.spacing.sm,
+  },
+  amountTitleRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    gap: theme.spacing.xs,
   },
   amountValueGroup: {
     flex: 1,

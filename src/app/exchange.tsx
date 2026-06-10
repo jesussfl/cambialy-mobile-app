@@ -72,45 +72,42 @@ export default function ExchangeScreen() {
   const resultAmountText = formatCompactAmount(convertedAmount);
   const resultCopyText = `${resultMeta.symbol} ${resultAmountText} ${resultMeta.code}`;
   const resultCopied = copiedResultText === resultCopyText;
-  const conversionDetails = useMemo<ConversionDetail[]>(
-    () => {
-      if (isReversed) {
-        return sortedRates
-          .filter((rate) => rate.id !== selectedRate.id)
-          .map((rate) => {
-            const rateMeta = currencyMeta[rate.id];
-            const convertedValue = rate.value > 0 ? sourceAmountInVes / rate.value : 0;
-            const rateValue =
-              targetCurrencyId === "ves" ? formatRate(rate.value) : bcvRate > 0 ? `${formatNumber(rate.value / bcvRate)} ${targetMeta.code}` : "Sin datos";
-
-            return {
-              amountText: `${rateMeta.symbol} ${formatCompactAmount(convertedValue)}`,
-              icon: rate.icon,
-              id: rate.id,
-              label: rateMeta.code,
-              rateText: `1 ${rateMeta.code} = ${rateValue}`,
-            };
-          });
-      }
-
+  const conversionDetails = useMemo<ConversionDetail[]>(() => {
+    if (isReversed) {
       return sortedRates
         .filter((rate) => rate.id !== selectedRate.id)
         .map((rate) => {
           const rateMeta = currencyMeta[rate.id];
-          const convertedValue = targetCurrencyId === "ves" ? safeAmount * rate.value : bcvRate > 0 ? (safeAmount * rate.value) / bcvRate : 0;
-          const rateValue = targetCurrencyId === "ves" ? formatRate(rate.value) : bcvRate > 0 ? `${formatNumber(rate.value / bcvRate)} BCV` : "Sin datos";
+          const convertedValue = rate.value > 0 ? sourceAmountInVes / rate.value : 0;
+          const rateValue =
+            targetCurrencyId === "ves" ? formatRate(rate.value) : bcvRate > 0 ? `${formatNumber(rate.value / bcvRate)} ${targetMeta.code}` : "Sin datos";
 
           return {
-            amountText: `${targetMeta.symbol} ${formatCompactAmount(convertedValue)}`,
+            amountText: `${rateMeta.symbol} ${formatCompactAmount(convertedValue)}`,
             icon: rate.icon,
             id: rate.id,
             label: rateMeta.code,
             rateText: `1 ${rateMeta.code} = ${rateValue}`,
           };
         });
-    },
-    [bcvRate, isReversed, safeAmount, selectedRate.id, sortedRates, sourceAmountInVes, targetCurrencyId, targetMeta.code, targetMeta.symbol],
-  );
+    }
+
+    return sortedRates
+      .filter((rate) => rate.id !== selectedRate.id)
+      .map((rate) => {
+        const rateMeta = currencyMeta[rate.id];
+        const convertedValue = targetCurrencyId === "ves" ? safeAmount * rate.value : bcvRate > 0 ? (safeAmount * rate.value) / bcvRate : 0;
+        const rateValue = targetCurrencyId === "ves" ? formatRate(rate.value) : bcvRate > 0 ? `${formatNumber(rate.value / bcvRate)} BCV` : "Sin datos";
+
+        return {
+          amountText: `${targetMeta.symbol} ${formatCompactAmount(convertedValue)}`,
+          icon: rate.icon,
+          id: rate.id,
+          label: rateMeta.code,
+          rateText: `1 ${rateMeta.code} = ${rateValue}`,
+        };
+      });
+  }, [bcvRate, isReversed, safeAmount, selectedRate.id, sortedRates, sourceAmountInVes, targetCurrencyId, targetMeta.code, targetMeta.symbol]);
   const ratesError = ratesQuery.isError ? "No se pudieron cargar las tasas actualizadas." : null;
   const headerSubtitle = `${selectedRate.label} · ${formatUpdatedAt(selectedRate.updatedAt)}`;
 
@@ -180,6 +177,7 @@ export default function ExchangeScreen() {
             onQuickAmountSelect={setAmount}
             options={sourceOptions}
             quickAmounts={QUICK_AMOUNTS}
+            supportingHint={selectedRateHint}
             selectedOptionId={sourceSelectedOptionId}
             symbol={sourceMeta.symbol}
           />
@@ -196,7 +194,6 @@ export default function ExchangeScreen() {
             options={resultOptions}
             resultCopied={resultCopied}
             selectedOptionId={resultSelectedOptionId}
-            supportingHint={selectedRateHint}
             supportingDetails={conversionDetails}
             supportingFormula="Otros cambios"
             symbol={resultMeta.symbol}
