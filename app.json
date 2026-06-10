@@ -28,6 +28,7 @@
     },
     "plugins": [
       "expo-router",
+      "./plugins/withFirebaseAppDistribution",
       [
         "expo-splash-screen",
         {
