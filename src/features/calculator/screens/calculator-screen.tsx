@@ -98,15 +98,6 @@ export function CalculatorScreen() {
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
         <View style={styles.header}>
-          <View style={styles.headerButton}>
-            <UniRemixIcon
-              name="calculator-line"
-              size={22}
-              uniProps={(theme: any) => ({
-                color: theme.colors.primary,
-              })}
-            />
-          </View>
           <View style={styles.headerTitleGroup}>
             <AppText variant="cardTitle" style={styles.headerTitle}>
               Comparar precios
@@ -115,9 +106,9 @@ export function CalculatorScreen() {
               {ratesQuery.isFetching ? "Actualizando tasas" : formatUpdatedAt(latestUpdate)}
             </AppText>
           </View>
-          <View style={styles.headerButton}>
+          {/* <View style={styles.headerButton}>
             <View style={[styles.statusDot, ratesQuery.isFetching ? styles.statusDotLoading : null]} />
-          </View>
+          </View> */}
         </View>
 
         <View style={styles.comparePanel}>
@@ -378,15 +369,11 @@ const styles = StyleSheet.create((theme) => ({
   },
   headerTitleGroup: {
     flex: 1,
-    alignItems: "center",
     gap: theme.spacing.xxs,
   },
-  headerTitle: {
-    textAlign: "center",
-  },
+  headerTitle: {},
   headerSubtitle: {
     color: theme.colors.textMuted,
-    textAlign: "center",
   },
   statusDot: {
     width: 10,

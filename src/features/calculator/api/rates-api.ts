@@ -10,10 +10,20 @@ export type ExchangeRate = {
   icon: IconName;
 };
 
+export type ExchangeRateHistoryOption = ExchangeRate & {
+  bcvValue?: number;
+  eurValue?: number;
+};
+
 type AhorraVeRatesResponse = {
   source?: string;
   last_updated?: string;
   rates?: Partial<Record<"USD" | "EUR", number>>;
+};
+
+type AhorraVeHistoryResponse = {
+  category?: "bcv" | "binance";
+  history?: AhorraVeRatesResponse[];
 };
 
 const API_BASE_URL = "https://ahorrave-api.onrender.com/api/v1";
@@ -22,6 +32,12 @@ const endpoints = {
   bcv: `${API_BASE_URL}/rates/bcv`,
   usdt: `${API_BASE_URL}/rates/binance`,
   eur: `${API_BASE_URL}/rates/bcv`,
+} as const;
+
+const historyEndpoints = {
+  bcv: `${API_BASE_URL}/rates/history/bcv`,
+  usdt: `${API_BASE_URL}/rates/history/binance`,
+  eur: `${API_BASE_URL}/rates/history/bcv`,
 } as const;
 
 const rateMetadata = {
@@ -43,7 +59,7 @@ function getRateCurrency(id: ExchangeRateId) {
   return id === "eur" ? "EUR" : "USD";
 }
 
-function mapRate(id: ExchangeRateId, data: AhorraVeRatesResponse): ExchangeRate {
+function mapRate(id: ExchangeRateId, data: AhorraVeRatesResponse): ExchangeRateHistoryOption {
   const currency = getRateCurrency(id);
   const value = data.rates?.[currency];
 
@@ -55,6 +71,8 @@ function mapRate(id: ExchangeRateId, data: AhorraVeRatesResponse): ExchangeRate 
     id,
     label: rateMetadata[id].label,
     value,
+    bcvValue: data.rates?.USD,
+    eurValue: data.rates?.EUR,
     updatedAt: data.last_updated,
     icon: rateMetadata[id].icon,
   };
@@ -74,4 +92,16 @@ export async function fetchExchangeRates() {
   const [binanceRates, bcvRates] = await Promise.all([fetchRatePayload("usdt"), fetchRatePayload("bcv")]);
 
   return [mapRate("usdt", binanceRates), mapRate("bcv", bcvRates), mapRate("eur", bcvRates)];
+}
+
+export async function fetchExchangeRateHistory(id: ExchangeRateId, limit = 20): Promise<ExchangeRateHistoryOption[]> {
+  const response = await fetch(`${historyEndpoints[id]}?limit=${limit}`);
+
+  if (!response.ok) {
+    throw new Error(`No se pudo cargar el historial de la tasa ${id}`);
+  }
+
+  const payload = (await response.json()) as AhorraVeHistoryResponse;
+
+  return (payload.history ?? []).map((historyItem) => mapRate(id, historyItem));
 }

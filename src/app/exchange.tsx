@@ -6,25 +6,28 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
-import { fetchExchangeRates, type ExchangeRateId } from "@/features/calculator/api/rates-api";
-import { ExchangeHeader } from "@/features/exchange/components/exchange-header";
+import { fetchExchangeRateHistory, fetchExchangeRates, type ExchangeRateHistoryOption, type ExchangeRateId } from "@/features/calculator/api/rates-api";
+import { ExchangeHeader, type ExchangeHistoryPickerOption } from "@/features/exchange/components/exchange-header";
 import { SwapAmountBlock } from "@/features/exchange/components/swap-amount-block";
 import { SwapDivider } from "@/features/exchange/components/swap-divider";
 import { currencyMeta, fallbackRates, QUICK_AMOUNTS, RATE_ORDER, RATES_CACHE_TIME, RATES_STALE_TIME, targetCurrencyMeta } from "@/features/exchange/constants";
 import type { ConversionDetail, TargetCurrencyId } from "@/features/exchange/types";
 import {
   formatCompactAmount,
+  formatHistoryDate,
   formatNumber,
   formatRate,
-  formatUpdatedAt,
   getDisplayAmount,
   parseCurrencyAmount,
   sanitizeAmountInput,
 } from "@/features/exchange/utils";
 
+const LIVE_HISTORY_VALUE = "live";
+
 export default function ExchangeScreen() {
   const [amount, setAmount] = useState("1");
   const [selectedRateId, setSelectedRateId] = useState<ExchangeRateId>("bcv");
+  const [selectedHistoryValue, setSelectedHistoryValue] = useState(LIVE_HISTORY_VALUE);
   const [targetCurrencyId, setTargetCurrencyId] = useState<TargetCurrencyId>("ves");
   const [isReversed, setIsReversed] = useState(false);
   const [copiedResultText, setCopiedResultText] = useState<string | null>(null);
@@ -36,8 +39,52 @@ export default function ExchangeScreen() {
     gcTime: RATES_CACHE_TIME,
   });
 
+  console.log("ExchangeScreen render", {
+    rates: ratesQuery.data,
+    ratesError: ratesQuery.error,
+  });
+
+  const rateHistoryQuery = useQuery({
+    queryKey: ["exchange-rate-history", selectedRateId],
+    queryFn: () => fetchExchangeRateHistory(selectedRateId),
+    staleTime: RATES_STALE_TIME,
+    gcTime: RATES_CACHE_TIME,
+  });
+
   const rates = ratesQuery.data ?? fallbackRates;
-  const sortedRates = useMemo(() => [...rates].sort((leftRate, rightRate) => RATE_ORDER[leftRate.id] - RATE_ORDER[rightRate.id]), [rates]);
+  const liveSortedRates = useMemo(() => [...rates].sort((leftRate, rightRate) => RATE_ORDER[leftRate.id] - RATE_ORDER[rightRate.id]), [rates]);
+  const liveSelectedRate = liveSortedRates.find((rate) => rate.id === selectedRateId) ?? liveSortedRates[0] ?? fallbackRates[0];
+  const historyRates = useMemo(() => rateHistoryQuery.data ?? [], [rateHistoryQuery.data]);
+  const selectedHistoryRate = useMemo(() => {
+    if (selectedHistoryValue === LIVE_HISTORY_VALUE) {
+      return null;
+    }
+
+    return historyRates.find((historyRate, index) => getHistoryRateKey(historyRate, index) === selectedHistoryValue) ?? null;
+  }, [historyRates, selectedHistoryValue]);
+  const sortedRates = useMemo(
+    () =>
+      liveSortedRates.map((rate) => {
+        if (!selectedHistoryRate) {
+          return rate;
+        }
+
+        if (rate.id === selectedRateId) {
+          return selectedHistoryRate;
+        }
+
+        if (selectedRateId === "bcv" && rate.id === "eur" && isFiniteRate(selectedHistoryRate.eurValue)) {
+          return { ...rate, value: selectedHistoryRate.eurValue, updatedAt: selectedHistoryRate.updatedAt };
+        }
+
+        if (selectedRateId === "eur" && rate.id === "bcv" && isFiniteRate(selectedHistoryRate.bcvValue)) {
+          return { ...rate, value: selectedHistoryRate.bcvValue, updatedAt: selectedHistoryRate.updatedAt };
+        }
+
+        return rate;
+      }),
+    [liveSortedRates, selectedHistoryRate, selectedRateId],
+  );
   const selectedRate = sortedRates.find((rate) => rate.id === selectedRateId) ?? sortedRates[0] ?? fallbackRates[0];
   const selectedMeta = currencyMeta[selectedRate.id];
   const targetMeta = targetCurrencyMeta[targetCurrencyId];
@@ -109,7 +156,32 @@ export default function ExchangeScreen() {
       });
   }, [bcvRate, isReversed, safeAmount, selectedRate.id, sortedRates, sourceAmountInVes, targetCurrencyId, targetMeta.code, targetMeta.symbol]);
   const ratesError = ratesQuery.isError ? "No se pudieron cargar las tasas actualizadas." : null;
-  const headerSubtitle = `${selectedRate.label} · ${formatUpdatedAt(selectedRate.updatedAt)}`;
+  const historyPickerOptions = useMemo<ExchangeHistoryPickerOption[]>(() => {
+    const liveRateText = formatRate(liveSelectedRate.value);
+    const liveDateText = formatHistoryDate(liveSelectedRate.updatedAt);
+    const liveOption = {
+      value: LIVE_HISTORY_VALUE,
+      label: liveRateText,
+      description: liveDateText,
+      headerDescription: `${liveRateText} - ${liveDateText}`,
+    };
+
+    const historyOptions = historyRates
+      .filter((historyRate) => historyRate.updatedAt !== liveSelectedRate.updatedAt)
+      .map((historyRate, index) => {
+        const rateText = formatRate(historyRate.value);
+        const dateText = formatHistoryDate(historyRate.updatedAt);
+
+        return {
+          value: getHistoryRateKey(historyRate, index),
+          label: rateText,
+          description: dateText,
+          headerDescription: `${rateText} - ${dateText}`,
+        };
+      });
+
+    return [liveOption, ...historyOptions];
+  }, [historyRates, liveSelectedRate.updatedAt, liveSelectedRate.value]);
 
   const handleChangeAmount = (value: string) => {
     setAmount(sanitizeAmountInput(value));
@@ -121,11 +193,13 @@ export default function ExchangeScreen() {
       return;
     }
 
+    setSelectedHistoryValue(LIVE_HISTORY_VALUE);
     setSelectedRateId(optionId as ExchangeRateId);
   };
 
   const handleResultCurrencySelect = (optionId: string) => {
     if (isReversed) {
+      setSelectedHistoryValue(LIVE_HISTORY_VALUE);
       setSelectedRateId(optionId as ExchangeRateId);
       return;
     }
@@ -163,7 +237,14 @@ export default function ExchangeScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
-        <ExchangeHeader isFetching={ratesQuery.isFetching} subtitle={headerSubtitle} />
+        <ExchangeHeader
+          historyOptions={historyPickerOptions}
+          isFetching={ratesQuery.isFetching}
+          isHistoryFetching={rateHistoryQuery.isFetching}
+          label={selectedRate.label}
+          onHistorySelect={setSelectedHistoryValue}
+          selectedHistoryValue={selectedHistoryValue}
+        />
 
         <View style={styles.swapPanel}>
           <SwapAmountBlock
@@ -210,6 +291,14 @@ export default function ExchangeScreen() {
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+function getHistoryRateKey(rate: ExchangeRateHistoryOption, index: number) {
+  return `${rate.updatedAt ?? "sin-fecha"}-${index}`;
+}
+
+function isFiniteRate(value?: number): value is number {
+  return typeof value === "number" && Number.isFinite(value);
 }
 
 const styles = StyleSheet.create((theme) => ({

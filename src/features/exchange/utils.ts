@@ -43,6 +43,27 @@ export const formatUpdatedAt = (value?: string) => {
   }).format(date)}`;
 };
 
+export const formatHistoryDate = (value?: string) => {
+  if (!value) {
+    return "Fecha pendiente";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Fecha pendiente";
+  }
+
+  const day = date.getDate();
+  const month = new Intl.DateTimeFormat("es-VE", { month: "short" }).format(date).replace(".", "");
+  const hours = date.getHours();
+  const hour = hours % 12 || 12;
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  const meridiem = hours >= 12 ? "pm" : "am";
+
+  return `${day} ${month} - ${hour}:${minutes} ${meridiem}`;
+};
+
 export const getDisplayAmount = (amount: string) => {
   if (!amount) {
     return "";
