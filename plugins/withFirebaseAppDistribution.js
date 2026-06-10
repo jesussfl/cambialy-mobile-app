@@ -4,13 +4,7 @@ const { withAppBuildGradle, withProjectBuildGradle } = require("expo/config-plug
 
 const APP_DISTRIBUTION_CLASSPATH = "classpath 'com.google.firebase:firebase-appdistribution-gradle:5.2.1'";
 const APP_DISTRIBUTION_PLUGIN = 'apply plugin: "com.google.firebase.appdistribution"';
-const AUTO_UPLOAD_BLOCK = `
-afterEvaluate {
-    tasks.matching { it.name == "assembleRelease" }.configureEach {
-        finalizedBy("appDistributionUploadRelease")
-    }
-}
-`;
+const AUTO_UPLOAD_BLOCK_PATTERN = /\n?afterEvaluate\s*\{\s*tasks\.matching\s*\{\s*it\.name\s*==\s*"assembleRelease"\s*\}\.configureEach\s*\{\s*finalizedBy\("appDistributionUploadRelease"\)\s*\}\s*\}\s*/;
 
 function readFirebaseAppId(projectRoot, googleServicesFile) {
   const servicesPath = path.resolve(projectRoot, googleServicesFile || "google-services.json");
@@ -83,12 +77,8 @@ function addReleaseConfig(contents, appId) {
   );
 }
 
-function addAutoUpload(contents) {
-  if (contents.includes('finalizedBy("appDistributionUploadRelease")')) {
-    return contents;
-  }
-
-  return `${contents.trimEnd()}\n${AUTO_UPLOAD_BLOCK}`;
+function removeAutoUpload(contents) {
+  return contents.replace(AUTO_UPLOAD_BLOCK_PATTERN, "\n");
 }
 
 module.exports = function withFirebaseAppDistribution(config, options = {}) {
@@ -105,7 +95,7 @@ module.exports = function withFirebaseAppDistribution(config, options = {}) {
     if (config.modResults.language === "groovy") {
       const appId = options.appId || readFirebaseAppId(config.modRequest.projectRoot, googleServicesFile);
 
-      config.modResults.contents = addAutoUpload(
+      config.modResults.contents = removeAutoUpload(
         addReleaseConfig(
           addDistributionVariables(addAppPlugin(config.modResults.contents)),
           appId
