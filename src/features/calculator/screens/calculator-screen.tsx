@@ -335,7 +335,11 @@ type ComparisonSummaryProps = {
 
 function ComparisonSummary({ firstOption, secondOption, result }: ComparisonSummaryProps) {
   const hasValues = firstOption.valueInVes > 0 || secondOption.valueInVes > 0;
-  const winnerLabel = result?.isEquivalent ? "Precios equivalentes" : result?.betterSide === "first" ? `Precio en ${firstOption.currency.name} conviene mas` : `Precio en ${secondOption.currency.name} conviene mas`;
+  const winnerLabel = result?.isEquivalent
+    ? "Precios equivalentes"
+    : result?.betterSide === "first"
+      ? `Precio en ${firstOption.currency.name} conviene mas`
+      : `Precio en ${secondOption.currency.name} conviene mas`;
 
   return (
     <Card elevated style={styles.summaryCard}>
