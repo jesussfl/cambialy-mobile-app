@@ -338,17 +338,19 @@ function ComparisonSummary({ firstOption, secondOption, result }: ComparisonSumm
   const winnerLabel = result?.isEquivalent
     ? "Precios equivalentes"
     : result?.betterSide === "first"
-      ? `Precio en ${firstOption.currency.name} conviene mas`
-      : `Precio en ${secondOption.currency.name} conviene mas`;
+      ? "Precio A conviene mas"
+      : "Precio B conviene mas";
 
   return (
     <Card elevated style={styles.summaryCard}>
       <View style={styles.summaryHeader}>
-        <View>
+        <View style={styles.summaryTitleGroup}>
           <AppText variant="tab" style={styles.summaryEyebrow}>
             Resultado
           </AppText>
-          <AppText variant="cardTitle">{result ? winnerLabel : "Ingresa ambos precios"}</AppText>
+          <AppText variant="cardTitle" style={styles.summaryTitle}>
+            {result ? winnerLabel : "Ingresa ambos precios"}
+          </AppText>
         </View>
         <View style={styles.summaryBadge}>
           <UniRemixIcon
@@ -568,8 +570,15 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: "space-between",
     gap: theme.spacing.md,
   },
+  summaryTitleGroup: {
+    flex: 1,
+    minWidth: 0,
+  },
   summaryEyebrow: {
     color: theme.colors.textMuted,
+  },
+  summaryTitle: {
+    flexShrink: 1,
   },
   summaryBadge: {
     width: 40,
