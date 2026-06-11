@@ -14,11 +14,12 @@ import { formatCompactAmount, formatNumber, formatUpdatedAt, parseCurrencyAmount
 
 import { fetchExchangeRates, type ExchangeRateId } from "../api/rates-api";
 
-type PriceCurrencyId = ExchangeRateId | "ves";
+type PriceCurrencyId = ExchangeRateId | "ves" | "custom";
 type PriceSide = "first" | "second";
 
 type PriceInputState = {
   amount: string;
+  customRate: string;
   currencyId: PriceCurrencyId;
 };
 
@@ -34,7 +35,7 @@ const priceCurrencyMeta: Record<PriceCurrencyId, CurrencyOption> = {
   usdt: {
     id: "usdt",
     symbol: "$",
-    name: "Tasa USDT",
+    name: "Divisa",
     code: "Divisa",
     icon: "copper-coin-line",
   },
@@ -45,16 +46,31 @@ const priceCurrencyMeta: Record<PriceCurrencyId, CurrencyOption> = {
     symbol: "Bs.",
     icon: "bank-line",
   },
+  bcv: {
+    ...currencyMeta.bcv,
+    name: "Dolares BCV",
+  },
+  eur: {
+    ...currencyMeta.eur,
+    name: "Euros",
+  },
+  custom: {
+    id: "custom",
+    code: "PERS",
+    name: "Personalizado",
+    symbol: "$",
+    icon: "edit-2-line",
+  },
 };
 
-const priceCurrencyOrder: PriceCurrencyId[] = ["ves", "usdt", "bcv", "eur"];
+const priceCurrencyOrder: PriceCurrencyId[] = ["ves", "usdt", "bcv", "eur", "custom"];
 
 const UniTextInput = withUnistyles(TextInput);
 const UniRemixIcon = withUnistyles(RemixIcon);
 
 export function CalculatorScreen() {
-  const [firstPrice, setFirstPrice] = useState<PriceInputState>({ amount: "1", currencyId: "usdt" });
-  const [secondPrice, setSecondPrice] = useState<PriceInputState>({ amount: "", currencyId: "bcv" });
+  const [firstPrice, setFirstPrice] = useState<PriceInputState>({ amount: "1", customRate: "", currencyId: "usdt" });
+  const [secondPrice, setSecondPrice] = useState<PriceInputState>({ amount: "", customRate: "", currencyId: "ves" });
 
   const ratesQuery = useQuery({
     queryKey: ["exchange-rates"],
@@ -94,6 +110,17 @@ export function CalculatorScreen() {
     setSecondPrice((currentValue) => ({ ...currentValue, currencyId: currencyId as PriceCurrencyId }));
   };
 
+  const handleCustomRateChange = (side: PriceSide, value: string) => {
+    const sanitizedValue = sanitizeAmountInput(value);
+
+    if (side === "first") {
+      setFirstPrice((currentValue) => ({ ...currentValue, customRate: sanitizedValue }));
+      return;
+    }
+
+    setSecondPrice((currentValue) => ({ ...currentValue, customRate: sanitizedValue }));
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
@@ -115,8 +142,10 @@ export function CalculatorScreen() {
           <PriceComparisonBlock
             amount={firstPrice.amount}
             currency={priceCurrencyMeta[firstPrice.currencyId]}
+            customRate={firstPrice.customRate}
             label="Precio A"
             onAmountChange={(value) => handleAmountChange("first", value)}
+            onCustomRateChange={(value) => handleCustomRateChange("first", value)}
             onCurrencySelect={(currencyId) => handleCurrencySelect("first", currencyId)}
             options={currencyOptions}
             rate={firstOption.rate}
@@ -141,8 +170,10 @@ export function CalculatorScreen() {
           <PriceComparisonBlock
             amount={secondPrice.amount}
             currency={priceCurrencyMeta[secondPrice.currencyId]}
+            customRate={secondPrice.customRate}
             label="Precio B"
             onAmountChange={(value) => handleAmountChange("second", value)}
+            onCustomRateChange={(value) => handleCustomRateChange("second", value)}
             onCurrencySelect={(currencyId) => handleCurrencySelect("second", currencyId)}
             options={currencyOptions}
             rate={secondOption.rate}
@@ -166,7 +197,9 @@ export function CalculatorScreen() {
 function getComparisonOption(price: PriceInputState, ratesById: Map<ExchangeRateId, { value: number }>): ComparisonOption {
   const amount = parseCurrencyAmount(price.amount);
   const safeAmount = Number.isFinite(amount) && amount > 0 ? amount : 0;
-  const rate = price.currencyId === "ves" ? 1 : (ratesById.get(price.currencyId)?.value ?? 0);
+  const customRate = parseCurrencyAmount(price.customRate);
+  const safeCustomRate = Number.isFinite(customRate) && customRate > 0 ? customRate : 0;
+  const rate = price.currencyId === "ves" ? 1 : price.currencyId === "custom" ? safeCustomRate : (ratesById.get(price.currencyId)?.value ?? 0);
 
   return {
     amount: safeAmount,
@@ -200,8 +233,10 @@ function getComparisonResult(firstOption: ComparisonOption, secondOption: Compar
 type PriceComparisonBlockProps = {
   amount: string;
   currency: CurrencyOption;
+  customRate: string;
   label: string;
   onAmountChange: (value: string) => void;
+  onCustomRateChange: (value: string) => void;
   onCurrencySelect: (currencyId: string) => void;
   options: CurrencyOption[];
   rate: number;
@@ -212,14 +247,17 @@ type PriceComparisonBlockProps = {
 function PriceComparisonBlock({
   amount,
   currency,
+  customRate,
   label,
   onAmountChange,
+  onCustomRateChange,
   onCurrencySelect,
   options,
   rate,
   selectedCurrencyId,
   valueInVes,
 }: PriceComparisonBlockProps) {
+  const isCustomRate = selectedCurrencyId === "custom";
   const rateText = selectedCurrencyId === "ves" ? "Precio directo en bolivares" : `1 ${currency.code} equivale Bs. ${formatNumber(rate)}`;
   const amountPlaceholder = selectedCurrencyId === "ves" ? "0,00" : "0";
 
@@ -255,12 +293,36 @@ function PriceComparisonBlock({
 
       <View style={styles.priceFooter}>
         <AppText variant="tab" style={styles.rateHint} numberOfLines={1}>
-          {rate > 0 ? rateText : "Tasa no disponible"}
+          {rate > 0 ? rateText : isCustomRate ? "Ingresa la tasa personalizada" : "Tasa no disponible"}
         </AppText>
         <AppText variant="tab" style={styles.vesValue} numberOfLines={1}>
           Bs. {formatCompactAmount(valueInVes)}
         </AppText>
       </View>
+
+      {isCustomRate ? (
+        <View style={styles.customRateRow}>
+          <AppText variant="tab" style={styles.customRateLabel} numberOfLines={1}>
+            Tasa
+          </AppText>
+          <AppText variant="tab" style={styles.customRatePrefix}>
+            Bs.
+          </AppText>
+          <UniTextInput
+            value={customRate.replace(".", ",")}
+            onChangeText={onCustomRateChange}
+            keyboardType="decimal-pad"
+            autoCapitalize="none"
+            autoCorrect={false}
+            placeholder="0,00"
+            style={styles.customRateInput}
+            uniProps={(theme) => ({
+              placeholderTextColor: theme.colors.textMuted,
+              selectionColor: theme.colors.primary,
+            })}
+          />
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -273,7 +335,7 @@ type ComparisonSummaryProps = {
 
 function ComparisonSummary({ firstOption, secondOption, result }: ComparisonSummaryProps) {
   const hasValues = firstOption.valueInVes > 0 || secondOption.valueInVes > 0;
-  const winnerLabel = result?.isEquivalent ? "Precios equivalentes" : result?.betterSide === "first" ? "Precio A conviene mas" : "Precio B conviene mas";
+  const winnerLabel = result?.isEquivalent ? "Precios equivalentes" : result?.betterSide === "first" ? `Precio en ${firstOption.currency.name} conviene mas` : `Precio en ${secondOption.currency.name} conviene mas`;
 
   return (
     <Card elevated style={styles.summaryCard}>
@@ -312,7 +374,7 @@ function ComparisonSummary({ firstOption, secondOption, result }: ComparisonSumm
               : `Ahorras ${formatNumber(result.savingPercent)}% frente a la opcion mas cara.`
             : hasValues
               ? "Falta completar uno de los precios para comparar."
-              : "Compara precios usando VES, BCV, Divisa (USDT) o EUR."}
+              : "Compara precios usando VES, BCV, Divisa (USDT), EUR o una tasa personalizada."}
         </AppText>
       </View>
     </Card>
@@ -444,6 +506,34 @@ const styles = StyleSheet.create((theme) => ({
     maxWidth: "42%",
     color: theme.colors.textPrimary,
     textAlign: "right",
+  },
+  customRateRow: {
+    minHeight: 46,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.surfaceSoft,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
+  },
+  customRateLabel: {
+    minWidth: 42,
+    color: theme.colors.textMuted,
+  },
+  customRatePrefix: {
+    color: theme.colors.textSecondary,
+  },
+  customRateInput: {
+    flex: 1,
+    minWidth: 0,
+    height: 44,
+    padding: 0,
+    color: theme.colors.textPrimary,
+    fontFamily: theme.typography.fontFamily.semibold,
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.semibold,
   },
   dividerRow: {
     flexDirection: "row",

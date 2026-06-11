@@ -6,12 +6,18 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
-import { fetchExchangeRateHistory, fetchExchangeRates, type ExchangeRateHistoryOption, type ExchangeRateId } from "@/features/calculator/api/rates-api";
+import {
+  fetchExchangeRateHistory,
+  fetchExchangeRates,
+  type ExchangeRate,
+  type ExchangeRateHistoryOption,
+  type ExchangeRateId,
+} from "@/features/calculator/api/rates-api";
 import { ExchangeHeader, type ExchangeHistoryPickerOption } from "@/features/exchange/components/exchange-header";
 import { SwapAmountBlock } from "@/features/exchange/components/swap-amount-block";
 import { SwapDivider } from "@/features/exchange/components/swap-divider";
 import { currencyMeta, fallbackRates, QUICK_AMOUNTS, RATE_ORDER, RATES_CACHE_TIME, RATES_STALE_TIME, targetCurrencyMeta } from "@/features/exchange/constants";
-import type { ConversionDetail, TargetCurrencyId } from "@/features/exchange/types";
+import type { ConversionDetail, CurrencyOption, TargetCurrencyId } from "@/features/exchange/types";
 import {
   formatCompactAmount,
   formatHistoryDate,
@@ -23,10 +29,23 @@ import {
 } from "@/features/exchange/utils";
 
 const LIVE_HISTORY_VALUE = "live";
+const CUSTOM_RATE_ID = "custom";
+
+type SourceRateId = ExchangeRateId | typeof CUSTOM_RATE_ID;
+type SourceRate = Omit<ExchangeRate, "id"> & { id: SourceRateId };
+
+const customCurrencyMeta: CurrencyOption = {
+  id: CUSTOM_RATE_ID,
+  code: "PERS",
+  name: "Personalizado",
+  symbol: "$",
+  icon: "edit-2-line",
+};
 
 export default function ExchangeScreen() {
   const [amount, setAmount] = useState("1");
-  const [selectedRateId, setSelectedRateId] = useState<ExchangeRateId>("bcv");
+  const [selectedRateId, setSelectedRateId] = useState<SourceRateId>("bcv");
+  const [customRate, setCustomRate] = useState("");
   const [selectedHistoryValue, setSelectedHistoryValue] = useState(LIVE_HISTORY_VALUE);
   const [targetCurrencyId, setTargetCurrencyId] = useState<TargetCurrencyId>("ves");
   const [isReversed, setIsReversed] = useState(false);
@@ -46,17 +65,18 @@ export default function ExchangeScreen() {
 
   const rateHistoryQuery = useQuery({
     queryKey: ["exchange-rate-history", selectedRateId],
-    queryFn: () => fetchExchangeRateHistory(selectedRateId),
+    queryFn: () => (selectedRateId === CUSTOM_RATE_ID ? Promise.resolve([]) : fetchExchangeRateHistory(selectedRateId)),
+    enabled: selectedRateId !== CUSTOM_RATE_ID,
     staleTime: RATES_STALE_TIME,
     gcTime: RATES_CACHE_TIME,
   });
 
   const rates = ratesQuery.data ?? fallbackRates;
   const liveSortedRates = useMemo(() => [...rates].sort((leftRate, rightRate) => RATE_ORDER[leftRate.id] - RATE_ORDER[rightRate.id]), [rates]);
-  const liveSelectedRate = liveSortedRates.find((rate) => rate.id === selectedRateId) ?? liveSortedRates[0] ?? fallbackRates[0];
+  const liveSelectedApiRate = selectedRateId === CUSTOM_RATE_ID ? (liveSortedRates[0] ?? fallbackRates[0]) : (liveSortedRates.find((rate) => rate.id === selectedRateId) ?? liveSortedRates[0] ?? fallbackRates[0]);
   const historyRates = useMemo(() => rateHistoryQuery.data ?? [], [rateHistoryQuery.data]);
   const selectedHistoryRate = useMemo(() => {
-    if (selectedHistoryValue === LIVE_HISTORY_VALUE) {
+    if (selectedRateId === CUSTOM_RATE_ID || selectedHistoryValue === LIVE_HISTORY_VALUE) {
       return null;
     }
 
@@ -82,17 +102,29 @@ export default function ExchangeScreen() {
         }
 
         return rate;
-      }),
+    }),
     [liveSortedRates, selectedHistoryRate, selectedRateId],
   );
-  const selectedRate = sortedRates.find((rate) => rate.id === selectedRateId) ?? sortedRates[0] ?? fallbackRates[0];
-  const selectedMeta = currencyMeta[selectedRate.id];
+  const parsedCustomRate = parseCurrencyAmount(customRate);
+  const safeCustomRate = Number.isFinite(parsedCustomRate) && parsedCustomRate > 0 ? parsedCustomRate : 0;
+  const customRateOption = useMemo<SourceRate>(
+    () => ({
+      id: CUSTOM_RATE_ID,
+      label: "Tasa personalizada",
+      value: safeCustomRate,
+      icon: customCurrencyMeta.icon,
+    }),
+    [safeCustomRate],
+  );
+  const sourceRates = useMemo<SourceRate[]>(() => [...sortedRates, customRateOption], [customRateOption, sortedRates]);
+  const selectedRate = sourceRates.find((rate) => rate.id === selectedRateId) ?? sourceRates[0] ?? customRateOption;
+  const selectedMeta = selectedRate.id === CUSTOM_RATE_ID ? customCurrencyMeta : currencyMeta[selectedRate.id];
   const targetMeta = targetCurrencyMeta[targetCurrencyId];
   const bcvRate = sortedRates.find((rate) => rate.id === "bcv")?.value ?? fallbackRates.find((rate) => rate.id === "bcv")?.value ?? 0;
   const sourceMeta = isReversed ? targetMeta : selectedMeta;
   const resultMeta = isReversed ? selectedMeta : targetMeta;
-  const sourceOptions = isReversed ? Object.values(targetCurrencyMeta) : sortedRates.map((rate) => currencyMeta[rate.id]);
-  const resultOptions = isReversed ? sortedRates.map((rate) => currencyMeta[rate.id]) : Object.values(targetCurrencyMeta);
+  const sourceOptions = isReversed ? Object.values(targetCurrencyMeta) : sourceRates.map((rate) => (rate.id === CUSTOM_RATE_ID ? customCurrencyMeta : currencyMeta[rate.id]));
+  const resultOptions = isReversed ? sourceRates.map((rate) => (rate.id === CUSTOM_RATE_ID ? customCurrencyMeta : currencyMeta[rate.id])) : Object.values(targetCurrencyMeta);
   const sourceSelectedOptionId = isReversed ? targetCurrencyId : selectedRate.id;
   const resultSelectedOptionId = isReversed ? selectedRate.id : targetCurrencyId;
   const parsedAmount = parseCurrencyAmount(amount);
@@ -116,15 +148,16 @@ export default function ExchangeScreen() {
         ? `${formatNumber(selectedRate.value / bcvRate)} ${targetMeta.code}`
         : "Sin datos";
   const selectedRateHint = `1 ${selectedMeta.code} equivale ${selectedEquivalentValue}`;
+  const customRateHint = safeCustomRate > 0 ? selectedRateHint : "Ingresa la tasa personalizada";
   const resultAmountText = formatCompactAmount(convertedAmount);
   const resultCopyText = `${resultMeta.symbol} ${resultAmountText} ${resultMeta.code}`;
   const resultCopied = copiedResultText === resultCopyText;
   const conversionDetails = useMemo<ConversionDetail[]>(() => {
     if (isReversed) {
-      return sortedRates
+      return sourceRates
         .filter((rate) => rate.id !== selectedRate.id)
         .map((rate) => {
-          const rateMeta = currencyMeta[rate.id];
+          const rateMeta = rate.id === CUSTOM_RATE_ID ? customCurrencyMeta : currencyMeta[rate.id];
           const convertedValue = rate.value > 0 ? sourceAmountInVes / rate.value : 0;
           const rateValue =
             targetCurrencyId === "ves" ? formatRate(rate.value) : bcvRate > 0 ? `${formatNumber(rate.value / bcvRate)} ${targetMeta.code}` : "Sin datos";
@@ -139,10 +172,10 @@ export default function ExchangeScreen() {
         });
     }
 
-    return sortedRates
+    return sourceRates
       .filter((rate) => rate.id !== selectedRate.id)
       .map((rate) => {
-        const rateMeta = currencyMeta[rate.id];
+        const rateMeta = rate.id === CUSTOM_RATE_ID ? customCurrencyMeta : currencyMeta[rate.id];
         const convertedValue = targetCurrencyId === "ves" ? safeAmount * rate.value : bcvRate > 0 ? (safeAmount * rate.value) / bcvRate : 0;
         const rateValue = targetCurrencyId === "ves" ? formatRate(rate.value) : bcvRate > 0 ? `${formatNumber(rate.value / bcvRate)} BCV` : "Sin datos";
 
@@ -154,11 +187,24 @@ export default function ExchangeScreen() {
           rateText: `1 ${rateMeta.code} = ${rateValue}`,
         };
       });
-  }, [bcvRate, isReversed, safeAmount, selectedRate.id, sortedRates, sourceAmountInVes, targetCurrencyId, targetMeta.code, targetMeta.symbol]);
+  }, [bcvRate, isReversed, safeAmount, selectedRate.id, sourceAmountInVes, sourceRates, targetCurrencyId, targetMeta.code, targetMeta.symbol]);
   const ratesError = ratesQuery.isError ? "No se pudieron cargar las tasas actualizadas." : null;
   const historyPickerOptions = useMemo<ExchangeHistoryPickerOption[]>(() => {
-    const liveRateText = formatRate(liveSelectedRate.value);
-    const liveDateText = formatHistoryDate(liveSelectedRate.updatedAt);
+    if (selectedRateId === CUSTOM_RATE_ID) {
+      const customRateText = formatRate(safeCustomRate);
+
+      return [
+        {
+          value: LIVE_HISTORY_VALUE,
+          label: customRateText,
+          description: "Tasa personalizada",
+          headerDescription: customRateText,
+        },
+      ];
+    }
+
+    const liveRateText = formatRate(liveSelectedApiRate.value);
+    const liveDateText = formatHistoryDate(liveSelectedApiRate.updatedAt);
     const liveOption = {
       value: LIVE_HISTORY_VALUE,
       label: liveRateText,
@@ -167,7 +213,7 @@ export default function ExchangeScreen() {
     };
 
     const historyOptions = historyRates
-      .filter((historyRate) => historyRate.updatedAt !== liveSelectedRate.updatedAt)
+      .filter((historyRate) => historyRate.updatedAt !== liveSelectedApiRate.updatedAt)
       .map((historyRate, index) => {
         const rateText = formatRate(historyRate.value);
         const dateText = formatHistoryDate(historyRate.updatedAt);
@@ -181,10 +227,14 @@ export default function ExchangeScreen() {
       });
 
     return [liveOption, ...historyOptions];
-  }, [historyRates, liveSelectedRate.updatedAt, liveSelectedRate.value]);
+  }, [historyRates, liveSelectedApiRate.updatedAt, liveSelectedApiRate.value, safeCustomRate, selectedRateId]);
 
   const handleChangeAmount = (value: string) => {
     setAmount(sanitizeAmountInput(value));
+  };
+
+  const handleCustomRateChange = (value: string) => {
+    setCustomRate(sanitizeAmountInput(value));
   };
 
   const handleSourceCurrencySelect = (optionId: string) => {
@@ -194,13 +244,13 @@ export default function ExchangeScreen() {
     }
 
     setSelectedHistoryValue(LIVE_HISTORY_VALUE);
-    setSelectedRateId(optionId as ExchangeRateId);
+    setSelectedRateId(optionId as SourceRateId);
   };
 
   const handleResultCurrencySelect = (optionId: string) => {
     if (isReversed) {
       setSelectedHistoryValue(LIVE_HISTORY_VALUE);
-      setSelectedRateId(optionId as ExchangeRateId);
+      setSelectedRateId(optionId as SourceRateId);
       return;
     }
 
@@ -251,11 +301,14 @@ export default function ExchangeScreen() {
             icon={sourceMeta.icon}
             label="Monto"
             onAmountChange={handleChangeAmount}
+            onCustomRateChange={handleCustomRateChange}
             onCurrencySelect={handleSourceCurrencySelect}
             onQuickAmountSelect={setAmount}
             options={sourceOptions}
             quickAmounts={QUICK_AMOUNTS}
-            supportingHint={selectedRateHint}
+            customRate={customRate}
+            showCustomRateInput={sourceSelectedOptionId === CUSTOM_RATE_ID}
+            supportingHint={sourceSelectedOptionId === CUSTOM_RATE_ID ? customRateHint : selectedRateHint}
             selectedOptionId={sourceSelectedOptionId}
             symbol={sourceMeta.symbol}
           />
@@ -268,10 +321,13 @@ export default function ExchangeScreen() {
             icon={resultMeta.icon}
             label="Cambio estimado"
             onCopyAmount={handleCopyResult}
+            onCustomRateChange={handleCustomRateChange}
             onCurrencySelect={handleResultCurrencySelect}
             options={resultOptions}
             resultCopied={resultCopied}
             selectedOptionId={resultSelectedOptionId}
+            customRate={customRate}
+            showCustomRateInput={resultSelectedOptionId === CUSTOM_RATE_ID}
             supportingDetails={conversionDetails}
             supportingFormula="Otros cambios"
             symbol={resultMeta.symbol}

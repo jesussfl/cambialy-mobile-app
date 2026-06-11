@@ -20,11 +20,13 @@ const UniRemixIcon = withUnistyles(RemixIcon);
 type SwapAmountBlockProps = {
   amount: string;
   code: string;
+  customRate?: string;
   editable?: boolean;
   icon: IconName;
   label: string;
   onAmountChange?: (value: string) => void;
   onCopyAmount?: () => void;
+  onCustomRateChange?: (value: string) => void;
   onCurrencySelect: (optionId: string) => void;
   onQuickAmountSelect?: (value: string) => void;
   options: CurrencyOption[];
@@ -35,16 +37,19 @@ type SwapAmountBlockProps = {
   supportingDetails?: ConversionDetail[];
   supportingFormula?: string;
   symbol: string;
+  showCustomRateInput?: boolean;
 };
 
 export function SwapAmountBlock({
   amount,
   code,
+  customRate = "",
   editable = false,
   icon,
   label,
   onAmountChange,
   onCopyAmount,
+  onCustomRateChange,
   onCurrencySelect,
   onQuickAmountSelect,
   options,
@@ -55,6 +60,7 @@ export function SwapAmountBlock({
   supportingDetails,
   supportingFormula,
   symbol,
+  showCustomRateInput = false,
 }: SwapAmountBlockProps) {
   const amountFontSize = useDerivedValue(() => {
     const compactLength = amount.replace(/[^\d]/g, "").length;
@@ -125,6 +131,29 @@ export function SwapAmountBlock({
           {supportingHint}
         </AppText>
       ) : null}
+      {showCustomRateInput && onCustomRateChange ? (
+        <View style={styles.customRateRow}>
+          <AppText variant="tab" style={styles.customRateLabel} numberOfLines={1}>
+            Tasa
+          </AppText>
+          <AppText variant="tab" style={styles.customRatePrefix}>
+            Bs.
+          </AppText>
+          <UniTextInput
+            value={customRate.replace(".", ",")}
+            onChangeText={onCustomRateChange}
+            keyboardType="decimal-pad"
+            autoCapitalize="none"
+            autoCorrect={false}
+            placeholder="0,00"
+            style={styles.customRateInput}
+            uniProps={(theme) => ({
+              placeholderTextColor: theme.colors.textMuted,
+              selectionColor: theme.colors.primary,
+            })}
+          />
+        </View>
+      ) : null}
       {editable && quickAmounts?.length && onQuickAmountSelect ? (
         <QuickAmountPills amount={amount} onSelect={onQuickAmountSelect} values={quickAmounts} />
       ) : null}
@@ -193,6 +222,34 @@ const styles = StyleSheet.create((theme) => ({
   },
   supportingHint: {
     color: theme.colors.textMuted,
+  },
+  customRateRow: {
+    minHeight: 46,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.surfaceSoft,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
+  },
+  customRateLabel: {
+    minWidth: 42,
+    color: theme.colors.textMuted,
+  },
+  customRatePrefix: {
+    color: theme.colors.textSecondary,
+  },
+  customRateInput: {
+    flex: 1,
+    minWidth: 0,
+    height: 44,
+    padding: 0,
+    color: theme.colors.textPrimary,
+    fontFamily: theme.typography.fontFamily.semibold,
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.semibold,
   },
   copyButton: {
     width: 38,

@@ -14,7 +14,7 @@ export type TargetCurrencyId = "ves" | "bcv";
 export type ConversionDetail = {
   amountText: string;
   icon: IconName;
-  id: ExchangeRateId;
+  id: string;
   label: string;
   rateText: string;
 };
