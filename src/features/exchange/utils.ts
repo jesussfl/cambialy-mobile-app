@@ -1,3 +1,5 @@
+import type { TargetCurrencyOption } from "./types";
+
 export const parseCurrencyAmount = (value: string) => {
   const trimmedValue = value.trim();
   const normalizedValue = trimmedValue.includes(",") && trimmedValue.includes(".") ? trimmedValue.replace(/,/g, "") : trimmedValue.replace(",", ".");
@@ -23,6 +25,38 @@ export const formatCompactAmount = (value: number) => {
 };
 
 export const formatRate = (value: number) => (value > 0 ? `${formatNumber(value)} Bs.` : "Sin datos");
+
+/**
+ * Gets the conversion rate to VES for a given currency ID.
+ * VES is the base unit (rate = 1).
+ */
+export const getCurrencyRate = (id: string, bcvRate: number) => (id === "ves" ? 1 : bcvRate);
+
+/**
+ * Converts an amount to VES based on the provided rate.
+ */
+export const toVes = (amount: number, rate: number) => amount * rate;
+
+/**
+ * Converts an amount from VES to a target currency based on the provided rate.
+ */
+export const fromVes = (vesAmount: number, rate: number) => (rate > 0 ? vesAmount / rate : 0);
+
+/**
+ * Formats an exchange rate label (e.g., "Bs. 60,00" or "1,20 BCV").
+ */
+export const formatExchangeRate = (baseRate: number, targetCurrency: TargetCurrencyOption, bcvRate: number) => {
+  const targetRate = getCurrencyRate(targetCurrency.id, bcvRate);
+
+  if (targetRate <= 0 || baseRate <= 0) {
+    return "Sin datos";
+  }
+
+  const value = baseRate / targetRate;
+  const formattedValue = formatNumber(value);
+
+  return targetCurrency.id === "ves" ? `${targetCurrency.symbol} ${formattedValue}` : `${formattedValue} ${targetCurrency.code}`;
+};
 
 export const formatUpdatedAt = (value?: string) => {
   if (!value) {

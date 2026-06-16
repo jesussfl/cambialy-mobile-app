@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import { historyQueries } from "@/api/queries/history.queries";
-import type { ExchangeHistoryPickerOption } from "@/features/exchange/components/exchange-header";
+import type { ExchangeHistoryPickerOption } from "@/features/exchange/types";
 import { RATES_CACHE_TIME, RATES_STALE_TIME } from "@/features/exchange/constants";
 import { formatHistoryDate, formatRate } from "@/features/exchange/utils";
 import type { ExchangeRateHistoryOption } from "@/models/exchange.models";

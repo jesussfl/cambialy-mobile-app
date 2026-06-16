@@ -3,74 +3,44 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
+import { ExchangeProvider } from "@/features/exchange/context/exchange-context";
+import { ExchangeInputBlock } from "@/features/exchange/components/exchange-input-block";
+import { ExchangeOutputBlock } from "@/features/exchange/components/exchange-output-block";
 import { ExchangeHeader } from "@/features/exchange/components/exchange-header";
-import { SwapAmountBlock } from "@/features/exchange/components/swap-amount-block";
 import { SwapDivider } from "@/features/exchange/components/swap-divider";
 import { useExchangeScreen } from "@/features/exchange/hooks/use-exchange-screen";
 
 export default function ExchangeScreen() {
-  const exchange = useExchangeScreen();
+  return (
+    <ExchangeProvider>
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        <ExchangeScreenContent />
+      </SafeAreaView>
+    </ExchangeProvider>
+  );
+}
+
+function ExchangeScreenContent() {
+  const { ratesError } = useExchangeScreen();
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
-        <ExchangeHeader
-          historyOptions={exchange.historyPickerOptions}
-          isFetching={exchange.isRatesFetching}
-          isHistoryFetching={exchange.isHistoryFetching}
-          label={exchange.selectedBaseRate.label}
-        />
+    <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
+      <ExchangeHeader />
 
-        <View style={styles.swapPanel}>
-          <SwapAmountBlock
-            amount={exchange.inputAmountText}
-            code={exchange.inputMeta.code}
-            editable
-            icon={exchange.inputMeta.icon}
-            label="Monto"
-            onAmountChange={exchange.handleInputAmountChange}
-            onCustomRateChange={exchange.handleCustomRateChange}
-            onCurrencySelect={exchange.handleInputCurrencySelect}
-            onQuickAmountSelect={exchange.setInputAmount}
-            options={exchange.inputOptions}
-            quickAmounts={exchange.quickAmounts}
-            customRate={exchange.customRate}
-            showCustomRateInput={exchange.showInputCustomRateInput}
-            supportingHint={exchange.showInputCustomRateInput ? exchange.customRateHint : exchange.selectedBaseRateHint}
-            selectedOptionId={exchange.inputSelectedOptionId}
-            symbol={exchange.inputMeta.symbol}
-          />
+      <View style={styles.swapPanel}>
+        <ExchangeInputBlock />
+        <SwapDivider />
+        <ExchangeOutputBlock />
+      </View>
 
-          <SwapDivider onPress={exchange.handleSwapDirection} />
-
-          <SwapAmountBlock
-            amount={exchange.outputAmountText}
-            code={exchange.outputMeta.code}
-            icon={exchange.outputMeta.icon}
-            label="Cambio estimado"
-            onCopyAmount={exchange.handleCopyOutput}
-            onCustomRateChange={exchange.handleCustomRateChange}
-            onCurrencySelect={exchange.handleOutputCurrencySelect}
-            options={exchange.outputOptions}
-            resultCopied={exchange.outputCopied}
-            selectedOptionId={exchange.outputSelectedOptionId}
-            customRate={exchange.customRate}
-            showCustomRateInput={exchange.showOutputCustomRateInput}
-            supportingDetails={exchange.conversionDetails}
-            supportingFormula="Otros cambios"
-            symbol={exchange.outputMeta.symbol}
-          />
-        </View>
-
-        <View style={styles.rateMeta}>
-          {exchange.ratesError ? (
-            <AppText variant="tab" style={styles.errorText} numberOfLines={1}>
-              {exchange.ratesError}
-            </AppText>
-          ) : null}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      <View style={styles.rateMeta}>
+        {ratesError ? (
+          <AppText variant="tab" style={styles.errorText} numberOfLines={1}>
+            {ratesError}
+          </AppText>
+        ) : null}
+      </View>
+    </ScrollView>
   );
 }
 

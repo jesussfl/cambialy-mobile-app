@@ -5,31 +5,20 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 
+import { useExchangeScreen } from "../hooks/use-exchange-screen";
+
 const UniRemixIcon = withUnistyles(RemixIcon);
 
-export type ExchangeHistoryPickerOption = {
-  description: string;
-  headerDescription: string;
-  label: string;
-  value: string;
-};
+export function ExchangeHeader() {
+  const { historyPickerOptions, selectedBaseRate } = useExchangeScreen();
 
-type ExchangeHeaderProps = {
-  isFetching: boolean;
-  isHistoryFetching: boolean;
-  historyOptions: ExchangeHistoryPickerOption[];
-  label: string;
-};
-
-export function ExchangeHeader({ historyOptions, isFetching, isHistoryFetching, label }: ExchangeHeaderProps) {
-  const selectedOption = historyOptions[0];
-  // const isLoading = isFetching || isHistoryFetching;
+  const selectedOption = historyPickerOptions[0];
+  const label = selectedBaseRate.label;
 
   return (
     <View style={styles.header}>
       <Select presentation="dialog" value={selectedOption}>
         <Select.Trigger variant="unstyled" style={styles.historyTrigger}>
-          {/* <View style={[styles.statusDot, isLoading ? styles.statusDotLoading : null]} /> */}
           <View style={styles.historyTriggerText} pointerEvents="none">
             <AppText variant="tab" style={styles.historyLabel} numberOfLines={1}>
               {label}
@@ -56,7 +45,7 @@ export function ExchangeHeader({ historyOptions, isFetching, isHistoryFetching, 
             <Select.Close />
             <ScrollView contentContainerStyle={styles.historyListContent} showsVerticalScrollIndicator={false}>
               <Select.ListLabel>Precio historico</Select.ListLabel>
-              {historyOptions.map((option) => (
+              {historyPickerOptions.map((option) => (
                 <Select.Item key={option.value} value={option.value} label={option.label}>
                   <View style={styles.historyOptionText}>
                     <Select.ItemLabel />

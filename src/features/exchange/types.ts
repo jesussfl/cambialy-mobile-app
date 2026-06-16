@@ -21,3 +21,10 @@ export type ConversionDetail = {
   label: string;
   rateText: string;
 };
+
+export type ExchangeHistoryPickerOption = {
+  description: string;
+  headerDescription: string;
+  label: string;
+  value: string;
+};

@@ -6,6 +6,7 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { AppText } from "@/components/ui/app-text";
 
 import type { ConversionDetail, CurrencyOption } from "../types";
+import { useCopyResult } from "../hooks/use-copy-result";
 import { AnimatedAmountText } from "./animated-amount-text";
 import { ConversionDetails } from "./conversion-details";
 import { CurrencyPicker } from "./currency-picker";
@@ -20,18 +21,17 @@ const UniRemixIcon = withUnistyles(RemixIcon);
 type SwapAmountBlockProps = {
   amount: string;
   code: string;
+  copyText?: string;
   customRate?: string;
   editable?: boolean;
   icon: IconName;
   label: string;
   onAmountChange?: (value: string) => void;
-  onCopyAmount?: () => void;
   onCustomRateChange?: (value: string) => void;
   onCurrencySelect: (optionId: string) => void;
   onQuickAmountSelect?: (value: string) => void;
   options: CurrencyOption[];
   quickAmounts?: string[];
-  resultCopied?: boolean;
   selectedOptionId: string;
   supportingHint?: string;
   supportingDetails?: ConversionDetail[];
@@ -40,21 +40,42 @@ type SwapAmountBlockProps = {
   showCustomRateInput?: boolean;
 };
 
+function CopyButton({ text }: { text: string }) {
+  const { handleCopyResult, resultCopied } = useCopyResult(text);
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={resultCopied ? "Resultado copiado" : "Copiar resultado"}
+      hitSlop={10}
+      onPress={handleCopyResult}
+      style={({ pressed }) => [styles.copyButton, resultCopied ? styles.copyButtonActive : null, pressed ? styles.copyButtonPressed : null]}
+    >
+      <UniRemixIcon
+        name={resultCopied ? "check-line" : "file-copy-line"}
+        size={18}
+        uniProps={(theme: any) => ({
+          color: resultCopied ? theme.colors.primaryText : theme.colors.primary,
+        })}
+      />
+    </Pressable>
+  );
+}
+
 export function SwapAmountBlock({
   amount,
   code,
+  copyText,
   customRate = "",
   editable = false,
   icon,
   label,
   onAmountChange,
-  onCopyAmount,
   onCustomRateChange,
   onCurrencySelect,
   onQuickAmountSelect,
   options,
   quickAmounts,
-  resultCopied = false,
   selectedOptionId,
   supportingHint,
   supportingDetails,
@@ -104,23 +125,7 @@ export function SwapAmountBlock({
           ) : (
             <>
               <AnimatedAmountText containerStyle={styles.amountValueTextRow} style={[styles.amountValue, animatedAmountStyle]} text={amount} />
-              {onCopyAmount ? (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={resultCopied ? "Resultado copiado" : "Copiar resultado"}
-                  hitSlop={10}
-                  onPress={onCopyAmount}
-                  style={({ pressed }) => [styles.copyButton, resultCopied ? styles.copyButtonActive : null, pressed ? styles.copyButtonPressed : null]}
-                >
-                  <UniRemixIcon
-                    name={resultCopied ? "check-line" : "file-copy-line"}
-                    size={18}
-                    uniProps={(theme: any) => ({
-                      color: resultCopied ? theme.colors.primaryText : theme.colors.primary,
-                    })}
-                  />
-                </Pressable>
-              ) : null}
+              {copyText ? <CopyButton text={copyText} /> : null}
             </>
           )}
         </View>

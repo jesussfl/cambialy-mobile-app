@@ -45,7 +45,8 @@
     "tailwind-variants": "^3.2.2",
     "tailwindcss": "^4.3.0",
     "uniwind": "^1.7.0",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
