@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="0dp"
+  android:layout_marginBottom="6dp"
+  android:layout_weight="1"
+  android:background="@drawable/rates_widget_row_background"
+  android:gravity="center_vertical"
+  android:orientation="horizontal"
+  android:paddingHorizontal="10dp">
+
+  <TextView
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:ellipsize="end"
+    android:maxLines="1"
+    android:text="@string/rates_widget_usd_label"
+    android:textColor="#07101F"
+    android:textSize="12sp"
+    android:textStyle="bold" />
+
+  <TextView
+    android:id="@+id/rates_widget_usd_value"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:maxLines="1"
+    android:text="@string/rates_widget_unavailable"
+    android:textColor="#0350FF"
+    android:textSize="12sp"
+    android:textStyle="bold" />
+</LinearLayout>
