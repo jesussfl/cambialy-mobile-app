@@ -8,17 +8,12 @@ import { Tabs } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { HeroUINativeProvider } from "heroui-native";
-import type { ComponentProps } from "react";
-import { Pressable, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import RemixIcon, { type IconName } from "react-native-remix-icon";
+import { type IconName } from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
-import { AppText } from "@/components/ui/app-text";
+import { CustomTabBar } from "@/components/custom-tabbar/custom-tabbar";
 import { OnboardingGate } from "@/features/onboarding/components/onboarding-gate";
-
-type ExpoTabsProps = ComponentProps<typeof Tabs>;
-type BottomTabBarProps = Parameters<NonNullable<ExpoTabsProps["tabBar"]>>[0];
 
 type TabConfig = {
   icon: IconName;
@@ -49,81 +44,7 @@ SplashScreen.setOptions({
 });
 void SplashScreen.preventAutoHideAsync();
 
-const UniRemixIcon = withUnistyles(RemixIcon);
-const UniAppText = withUnistyles(AppText);
 const UniTabs = withUnistyles(Tabs);
-
-function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
-  return (
-    <View style={styles.tabBar}>
-      {state.routes.map((route, index) => {
-        const config = tabConfig[route.name];
-        const options = descriptors[route.key]?.options;
-        const isFocused = state.index === index;
-
-        if (!config) {
-          return null;
-        }
-
-        const handlePress = () => {
-          const event = navigation.emit({
-            type: "tabPress",
-            target: route.key,
-            canPreventDefault: true,
-          });
-
-          if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name, route.params);
-          }
-        };
-
-        const handleLongPress = () => {
-          navigation.emit({
-            type: "tabLongPress",
-            target: route.key,
-          });
-        };
-
-        return (
-          <Pressable
-            key={route.key}
-            accessibilityLabel={options.tabBarAccessibilityLabel}
-            accessibilityRole="button"
-            accessibilityState={isFocused ? { selected: true } : undefined}
-            onLongPress={handleLongPress}
-            onPress={handlePress}
-            style={styles.tabButton}
-          >
-            <View
-              style={[
-                styles.activeDot,
-                {
-                  opacity: isFocused ? 1 : 0,
-                },
-              ]}
-            />
-            <UniRemixIcon
-              name={config.icon}
-              size={22}
-              uniProps={(theme: any) => ({
-                color: isFocused ? theme.colors.primary : theme.colors.textMuted,
-              })}
-            />
-            <UniAppText
-              variant="tab"
-              style={styles.tabLabel}
-              uniProps={(theme) => ({
-                color: isFocused ? theme.colors.primary : theme.colors.textMuted,
-              })}
-            >
-              {config.label}
-            </UniAppText>
-          </Pressable>
-        );
-      })}
-    </View>
-  );
-}
 
 export default function RootLayout() {
   return (
@@ -162,33 +83,5 @@ const styles = StyleSheet.create((theme, rt) => ({
   root: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  tabBar: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-around",
-    minHeight: 92,
-    paddingTop: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.md,
-    backgroundColor: theme.colors.tabSurface,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.tabBorder,
-    paddingBottom: Math.max(rt.insets.bottom, theme.spacing.sm),
-  },
-  tabButton: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "flex-start",
-    gap: theme.spacing.xxs,
-    minHeight: 68,
-  },
-  activeDot: {
-    width: 18,
-    height: 3,
-    borderRadius: 2,
-    backgroundColor: theme.colors.primary,
-  },
-  tabLabel: {
-    lineHeight: theme.typography.lineHeight.xs,
   },
 }));
