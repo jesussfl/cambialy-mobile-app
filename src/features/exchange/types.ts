@@ -1,4 +1,3 @@
-import type { ExchangeRateId } from "@/features/calculator/api/rates-api";
 import type { IconName } from "react-native-remix-icon";
 
 export type CurrencyOption = {
@@ -10,6 +9,10 @@ export type CurrencyOption = {
 };
 
 export type TargetCurrencyId = "ves" | "bcv";
+
+export type TargetCurrencyOption = CurrencyOption & {
+  id: TargetCurrencyId;
+};
 
 export type ConversionDetail = {
   amountText: string;

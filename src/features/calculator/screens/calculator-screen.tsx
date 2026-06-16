@@ -8,7 +8,7 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { AppText } from "@/components/ui/app-text";
 import { Card } from "@/components/ui/card";
 import { CurrencyPicker } from "@/features/exchange/components/currency-picker";
-import { currencyMeta, fallbackRates, RATE_ORDER, RATES_CACHE_TIME, RATES_STALE_TIME } from "@/features/exchange/constants";
+import { currencyInfo, fallbackRates, RATE_ORDER, RATES_CACHE_TIME, RATES_STALE_TIME } from "@/features/exchange/constants";
 import type { CurrencyOption } from "@/features/exchange/types";
 import { formatCompactAmount, formatNumber, formatUpdatedAt, parseCurrencyAmount, sanitizeAmountInput } from "@/features/exchange/utils";
 
@@ -31,7 +31,7 @@ type ComparisonOption = {
 };
 
 const priceCurrencyMeta: Record<PriceCurrencyId, CurrencyOption> = {
-  ...currencyMeta,
+  ...currencyInfo,
   usdt: {
     id: "usdt",
     symbol: "$",
@@ -47,11 +47,11 @@ const priceCurrencyMeta: Record<PriceCurrencyId, CurrencyOption> = {
     icon: "bank-line",
   },
   bcv: {
-    ...currencyMeta.bcv,
+    ...currencyInfo.bcv,
     name: "Dolares BCV",
   },
   eur: {
-    ...currencyMeta.eur,
+    ...currencyInfo.eur,
     name: "Euros",
   },
   custom: {
@@ -335,11 +335,7 @@ type ComparisonSummaryProps = {
 
 function ComparisonSummary({ firstOption, secondOption, result }: ComparisonSummaryProps) {
   const hasValues = firstOption.valueInVes > 0 || secondOption.valueInVes > 0;
-  const winnerLabel = result?.isEquivalent
-    ? "Precios equivalentes"
-    : result?.betterSide === "first"
-      ? "Precio A conviene mas"
-      : "Precio B conviene mas";
+  const winnerLabel = result?.isEquivalent ? "Precios equivalentes" : result?.betterSide === "first" ? "Precio A conviene mas" : "Precio B conviene mas";
 
   return (
     <Card elevated style={styles.summaryCard}>

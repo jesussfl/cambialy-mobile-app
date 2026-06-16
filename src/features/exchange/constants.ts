@@ -1,6 +1,8 @@
-import type { ExchangeRate, ExchangeRateId } from "@/features/calculator/api/rates-api";
+import type { ExchangeRate, ExchangeRateId } from "@/models/exchange.models";
 
-import type { CurrencyOption, TargetCurrencyId } from "./types";
+import type { CurrencyOption, TargetCurrencyId, TargetCurrencyOption } from "./types";
+
+export const CUSTOM_RATE_ID = "custom";
 
 export const fallbackRates: ExchangeRate[] = [
   {
@@ -23,7 +25,7 @@ export const fallbackRates: ExchangeRate[] = [
   },
 ];
 
-export const currencyMeta: Record<ExchangeRateId, CurrencyOption> = {
+export const currencyInfo: Record<ExchangeRateId, CurrencyOption> = {
   usdt: {
     id: "usdt",
     code: "USDT",
@@ -47,7 +49,15 @@ export const currencyMeta: Record<ExchangeRateId, CurrencyOption> = {
   },
 };
 
-export const targetCurrencyMeta: Record<TargetCurrencyId, CurrencyOption> = {
+export const customCurrencyInfo: CurrencyOption = {
+  id: CUSTOM_RATE_ID,
+  code: "PERS",
+  name: "Personalizado",
+  symbol: "$",
+  icon: "edit-2-line",
+};
+
+export const targetCurrencyInfo: Record<TargetCurrencyId, TargetCurrencyOption> = {
   ves: {
     id: "ves",
     code: "VES",
@@ -68,4 +78,4 @@ export const RATES_CACHE_TIME = 1000 * 60 * 10;
 export const RATES_STALE_TIME = 1000 * 60 * 5;
 export const QUICK_AMOUNTS = ["5", "10", "15", "20", "30", "50", "100"];
 
-export const RATE_ORDER: Record<ExchangeRateId, number> = { usdt: 0, bcv: 1, eur: 2 };
+export const RATE_ORDER: Record<ExchangeRateId, number> = { bcv: 0, usdt: 1, eur: 2 };

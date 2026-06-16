@@ -19,17 +19,15 @@ type ExchangeHeaderProps = {
   isHistoryFetching: boolean;
   historyOptions: ExchangeHistoryPickerOption[];
   label: string;
-  onHistorySelect: (value: string) => void;
-  selectedHistoryValue: string;
 };
 
-export function ExchangeHeader({ historyOptions, isFetching, isHistoryFetching, label, onHistorySelect, selectedHistoryValue }: ExchangeHeaderProps) {
-  const selectedOption = historyOptions.find((option) => option.value === selectedHistoryValue) ?? historyOptions[0];
+export function ExchangeHeader({ historyOptions, isFetching, isHistoryFetching, label }: ExchangeHeaderProps) {
+  const selectedOption = historyOptions[0];
   // const isLoading = isFetching || isHistoryFetching;
 
   return (
     <View style={styles.header}>
-      <Select presentation="dialog" value={selectedOption} onValueChange={(option) => option?.value && onHistorySelect(option.value)}>
+      <Select presentation="dialog" value={selectedOption}>
         <Select.Trigger variant="unstyled" style={styles.historyTrigger}>
           {/* <View style={[styles.statusDot, isLoading ? styles.statusDotLoading : null]} /> */}
           <View style={styles.historyTriggerText} pointerEvents="none">
