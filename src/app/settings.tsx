@@ -1,17 +1,63 @@
-import { View } from "react-native";
+import { Switch, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet } from "react-native-unistyles";
+import RemixIcon from "react-native-remix-icon";
+import { StyleSheet, useUnistyles, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 import { Card } from "@/components/ui/card";
+import { useThemePreference } from "@/theme/theme-preference";
+
+const UniRemixIcon = withUnistyles(RemixIcon);
 
 export default function SettingsScreen() {
+  const { theme } = useUnistyles();
+  const { isDarkMode, toggleTheme } = useThemePreference();
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.content}>
         <AppText variant="title" style={styles.title}>
           Ajustes
         </AppText>
+
+        <View style={styles.section}>
+          <AppText variant="sectionTitle" style={styles.sectionHeader}>
+            Apariencia
+          </AppText>
+          <Card style={styles.card}>
+            <View style={styles.preferenceRow}>
+              <View style={styles.preferenceCopy}>
+                <View style={styles.preferenceTitleRow}>
+                  <UniRemixIcon
+                    name={isDarkMode ? "moon-line" : "sun-line"}
+                    size={20}
+                    uniProps={(theme: any) => ({
+                      color: theme.colors.primary,
+                    })}
+                  />
+                  <AppText variant="body" style={styles.preferenceTitle}>
+                    Modo oscuro
+                  </AppText>
+                </View>
+                <AppText variant="subtitle" style={styles.preferenceDescription}>
+                  {isDarkMode ? "La app usa el tema oscuro." : "La app usa el tema claro."}
+                </AppText>
+              </View>
+              <Switch
+                accessibilityLabel="Cambiar modo oscuro"
+                onValueChange={() => {
+                  void toggleTheme();
+                }}
+                thumbColor={isDarkMode ? theme.colors.primaryText : theme.colors.surface}
+                trackColor={{
+                  false: theme.colors.secondarySurface,
+                  true: theme.colors.primary,
+                }}
+                value={isDarkMode}
+              />
+            </View>
+          </Card>
+        </View>
 
         <View style={styles.section}>
           <AppText variant="sectionTitle" style={styles.sectionHeader}>
@@ -73,6 +119,30 @@ const styles = StyleSheet.create((theme) => ({
   },
   card: {
     padding: theme.spacing.md,
+  },
+  preferenceRow: {
+    minHeight: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: theme.spacing.md,
+  },
+  preferenceCopy: {
+    flex: 1,
+    minWidth: 0,
+    gap: theme.spacing.xxs,
+  },
+  preferenceTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.xs,
+  },
+  preferenceTitle: {
+    color: theme.colors.textPrimary,
+    fontWeight: theme.typography.fontWeight.semibold,
+  },
+  preferenceDescription: {
+    color: theme.colors.textSecondary,
   },
   description: {
     color: theme.colors.textPrimary,

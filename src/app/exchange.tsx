@@ -1,22 +1,24 @@
 import { Pressable, ScrollView, View } from "react-native";
 import RemixIcon from "react-native-remix-icon";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet, withUnistyles } from "react-native-unistyles";
+import { StyleSheet, useUnistyles, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
-import { ExchangeProvider } from "@/features/exchange/context/exchange-context";
+import { ExchangeHeader } from "@/features/exchange/components/exchange-header";
 import { ExchangeInputBlock } from "@/features/exchange/components/exchange-input-block";
 import { ExchangeOutputBlock } from "@/features/exchange/components/exchange-output-block";
-import { ExchangeHeader } from "@/features/exchange/components/exchange-header";
 import { SwapDivider } from "@/features/exchange/components/swap-divider";
+import { ExchangeProvider } from "@/features/exchange/context/exchange-context";
 import { useExchangeScreen } from "@/features/exchange/hooks/use-exchange-screen";
 
 const UniRemixIcon = withUnistyles(RemixIcon);
 
 export default function ExchangeScreen() {
+  const { theme } = useUnistyles();
+
   return (
     <ExchangeProvider>
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]} edges={["top"]}>
         <ExchangeScreenContent />
       </SafeAreaView>
     </ExchangeProvider>
@@ -28,7 +30,7 @@ function ExchangeScreenContent() {
 
   return (
     <View style={styles.screenContent}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
         <ExchangeHeader />
 
         <View style={styles.swapPanel}>
@@ -72,6 +74,11 @@ const styles = StyleSheet.create((theme) => ({
   },
   screenContent: {
     flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
   },
   content: {
     flexGrow: 1,

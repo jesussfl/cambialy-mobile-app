@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { ScrollView, TextInput, View } from "react-native";
 import RemixIcon from "react-native-remix-icon";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet, withUnistyles } from "react-native-unistyles";
+import { StyleSheet, useUnistyles, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 import { Card } from "@/components/ui/card";
@@ -69,6 +69,7 @@ const UniTextInput = withUnistyles(TextInput);
 const UniRemixIcon = withUnistyles(RemixIcon);
 
 export function CalculatorScreen() {
+  const { theme } = useUnistyles();
   const [firstPrice, setFirstPrice] = useState<PriceInputState>({ amount: "1", customRate: "", currencyId: "usdt" });
   const [secondPrice, setSecondPrice] = useState<PriceInputState>({ amount: "", customRate: "", currencyId: "ves" });
 
@@ -122,8 +123,8 @@ export function CalculatorScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]} edges={["top"]}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
         <View style={styles.header}>
           <View style={styles.headerTitleGroup}>
             <AppText variant="cardTitle" style={styles.headerTitle}>
@@ -404,6 +405,10 @@ function SummaryMetric({ isActive, label, value }: SummaryMetricProps) {
 
 const styles = StyleSheet.create((theme) => ({
   safeArea: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  scrollView: {
     flex: 1,
     backgroundColor: theme.colors.background,
   },

@@ -10,10 +10,11 @@ import { StatusBar } from "expo-status-bar";
 import { HeroUINativeProvider } from "heroui-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { type IconName } from "react-native-remix-icon";
-import { StyleSheet, withUnistyles } from "react-native-unistyles";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { CustomTabBar } from "@/components/custom-tabbar/custom-tabbar";
 import { OnboardingGate } from "@/features/onboarding/components/onboarding-gate";
+import { ThemePreferenceProvider, useThemePreference } from "@/theme/theme-preference";
 
 type TabConfig = {
   icon: IconName;
@@ -44,38 +45,45 @@ SplashScreen.setOptions({
 });
 void SplashScreen.preventAutoHideAsync();
 
-const UniTabs = withUnistyles(Tabs);
-
 export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={styles.root}>
         <HeroUINativeProvider>
-          <StatusBar style="dark" />
-          <OnboardingGate>
-            <UniTabs
-              initialRouteName="exchange"
-              tabBar={(props) => <CustomTabBar {...props} />}
-              screenOptions={{
-                headerShown: false,
-                tabBarHideOnKeyboard: true,
-              }}
-              uniProps={(theme) => ({
-                screenOptions: {
-                  sceneStyle: {
-                    backgroundColor: theme.colors.background,
-                  },
-                },
-              })}
-            >
-              <Tabs.Screen name="exchange" options={{ title: tabConfig.exchange.label }} />
-              <Tabs.Screen name="compare" options={{ title: tabConfig.compare.label }} />
-              <Tabs.Screen name="settings" options={{ title: tabConfig.settings.label }} />
-            </UniTabs>
-          </OnboardingGate>
+          <ThemePreferenceProvider>
+            <AppTabs />
+          </ThemePreferenceProvider>
         </HeroUINativeProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>
+  );
+}
+
+function AppTabs() {
+  const { isDarkMode } = useThemePreference();
+  const { theme } = useUnistyles();
+
+  return (
+    <>
+      <StatusBar style={isDarkMode ? "light" : "dark"} />
+      <OnboardingGate>
+        <Tabs
+          initialRouteName="exchange"
+          tabBar={(props) => <CustomTabBar {...props} />}
+          screenOptions={{
+            headerShown: false,
+            sceneStyle: {
+              backgroundColor: theme.colors.background,
+            },
+            tabBarHideOnKeyboard: true,
+          }}
+        >
+          <Tabs.Screen name="exchange" options={{ title: tabConfig.exchange.label }} />
+          <Tabs.Screen name="compare" options={{ title: tabConfig.compare.label }} />
+          <Tabs.Screen name="settings" options={{ title: tabConfig.settings.label }} />
+        </Tabs>
+      </OnboardingGate>
+    </>
   );
 }
 
