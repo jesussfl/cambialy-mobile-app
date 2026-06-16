@@ -30,6 +30,7 @@
     "react-dom": "19.2.3",
     "react-hook-form": "^7.76.1",
     "react-native": "0.85.3",
+    "react-native-currency-input": "^1.1.1",
     "react-native-gesture-handler": "~2.31.2",
     "react-native-keyboard-controller": "1.21.6",
     "react-native-nitro-modules": "0.35.9",

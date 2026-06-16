@@ -1,6 +1,15 @@
 import { QUICK_AMOUNTS, targetCurrencyInfo } from "@/features/exchange/constants";
 import type { ConversionDetail, TargetCurrencyId } from "@/features/exchange/types";
-import { formatCompactAmount, formatExchangeRate, fromVes, getCurrencyRate, getDisplayAmount, parseCurrencyAmount, toVes } from "@/features/exchange/utils";
+import {
+  formatCompactAmount,
+  formatExchangeRate,
+  fromVes,
+  getCurrencyRate,
+  getDisplayAmount,
+  normalizeAmountInputChange,
+  parseCurrencyAmount,
+  toVes,
+} from "@/features/exchange/utils";
 
 import { useExchangeContext } from "../context/exchange-context";
 import { CUSTOM_RATE_ID, type BaseRateId } from "./exchange-screen.types";
@@ -20,6 +29,7 @@ export function useExchangeScreen() {
     setSelectedTargetCurrencyId,
     setCustomRate,
     toggleReverse,
+    resetExchange,
   } = useExchangeContext((state) => state);
 
   const selectedTargetCurrency = targetCurrencyInfo[selectedTargetCurrencyId];
@@ -101,7 +111,7 @@ export function useExchangeScreen() {
   };
 
   const handleInputAmountChange = (value: string) => {
-    setInputAmount(value);
+    setInputAmount(normalizeAmountInputChange(value, inputAmount));
   };
 
   const handleCustomRateChange = (value: string) => {
@@ -143,6 +153,7 @@ export function useExchangeScreen() {
     handleOutputCurrencySelect,
     handleInputCurrencySelect,
     handleSwapDirection,
+    resetExchange,
     historyPickerOptions,
     isHistoryFetching,
     isRatesFetching,

@@ -20,19 +20,28 @@ export interface ExchangeActions {
   setCustomRate: (input: string) => void;
   toggleReverse: () => void;
   setReverse: (isReversed: boolean) => void;
+  resetExchange: () => void;
 }
 
 export type ExchangeStore = ExchangeState & ExchangeActions;
 
+const initialExchangeState: ExchangeState = {
+  inputAmount: "1",
+  selectedBaseRateId: "bcv",
+  selectedTargetCurrencyId: "ves",
+  customRateInput: "",
+  customRateValue: 0,
+  isReversed: false,
+};
+
 export const createExchangeStore = (initialState: Partial<ExchangeState> = {}) => {
-  return createStore<ExchangeStore>((set) => ({
-    inputAmount: "1",
-    selectedBaseRateId: "bcv",
-    selectedTargetCurrencyId: "ves",
-    customRateInput: "",
-    customRateValue: 0,
-    isReversed: false,
+  const resolvedInitialState = {
+    ...initialExchangeState,
     ...initialState,
+  };
+
+  return createStore<ExchangeStore>((set) => ({
+    ...resolvedInitialState,
 
     setInputAmount: (amount) => set({ inputAmount: sanitizeAmountInput(amount) }),
     setSelectedBaseRateId: (id) => set({ selectedBaseRateId: id }),
@@ -47,5 +56,6 @@ export const createExchangeStore = (initialState: Partial<ExchangeState> = {}) =
     },
     toggleReverse: () => set((state) => ({ isReversed: !state.isReversed })),
     setReverse: (isReversed) => set({ isReversed }),
+    resetExchange: () => set(resolvedInitialState),
   }));
 };
