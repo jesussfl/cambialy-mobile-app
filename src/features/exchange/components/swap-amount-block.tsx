@@ -5,8 +5,8 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 
-import type { ConversionDetail, CurrencyOption } from "../types";
 import { useCopyResult } from "../hooks/use-copy-result";
+import type { ConversionDetail, CurrencyOption } from "../types";
 import { AnimatedAmountText } from "./animated-amount-text";
 import { ConversionDetails } from "./conversion-details";
 import { CurrencyPicker } from "./currency-picker";
@@ -97,12 +97,7 @@ export function SwapAmountBlock({
   return (
     <View style={styles.amountBlock}>
       <View style={styles.amountTopRow}>
-        <View style={styles.amountTitleRow}>
-          <AppText variant="tab" style={styles.blockLabel}>
-            {label}
-          </AppText>
-          <CurrencyPicker code={code} icon={icon} onSelect={onCurrencySelect} options={options} selectedOptionId={selectedOptionId} />
-        </View>
+        <CurrencyPicker code={code} icon={icon} onSelect={onCurrencySelect} options={options} selectedOptionId={selectedOptionId} />
 
         <View style={styles.amountRow}>
           <AppText variant="title" style={styles.amountSymbol}>
@@ -131,11 +126,6 @@ export function SwapAmountBlock({
         </View>
       </View>
 
-      {supportingHint ? (
-        <AppText variant="tab" style={styles.supportingHint} numberOfLines={1}>
-          {supportingHint}
-        </AppText>
-      ) : null}
       {showCustomRateInput && onCustomRateChange ? (
         <View style={styles.customRateRow}>
           <AppText variant="tab" style={styles.customRateLabel} numberOfLines={1}>

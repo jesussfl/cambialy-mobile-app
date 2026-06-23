@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import { historyQueries } from "@/api/queries/history.queries";
-import type { ExchangeHistoryPickerOption } from "@/features/exchange/types";
 import { RATES_CACHE_TIME, RATES_STALE_TIME } from "@/features/exchange/constants";
+import type { ExchangeHistoryPickerOption } from "@/features/exchange/types";
 import { formatHistoryDate, formatRate } from "@/features/exchange/utils";
 import type { ExchangeRateHistoryOption } from "@/models/exchange.models";
 
@@ -46,7 +46,7 @@ export function useExchangeHistory({ selectedBaseRate, customRateValue, selected
       value: LIVE_HISTORY_VALUE,
       label: liveRateText,
       description: liveDateText,
-      headerDescription: `${liveRateText} - ${liveDateText}`,
+      headerDescription: `${liveDateText}`,
     };
 
     const historyOptions = historyRates
@@ -59,7 +59,7 @@ export function useExchangeHistory({ selectedBaseRate, customRateValue, selected
           value: getHistoryRateKey(historyRate, index),
           label: rateText,
           description: dateText,
-          headerDescription: `${rateText} - ${dateText}`,
+          headerDescription: `${dateText}`,
         };
       });
 
