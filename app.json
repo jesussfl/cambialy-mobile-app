@@ -30,6 +30,7 @@
     "plugins": [
       "expo-router",
       "./plugins/withFirebaseAppDistribution",
+      "./plugins/withIosBuildReactNativeFromSource",
       [
         "expo-splash-screen",
         {
@@ -42,6 +43,21 @@
             "image": "./assets/images/cambialy-monochrome.png",
             "imageWidth": 156
           }
+        }
+      ],
+      [
+        "expo-widgets",
+        {
+          "bundleIdentifier": "com.cambialy.app.ExpoWidgetsTarget",
+          "groupIdentifier": "group.com.cambialy.app",
+          "widgets": [
+            {
+              "name": "RatesWidget",
+              "displayName": "Tasas Cambialy",
+              "description": "Consulta USD BCV, EUR BCV y USDT Binance",
+              "supportedFamilies": ["systemSmall", "systemMedium", "systemLarge"]
+            }
+          ]
         }
       ]
     ],

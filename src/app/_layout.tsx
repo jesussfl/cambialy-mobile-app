@@ -8,12 +8,15 @@ import { Tabs } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { HeroUINativeProvider } from "heroui-native";
+import { useEffect } from "react";
+import { AppState } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { type IconName } from "react-native-remix-icon";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { CustomTabBar } from "@/components/custom-tabbar/custom-tabbar";
 import { OnboardingGate } from "@/features/onboarding/components/onboarding-gate";
+import { refreshRatesWidget } from "@/modules/rates-widget";
 import { ThemePreferenceProvider, useThemePreference } from "@/theme/theme-preference";
 
 type TabConfig = {
@@ -62,6 +65,20 @@ export default function RootLayout() {
 function AppTabs() {
   const { isDarkMode } = useThemePreference();
   const { theme } = useUnistyles();
+
+  useEffect(() => {
+    void refreshRatesWidget();
+
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state === "active") {
+        void refreshRatesWidget();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   return (
     <>
