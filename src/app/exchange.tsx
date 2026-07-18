@@ -4,7 +4,6 @@ import { StyleSheet } from "react-native-unistyles";
 
 import { IconButton } from "@/components/ui/button";
 import { ConversionDetails } from "@/features/exchange/components/conversion-details";
-import { ExchangeHeader } from "@/features/exchange/components/exchange-header";
 import { ExchangeInputBlock } from "@/features/exchange/components/exchange-input-block";
 import { ExchangeOutputBlock } from "@/features/exchange/components/exchange-output-block";
 import { SwapDivider } from "@/features/exchange/components/swap-divider";
@@ -28,8 +27,6 @@ function ExchangeScreenContent() {
   return (
     <View style={styles.screenContent}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
-        <ExchangeHeader />
-
         <View style={styles.swapPanel}>
           <ExchangeInputBlock />
           <SwapDivider />

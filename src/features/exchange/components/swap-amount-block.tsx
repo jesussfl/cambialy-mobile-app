@@ -1,21 +1,23 @@
-import { Pressable, TextInput, View } from "react-native";
+import { useState } from "react";
+import { Pressable, View } from "react-native";
 import { useAnimatedStyle, useDerivedValue, withTiming } from "react-native-reanimated";
 import RemixIcon, { type IconName } from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 
+import { PressableScale } from "pressto";
+import { AmountKeypadSheet } from "./amount-keypad-sheet";
 import { useCopyResult } from "../hooks/use-copy-result";
 import type { CurrencyOption } from "../types";
 import { AnimatedAmountText } from "./animated-amount-text";
 import { CurrencyPicker } from "./currency-picker";
 import { QuickAmountPills } from "./quick-amount-pills";
-
 const AMOUNT_FONT_SIZE = 34;
 const MIN_AMOUNT_FONT_SIZE = 25;
 
-const UniTextInput = withUnistyles(TextInput);
 const UniRemixIcon = withUnistyles(RemixIcon);
+const UniAppText = withUnistyles(AppText);
 
 type SwapAmountBlockProps = {
   amount: string;
@@ -77,6 +79,8 @@ export function SwapAmountBlock({
 }: SwapAmountBlockProps) {
   const safeAmount = amount ?? "";
   const safeCustomRate = customRate ?? "";
+  const [activeField, setActiveField] = useState<"amount" | "customRate">("amount");
+  const [isKeypadVisible, setIsKeypadVisible] = useState(false);
 
   const amountFontSize = useDerivedValue(() => {
     const compactLength = safeAmount.replace(/[^\d]/g, "").length;
@@ -89,6 +93,59 @@ export function SwapAmountBlock({
     lineHeight: amountFontSize.value + 6,
   }));
 
+  const handleValueInput = (value: string) => {
+    const normalizedValue = value === "," ? "." : value;
+    const nextValue = (() => {
+      if (activeField === "amount") {
+        const currentValue = safeAmount ?? "";
+
+        if (normalizedValue === ".") {
+          return currentValue.includes(".") ? currentValue : currentValue ? `${currentValue}.` : "0.";
+        }
+
+        return `${currentValue}${normalizedValue}`;
+      }
+
+      const currentValue = safeCustomRate ?? "";
+
+      if (normalizedValue === ".") {
+        return currentValue.includes(".") ? currentValue : currentValue ? `${currentValue}.` : "0.";
+      }
+
+      return `${currentValue}${normalizedValue}`;
+    })();
+
+    if (activeField === "amount") {
+      onAmountChange?.(nextValue);
+      return;
+    }
+
+    onCustomRateChange?.(nextValue);
+  };
+
+  const handleValueDelete = () => {
+    const currentValue = activeField === "amount" ? safeAmount : safeCustomRate;
+    const nextValue = currentValue.slice(0, -1);
+
+    if (activeField === "amount") {
+      onAmountChange?.(nextValue);
+      return;
+    }
+
+    onCustomRateChange?.(nextValue);
+  };
+
+  const handleValueClear = () => {
+    if (activeField === "amount") {
+      onAmountChange?.("");
+      return;
+    }
+
+    onCustomRateChange?.("");
+  };
+
+  const displayValue = activeField === "amount" ? safeAmount || "0" : safeCustomRate || "0";
+
   return (
     <View style={styles.amountBlock}>
       <View style={styles.amountTopRow}>
@@ -99,19 +156,24 @@ export function SwapAmountBlock({
             {symbol}
           </AppText>
           {editable ? (
-            <UniTextInput
-              value={safeAmount}
-              onChangeText={onAmountChange}
-              keyboardType="decimal-pad"
-              autoCapitalize="none"
-              autoCorrect={false}
-              placeholder="0"
-              style={styles.amountInput}
-              uniProps={(theme) => ({
-                placeholderTextColor: theme.colors.textMuted,
-                selectionColor: theme.colors.primary,
-              })}
-            />
+            <>
+              <PressableScale style={styles.amountInputPanel} onPress={() => setIsKeypadVisible(true)}>
+                <UniAppText variant="title" style={styles.amountPreview} numberOfLines={1}>
+                  {displayValue}
+                </UniAppText>
+              </PressableScale>
+              <AmountKeypadSheet
+                isVisible={isKeypadVisible}
+                onClose={() => setIsKeypadVisible(false)}
+                title={activeField === "customRate" ? "Editar tasa" : "Ingresar monto"}
+                showFieldSwitch={!!showCustomRateInput && !!onCustomRateChange}
+                activeField={activeField}
+                onFieldChange={setActiveField}
+                onKeyPress={handleValueInput}
+                onDelete={handleValueDelete}
+                onClear={handleValueClear}
+              />
+            </>
           ) : (
             <>
               <AnimatedAmountText containerStyle={styles.amountValueTextRow} style={[styles.amountValue, animatedAmountStyle]} text={safeAmount} />
@@ -121,29 +183,6 @@ export function SwapAmountBlock({
         </View>
       </View>
 
-      {showCustomRateInput && onCustomRateChange ? (
-        <View style={styles.customRateRow}>
-          <AppText variant="tab" style={styles.customRateLabel} numberOfLines={1}>
-            Tasa
-          </AppText>
-          <AppText variant="tab" style={styles.customRatePrefix}>
-            Bs.
-          </AppText>
-          <UniTextInput
-            value={safeCustomRate.replace(".", ",")}
-            onChangeText={onCustomRateChange}
-            keyboardType="decimal-pad"
-            autoCapitalize="none"
-            autoCorrect={false}
-            placeholder="0,00"
-            style={styles.customRateInput}
-            uniProps={(theme) => ({
-              placeholderTextColor: theme.colors.textMuted,
-              selectionColor: theme.colors.primary,
-            })}
-          />
-        </View>
-      ) : null}
       {editable && quickAmounts?.length && onQuickAmountSelect ? (
         <QuickAmountPills amount={safeAmount} onSelect={onQuickAmountSelect} values={quickAmounts} />
       ) : null}
@@ -197,47 +236,17 @@ const styles = StyleSheet.create((theme) => ({
     flex: 1,
     minWidth: 0,
   },
-  amountInput: {
+  amountInputPanel: {
     flex: 1,
     minWidth: 0,
-    height: 56,
-    padding: 0,
+    paddingVertical: theme.spacing.xs,
+  },
+  amountPreview: {
     color: theme.colors.textPrimary,
     fontFamily: theme.typography.fontFamily.bold,
     fontSize: 34,
     fontWeight: theme.typography.fontWeight.bold,
     lineHeight: 40,
-  },
-  supportingHint: {
-    color: theme.colors.textMuted,
-  },
-  customRateRow: {
-    minHeight: 46,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.sm,
-    borderRadius: theme.radius.sm,
-    backgroundColor: theme.colors.surfaceSoft,
-    borderWidth: 1,
-    borderColor: theme.colors.borderSubtle,
-  },
-  customRateLabel: {
-    minWidth: 42,
-    color: theme.colors.textMuted,
-  },
-  customRatePrefix: {
-    color: theme.colors.textSecondary,
-  },
-  customRateInput: {
-    flex: 1,
-    minWidth: 0,
-    height: 44,
-    padding: 0,
-    color: theme.colors.textPrimary,
-    fontFamily: theme.typography.fontFamily.semibold,
-    fontSize: theme.typography.fontSize.md,
-    fontWeight: theme.typography.fontWeight.semibold,
   },
   copyButton: {
     width: 38,
