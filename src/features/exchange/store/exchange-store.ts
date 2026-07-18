@@ -1,11 +1,12 @@
 import { createStore } from "zustand";
 
-import type { TargetCurrencyId } from "../types";
 import type { BaseRateId } from "../hooks/exchange-screen.types";
-import { parseCurrencyAmount, sanitizeAmountInput } from "../utils";
+import type { TargetCurrencyId } from "../types";
+import { getDisplayAmount, parseCurrencyAmount, sanitizeAmountInput } from "../utils";
 
 export interface ExchangeState {
   inputAmount: string;
+  inputAmountDisplay: string;
   selectedBaseRateId: BaseRateId;
   selectedTargetCurrencyId: TargetCurrencyId;
   customRateInput: string;
@@ -14,7 +15,7 @@ export interface ExchangeState {
 }
 
 export interface ExchangeActions {
-  setInputAmount: (amount: string) => void;
+  setInputAmount: (amount: string, displayAmount?: string) => void;
   setSelectedBaseRateId: (id: BaseRateId) => void;
   setSelectedTargetCurrencyId: (id: TargetCurrencyId) => void;
   setCustomRate: (input: string) => void;
@@ -27,6 +28,7 @@ export type ExchangeStore = ExchangeState & ExchangeActions;
 
 const initialExchangeState: ExchangeState = {
   inputAmount: "1",
+  inputAmountDisplay: "1",
   selectedBaseRateId: "bcv",
   selectedTargetCurrencyId: "ves",
   customRateInput: "",
@@ -43,7 +45,12 @@ export const createExchangeStore = (initialState: Partial<ExchangeState> = {}) =
   return createStore<ExchangeStore>((set) => ({
     ...resolvedInitialState,
 
-    setInputAmount: (amount) => set({ inputAmount: sanitizeAmountInput(amount) }),
+    setInputAmount: (amount, displayAmount) => {
+      const sanitizedAmount = sanitizeAmountInput(amount);
+      const nextDisplayAmount = displayAmount ?? getDisplayAmount(sanitizedAmount);
+
+      set({ inputAmount: sanitizedAmount, inputAmountDisplay: nextDisplayAmount });
+    },
     setSelectedBaseRateId: (id) => set({ selectedBaseRateId: id }),
     setSelectedTargetCurrencyId: (id) => set({ selectedTargetCurrencyId: id }),
     setCustomRate: (input) => {

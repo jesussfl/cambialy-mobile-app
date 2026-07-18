@@ -2,6 +2,7 @@ import { Pressable, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
+import { formatQuickAmountLabel } from "@/features/exchange/utils";
 
 type QuickAmountPillsProps = {
   amount: string;
@@ -24,7 +25,7 @@ export function QuickAmountPills({ amount, onSelect, values }: QuickAmountPillsP
             style={[styles.quickAmountPill, isSelected ? styles.quickAmountPillSelected : null]}
           >
             <AppText variant="tab" style={isSelected ? styles.quickAmountTextSelected : styles.quickAmountText}>
-              {quickAmount}
+              {formatQuickAmountLabel(quickAmount)}
             </AppText>
           </Pressable>
         );

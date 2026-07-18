@@ -6,9 +6,9 @@ export function ExchangeInputBlock() {
     inputAmountText,
     inputMeta,
     handleInputAmountChange,
+    handleQuickAmountSelect,
     handleCustomRateChange,
     handleInputCurrencySelect,
-    setInputAmount,
     inputOptions,
     quickAmounts,
     customRate,
@@ -28,7 +28,7 @@ export function ExchangeInputBlock() {
       onAmountChange={handleInputAmountChange}
       onCustomRateChange={handleCustomRateChange}
       onCurrencySelect={handleInputCurrencySelect}
-      onQuickAmountSelect={setInputAmount}
+      onQuickAmountSelect={handleQuickAmountSelect}
       options={inputOptions}
       quickAmounts={quickAmounts}
       customRate={customRate}

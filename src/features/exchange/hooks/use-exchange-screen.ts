@@ -1,4 +1,4 @@
-import { QUICK_AMOUNTS, targetCurrencyInfo } from "@/features/exchange/constants";
+import { QUICK_AMOUNTS, VES_QUICK_AMOUNTS, targetCurrencyInfo } from "@/features/exchange/constants";
 import type { ConversionDetail, TargetCurrencyId } from "@/features/exchange/types";
 import {
   formatCompactAmount,
@@ -114,6 +114,10 @@ export function useExchangeScreen() {
     setInputAmount(normalizeAmountInputChange(value, inputAmount));
   };
 
+  const handleQuickAmountSelect = (value: string) => {
+    setInputAmount(value);
+  };
+
   const handleCustomRateChange = (value: string) => {
     setCustomRate(value);
   };
@@ -143,12 +147,15 @@ export function useExchangeScreen() {
     toggleReverse();
   };
 
+  const quickAmounts = isReversed ? VES_QUICK_AMOUNTS : QUICK_AMOUNTS;
+
   return {
     inputAmountText: getDisplayAmount(inputAmount),
     conversionDetails,
     customRate: customRateInput,
     customRateHint,
     handleInputAmountChange,
+    handleQuickAmountSelect,
     handleCustomRateChange,
     handleOutputCurrencySelect,
     handleInputCurrencySelect,
@@ -157,7 +164,7 @@ export function useExchangeScreen() {
     historyPickerOptions,
     isHistoryFetching,
     isRatesFetching,
-    quickAmounts: QUICK_AMOUNTS,
+    quickAmounts,
     ratesError,
     outputAmountText,
     outputCopyText,

@@ -83,12 +83,15 @@ export function SwapAmountBlock({
   symbol,
   showCustomRateInput = false,
 }: SwapAmountBlockProps) {
+  const safeAmount = amount ?? "";
+  const safeCustomRate = customRate ?? "";
+
   const amountFontSize = useDerivedValue(() => {
-    const compactLength = amount.replace(/[^\d]/g, "").length;
+    const compactLength = safeAmount.replace(/[^\d]/g, "").length;
     const nextFontSize = compactLength <= 5 ? AMOUNT_FONT_SIZE : Math.max(MIN_AMOUNT_FONT_SIZE, AMOUNT_FONT_SIZE - (compactLength - 5) * 2);
 
     return withTiming(nextFontSize, { duration: 160 });
-  }, [amount]);
+  }, [safeAmount]);
   const animatedAmountStyle = useAnimatedStyle(() => ({
     fontSize: amountFontSize.value,
     lineHeight: amountFontSize.value + 6,
@@ -105,7 +108,7 @@ export function SwapAmountBlock({
           </AppText>
           {editable ? (
             <UniTextInput
-              value={amount}
+              value={safeAmount}
               onChangeText={onAmountChange}
               keyboardType="decimal-pad"
               autoCapitalize="none"
@@ -119,7 +122,7 @@ export function SwapAmountBlock({
             />
           ) : (
             <>
-              <AnimatedAmountText containerStyle={styles.amountValueTextRow} style={[styles.amountValue, animatedAmountStyle]} text={amount} />
+              <AnimatedAmountText containerStyle={styles.amountValueTextRow} style={[styles.amountValue, animatedAmountStyle]} text={safeAmount} />
               {copyText ? <CopyButton text={copyText} /> : null}
             </>
           )}
@@ -135,7 +138,7 @@ export function SwapAmountBlock({
             Bs.
           </AppText>
           <UniTextInput
-            value={customRate.replace(".", ",")}
+            value={safeCustomRate.replace(".", ",")}
             onChangeText={onCustomRateChange}
             keyboardType="decimal-pad"
             autoCapitalize="none"
@@ -150,7 +153,7 @@ export function SwapAmountBlock({
         </View>
       ) : null}
       {editable && quickAmounts?.length && onQuickAmountSelect ? (
-        <QuickAmountPills amount={amount} onSelect={onQuickAmountSelect} values={quickAmounts} />
+        <QuickAmountPills amount={safeAmount} onSelect={onQuickAmountSelect} values={quickAmounts} />
       ) : null}
 
       {supportingDetails?.length ? <ConversionDetails details={supportingDetails} formula={supportingFormula} /> : null}

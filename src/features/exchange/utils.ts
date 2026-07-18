@@ -106,77 +106,80 @@ export const formatHistoryDate = (value?: string) => {
   return `${day} ${month} - ${hour}:${minutes} ${meridiem}`;
 };
 
+const formatAmountNumber = (sanitizedAmount: string) => {
+  if (!sanitizedAmount) {
+    return "";
+  }
+
+  const [wholePart, decimalPart] = sanitizedAmount.split(".");
+  const numberValue = Number(`${wholePart}${decimalPart !== undefined ? `.${decimalPart}` : ""}`);
+
+  if (!Number.isFinite(numberValue)) {
+    return "";
+  }
+
+  const formatOptions = decimalPart !== undefined ? { minimumFractionDigits: decimalPart.length, maximumFractionDigits: decimalPart.length } : {};
+
+  return new Intl.NumberFormat("es-VE", formatOptions).format(numberValue).replace(/\u202F/g, ".");
+};
+
 export const getDisplayAmount = (amount: string) => {
   if (!amount) {
     return "";
   }
 
-  const parsedAmount = parseCurrencyAmount(amount);
+  const sanitizedAmount = sanitizeAmountInput(amount);
 
-  if (!Number.isFinite(parsedAmount)) {
+  if (!sanitizedAmount) {
     return "";
   }
 
-  return formatNumber(parsedAmount);
+  return formatAmountNumber(sanitizedAmount).replace(",", ",");
 };
 
 export const sanitizeAmountInput = (value: string) => {
-  const numericValue = value.replace(/[^\d.,]/g, "");
-  const lastCommaIndex = numericValue.lastIndexOf(",");
-  const lastDotIndex = numericValue.lastIndexOf(".");
-  const hasCommaDecimal = lastCommaIndex > -1;
-  const hasDotDecimal = !hasCommaDecimal && lastDotIndex > -1 && /\.\d{0,2}$/.test(numericValue);
-  const decimalSeparatorIndex = hasCommaDecimal ? lastCommaIndex : hasDotDecimal ? lastDotIndex : -1;
-  const wholeInput = decimalSeparatorIndex > -1 ? numericValue.slice(0, decimalSeparatorIndex) : numericValue;
-  const decimalInput = decimalSeparatorIndex > -1 ? numericValue.slice(decimalSeparatorIndex + 1) : "";
-  const wholePart = wholeInput.replace(/\D/g, "");
-  const decimals = decimalInput.replace(/\D/g, "").slice(0, 2);
-  const trimmedWholePart = wholePart.replace(/^0+(?=\d)/, "").slice(0, 9);
+  const digits = value.replace(/[^\d]/g, "");
 
-  if (decimalSeparatorIndex > -1) {
-    return `${trimmedWholePart || "0"}.${decimals}`;
+  if (!digits) {
+    return "";
   }
 
-  return trimmedWholePart;
+  const trimmedDigits = digits.replace(/^0+(?=\d)/, "");
+
+  if (!trimmedDigits) {
+    return "0";
+  }
+
+  if (trimmedDigits.length <= 2) {
+    return trimmedDigits;
+  }
+
+  return `${trimmedDigits.slice(0, -2)}.${trimmedDigits.slice(-2)}`;
+};
+
+export const formatQuickAmountLabel = (value: string) => {
+  const sanitizedAmount = sanitizeAmountInput(value);
+
+  if (!sanitizedAmount) {
+    return "";
+  }
+
+  const [wholePart, decimalPart] = sanitizedAmount.split(".");
+  const numberValue = Number(wholePart);
+
+  if (!Number.isFinite(numberValue)) {
+    return "";
+  }
+
+  return new Intl.NumberFormat("es-VE", { maximumFractionDigits: 0 }).format(numberValue).replace(/\u202F/g, ".");
 };
 
 export const normalizeAmountInputChange = (value: string, previousAmount: string) => {
+  void previousAmount;
+
   if (!value) {
     return "";
   }
 
-  const previousDisplayAmount = getDisplayAmount(previousAmount);
-  const appendedValue = previousDisplayAmount && value.startsWith(previousDisplayAmount) ? value.slice(previousDisplayAmount.length) : "";
-
-  if (previousDisplayAmount.startsWith(value) && value.length < previousDisplayAmount.length) {
-    const [previousWholePart = "", previousDecimalPart] = previousAmount.split(".");
-
-    if (previousDecimalPart !== undefined) {
-      if (!previousDecimalPart) {
-        return previousWholePart.slice(0, -1);
-      }
-
-      const nextDecimalPart = previousDecimalPart.slice(0, -1);
-      return nextDecimalPart ? `${previousWholePart || "0"}.${nextDecimalPart}` : `${previousWholePart || "0"}.`;
-    }
-
-    return previousWholePart.slice(0, -1);
-  }
-
-  if (/^\d+$/.test(appendedValue)) {
-    const [previousWholePart = "", previousDecimalPart] = previousAmount.split(".");
-
-    if (previousDecimalPart !== undefined) {
-      return `${previousWholePart || "0"}.${`${previousDecimalPart}${appendedValue}`.slice(0, 2)}`;
-    }
-
-    return `${previousWholePart}${appendedValue}`;
-  }
-
-  if (appendedValue === "," || appendedValue === ".") {
-    const [previousWholePart = "0"] = previousAmount.split(".");
-    return `${previousWholePart}.`;
-  }
-
-  return value;
+  return sanitizeAmountInput(value);
 };
