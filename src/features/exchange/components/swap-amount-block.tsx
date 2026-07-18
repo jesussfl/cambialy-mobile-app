@@ -6,10 +6,11 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { PressableScale } from "pressto";
-import { AmountKeypadSheet } from "./amount-keypad-sheet";
 import { useCopyResult } from "../hooks/use-copy-result";
 import type { CurrencyOption } from "../types";
+import { AmountKeypadSheet } from "./amount-keypad-sheet";
 import { AnimatedAmountText } from "./animated-amount-text";
 import { CurrencyPicker } from "./currency-picker";
 import { QuickAmountPills } from "./quick-amount-pills";
@@ -80,7 +81,6 @@ export function SwapAmountBlock({
   const safeAmount = amount ?? "";
   const safeCustomRate = customRate ?? "";
   const [activeField, setActiveField] = useState<"amount" | "customRate">("amount");
-  const [isKeypadVisible, setIsKeypadVisible] = useState(false);
 
   const amountFontSize = useDerivedValue(() => {
     const compactLength = safeAmount.replace(/[^\d]/g, "").length;
@@ -157,14 +157,12 @@ export function SwapAmountBlock({
           </AppText>
           {editable ? (
             <>
-              <PressableScale style={styles.amountInputPanel} onPress={() => setIsKeypadVisible(true)}>
+              <PressableScale style={styles.amountInputPanel} onPress={() => TrueSheet.present("amount-keypad-sheet")}>
                 <UniAppText variant="title" style={styles.amountPreview} numberOfLines={1}>
                   {displayValue}
                 </UniAppText>
               </PressableScale>
               <AmountKeypadSheet
-                isVisible={isKeypadVisible}
-                onClose={() => setIsKeypadVisible(false)}
                 title={activeField === "customRate" ? "Editar tasa" : "Ingresar monto"}
                 showFieldSwitch={!!showCustomRateInput && !!onCustomRateChange}
                 activeField={activeField}

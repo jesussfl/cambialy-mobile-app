@@ -4,7 +4,8 @@ const { withAppBuildGradle, withProjectBuildGradle } = require("expo/config-plug
 
 const APP_DISTRIBUTION_CLASSPATH = "classpath 'com.google.firebase:firebase-appdistribution-gradle:5.2.1'";
 const APP_DISTRIBUTION_PLUGIN = 'apply plugin: "com.google.firebase.appdistribution"';
-const AUTO_UPLOAD_BLOCK_PATTERN = /\n?afterEvaluate\s*\{\s*tasks\.matching\s*\{\s*it\.name\s*==\s*"assembleRelease"\s*\}\.configureEach\s*\{\s*finalizedBy\("appDistributionUploadRelease"\)\s*\}\s*\}\s*/;
+const AUTO_UPLOAD_BLOCK_PATTERN =
+  /\n?afterEvaluate\s*\{\s*tasks\.matching\s*\{\s*it\.name\s*==\s*"assembleRelease"\s*\}\.configureEach\s*\{\s*finalizedBy\("appDistributionUploadRelease"\)\s*\}\s*\}\s*/;
 
 function readFirebaseAppId(projectRoot, googleServicesFile) {
   const servicesPath = path.resolve(projectRoot, googleServicesFile || "google-services.json");
@@ -18,10 +19,7 @@ function addProjectClasspath(contents) {
     return contents;
   }
 
-  return contents.replace(
-    /dependencies\s*\{/,
-    (match) => `${match}\n    ${APP_DISTRIBUTION_CLASSPATH}`
-  );
+  return contents.replace(/dependencies\s*\{/, (match) => `${match}\n    ${APP_DISTRIBUTION_CLASSPATH}`);
 }
 
 function addAppPlugin(contents) {
@@ -29,10 +27,7 @@ function addAppPlugin(contents) {
     return contents;
   }
 
-  return contents.replace(
-    'apply plugin: "com.facebook.react"',
-    `apply plugin: "com.facebook.react"\n${APP_DISTRIBUTION_PLUGIN}`
-  );
+  return contents.replace('apply plugin: "com.facebook.react"', `apply plugin: "com.facebook.react"\n${APP_DISTRIBUTION_PLUGIN}`);
 }
 
 function addDistributionVariables(contents) {
@@ -45,10 +40,7 @@ def firebaseAppDistributionTesters = findProperty("firebaseAppDistributionTester
 def firebaseAppDistributionReleaseNotes = findProperty("firebaseAppDistributionReleaseNotes") ?: System.getenv("FIREBASE_APP_DISTRIBUTION_RELEASE_NOTES") ?: "Cambialy Android release"
 def firebaseAppDistributionServiceCredentialsFile = findProperty("firebaseAppDistributionServiceCredentialsFile") ?: System.getenv("FIREBASE_APP_DISTRIBUTION_SERVICE_CREDENTIALS_FILE")`;
 
-  return contents.replace(
-    /def projectRoot = .*/,
-    (match) => `${match}\n${variables}`
-  );
+  return contents.replace(/def projectRoot = .*/, (match) => `${match}\n${variables}`);
 }
 
 function addReleaseConfig(contents, appId) {
@@ -71,10 +63,41 @@ function addReleaseConfig(contents, appId) {
                 }
             }`;
 
-  return contents.replace(
-    /(\s+crunchPngs enablePngCrunchInRelease\.toBoolean\(\)\n)/,
-    `$1${block}\n`
-  );
+  return contents.replace(/(\s+crunchPngs enablePngCrunchInRelease\.toBoolean\(\)\n)/, `$1${block}\n`);
+}
+
+function addReleaseSigningConfig(contents) {
+  if (contents.includes("def releaseStoreFilePath") || contents.includes("signingConfigs.release")) {
+    return contents;
+  }
+
+  const block = `        release {
+            def releaseStoreFilePath = findProperty('android.injected.signing.store.file') ?: System.getenv('ANDROID_KEYSTORE_FILE')
+            def releaseStorePassword = findProperty('android.injected.signing.store.password') ?: System.getenv('ANDROID_KEYSTORE_PASSWORD')
+            def releaseKeyAlias = findProperty('android.injected.signing.key.alias') ?: System.getenv('ANDROID_KEY_ALIAS')
+            def releaseKeyPassword = findProperty('android.injected.signing.key.password') ?: System.getenv('ANDROID_KEY_PASSWORD')
+
+            if (releaseStoreFilePath != null && releaseStoreFilePath.trim() && releaseStorePassword != null && releaseKeyAlias != null && releaseKeyPassword != null) {
+                def resolvedStoreFile = new File(releaseStoreFilePath)
+                if (!resolvedStoreFile.isAbsolute()) {
+                    resolvedStoreFile = new File(rootDir, releaseStoreFilePath)
+                }
+                storeFile resolvedStoreFile
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }`;
+
+  return contents.replace(/(\n    \})\n    buildTypes \{/, `$1\n${block}\n    buildTypes {`);
+}
+
+function useReleaseSigningConfig(contents) {
+  if (contents.includes("signingConfig signingConfigs.release")) {
+    return contents;
+  }
+
+  return contents.replace(/signingConfig signingConfigs\.debug/, "signingConfig signingConfigs.release");
 }
 
 function removeAutoUpload(contents) {
@@ -96,10 +119,7 @@ module.exports = function withFirebaseAppDistribution(config, options = {}) {
       const appId = options.appId || readFirebaseAppId(config.modRequest.projectRoot, googleServicesFile);
 
       config.modResults.contents = removeAutoUpload(
-        addReleaseConfig(
-          addDistributionVariables(addAppPlugin(config.modResults.contents)),
-          appId
-        )
+        useReleaseSigningConfig(addReleaseSigningConfig(addReleaseConfig(addDistributionVariables(addAppPlugin(config.modResults.contents)), appId))),
       );
     }
     return config;

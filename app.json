@@ -2,7 +2,7 @@
   "expo": {
     "name": "Cambialy",
     "slug": "cambialy",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/cambialy.png",
     "scheme": "cambialy",
@@ -21,6 +21,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.cambialy.app",
+      "versionCode": 2,
       "googleServicesFile": "./google-services.json"
     },
     "web": {

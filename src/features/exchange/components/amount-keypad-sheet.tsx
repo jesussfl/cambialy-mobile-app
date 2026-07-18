@@ -1,5 +1,5 @@
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StyleSheet } from "react-native-unistyles";
@@ -10,8 +10,6 @@ import { PressableScale } from "pressto";
 import { AmountKeypad } from "./amount-keypad";
 
 type AmountKeypadSheetProps = {
-  isVisible: boolean;
-  onClose: () => void;
   title: string;
   showFieldSwitch: boolean;
   activeField: "amount" | "customRate";
@@ -21,44 +19,25 @@ type AmountKeypadSheetProps = {
   onClear: () => void;
 };
 
-export function AmountKeypadSheet({
-  isVisible,
-  onClose,
-  title,
-  showFieldSwitch,
-  activeField,
-  onFieldChange,
-  onKeyPress,
-  onDelete,
-  onClear,
-}: AmountKeypadSheetProps) {
+export function AmountKeypadSheet({ showFieldSwitch, activeField, onFieldChange, onKeyPress, onDelete, onClear }: AmountKeypadSheetProps) {
   const sheetRef = useRef<TrueSheet>(null);
-  const isPresented = useRef(false);
-
-  useEffect(() => {
-    if (isVisible && !isPresented.current) {
-      void sheetRef.current?.present();
-    } else if (!isVisible && isPresented.current) {
-      void sheetRef.current?.dismiss();
-    }
-  }, [isVisible]);
-
+  const onClose = () => {
+    sheetRef.current?.dismiss();
+  };
   return (
     <TrueSheet
       ref={sheetRef}
+      name="amount-keypad-sheet"
       detents={["auto"]}
-      dismissible={false}
       draggable={false}
       dimmed={false}
+      backgroundBlur="default" // 👈 Overrides the default iOS Liquid Glass effect
+      blurOptions={{
+        intensity: 0,
+        interaction: false, // 👈 Prevents extra gesture-based tint/shimmer shifts
+      }}
       grabber={false}
       cornerRadius={24}
-      onDidPresent={() => {
-        isPresented.current = true;
-      }}
-      onDidDismiss={() => {
-        isPresented.current = false;
-        onClose();
-      }}
     >
       <GestureHandlerRootView style={styles.gestureRoot}>
         <View style={styles.container}>
@@ -101,6 +80,7 @@ export function AmountKeypadSheet({
 const styles = StyleSheet.create((theme) => ({
   gestureRoot: {
     flexGrow: 1,
+    backgroundColor: theme.colors.background,
   },
   container: {
     paddingHorizontal: theme.spacing.lg,
