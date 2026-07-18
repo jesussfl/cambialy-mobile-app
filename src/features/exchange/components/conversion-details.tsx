@@ -1,4 +1,4 @@
-import { Pressable, type StyleProp, type ViewStyle, View } from "react-native";
+import { Pressable, View, type StyleProp, type ViewStyle } from "react-native";
 import RemixIcon from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
