@@ -6,9 +6,8 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { AppText } from "@/components/ui/app-text";
 
 import { useCopyResult } from "../hooks/use-copy-result";
-import type { ConversionDetail, CurrencyOption } from "../types";
+import type { CurrencyOption } from "../types";
 import { AnimatedAmountText } from "./animated-amount-text";
-import { ConversionDetails } from "./conversion-details";
 import { CurrencyPicker } from "./currency-picker";
 import { QuickAmountPills } from "./quick-amount-pills";
 
@@ -25,7 +24,6 @@ type SwapAmountBlockProps = {
   customRate?: string;
   editable?: boolean;
   icon: IconName;
-  label: string;
   onAmountChange?: (value: string) => void;
   onCustomRateChange?: (value: string) => void;
   onCurrencySelect: (optionId: string) => void;
@@ -33,9 +31,7 @@ type SwapAmountBlockProps = {
   options: CurrencyOption[];
   quickAmounts?: string[];
   selectedOptionId: string;
-  supportingHint?: string;
-  supportingDetails?: ConversionDetail[];
-  supportingFormula?: string;
+
   symbol: string;
   showCustomRateInput?: boolean;
 };
@@ -69,7 +65,6 @@ export function SwapAmountBlock({
   customRate = "",
   editable = false,
   icon,
-  label,
   onAmountChange,
   onCustomRateChange,
   onCurrencySelect,
@@ -77,9 +72,6 @@ export function SwapAmountBlock({
   options,
   quickAmounts,
   selectedOptionId,
-  supportingHint,
-  supportingDetails,
-  supportingFormula,
   symbol,
   showCustomRateInput = false,
 }: SwapAmountBlockProps) {
@@ -155,8 +147,6 @@ export function SwapAmountBlock({
       {editable && quickAmounts?.length && onQuickAmountSelect ? (
         <QuickAmountPills amount={safeAmount} onSelect={onQuickAmountSelect} values={quickAmounts} />
       ) : null}
-
-      {supportingDetails?.length ? <ConversionDetails details={supportingDetails} formula={supportingFormula} /> : null}
     </View>
   );
 }

@@ -2,8 +2,8 @@ import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet } from "react-native-unistyles";
 
-import { AppText } from "@/components/ui/app-text";
 import { IconButton } from "@/components/ui/button";
+import { ConversionDetails } from "@/features/exchange/components/conversion-details";
 import { ExchangeHeader } from "@/features/exchange/components/exchange-header";
 import { ExchangeInputBlock } from "@/features/exchange/components/exchange-input-block";
 import { ExchangeOutputBlock } from "@/features/exchange/components/exchange-output-block";
@@ -22,7 +22,8 @@ export default function ExchangeScreen() {
 }
 
 function ExchangeScreenContent() {
-  const { ratesError, resetExchange } = useExchangeScreen();
+  const { conversionDetails, resetExchange } = useExchangeScreen();
+  const details = conversionDetails();
 
   return (
     <View style={styles.screenContent}>
@@ -35,13 +36,7 @@ function ExchangeScreenContent() {
           <ExchangeOutputBlock />
         </View>
 
-        <View style={styles.rateMeta}>
-          {ratesError ? (
-            <AppText variant="tab" style={styles.errorText} numberOfLines={1}>
-              {ratesError}
-            </AppText>
-          ) : null}
-        </View>
+        {details.length ? <ConversionDetails details={details} formula="Otros cambios" style={styles.conversionDetails} /> : null}
       </ScrollView>
 
       <IconButton icon="refresh-line" onPress={resetExchange} style={styles.resetButton} />
@@ -72,6 +67,9 @@ const styles = StyleSheet.create((theme) => ({
   swapPanel: {
     gap: theme.spacing.md,
     paddingVertical: theme.spacing.lg,
+  },
+  conversionDetails: {
+    marginTop: theme.spacing.xs,
   },
   rateMeta: {
     minHeight: 22,

@@ -1,4 +1,4 @@
-import { Pressable, View } from "react-native";
+import { Pressable, type StyleProp, type ViewStyle, View } from "react-native";
 import RemixIcon from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
@@ -13,9 +13,10 @@ const UniRemixIcon = withUnistyles(RemixIcon);
 type ConversionDetailsProps = {
   details: ConversionDetail[];
   formula?: string;
+  style?: StyleProp<ViewStyle>;
 };
 
-export function ConversionDetails({ details, formula }: ConversionDetailsProps) {
+export function ConversionDetails({ details, formula, style }: ConversionDetailsProps) {
   const [copiedDetailId, setCopiedDetailId] = useState<string | null>(null);
 
   const onCopyAmount = async (amount: string, detailId: string) => {
@@ -44,7 +45,7 @@ export function ConversionDetails({ details, formula }: ConversionDetailsProps) 
   }
 
   return (
-    <View style={styles.conversionDetails}>
+    <View style={[styles.conversionDetails, style]}>
       {formula ? (
         <AppText variant="tab" style={styles.conversionFormula} numberOfLines={1}>
           {formula}

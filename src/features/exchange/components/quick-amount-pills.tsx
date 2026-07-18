@@ -1,8 +1,9 @@
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 import { formatQuickAmountLabel } from "@/features/exchange/utils";
+import { PressableScale } from "pressto";
 
 type QuickAmountPillsProps = {
   amount: string;
@@ -17,9 +18,7 @@ export function QuickAmountPills({ amount, onSelect, values }: QuickAmountPillsP
         const isSelected = amount === quickAmount;
 
         return (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={isSelected ? { selected: true } : undefined}
+          <PressableScale
             key={quickAmount}
             onPress={() => onSelect(quickAmount)}
             style={[styles.quickAmountPill, isSelected ? styles.quickAmountPillSelected : null]}
@@ -27,7 +26,7 @@ export function QuickAmountPills({ amount, onSelect, values }: QuickAmountPillsP
             <AppText variant="tab" style={isSelected ? styles.quickAmountTextSelected : styles.quickAmountText}>
               {formatQuickAmountLabel(quickAmount)}
             </AppText>
-          </Pressable>
+          </PressableScale>
         );
       })}
     </View>

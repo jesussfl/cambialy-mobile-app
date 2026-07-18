@@ -28,8 +28,6 @@ export function ExchangeOutputBlock() {
       selectedOptionId={outputSelectedOptionId}
       customRate={customRate}
       showCustomRateInput={showOutputCustomRateInput}
-      supportingDetails={conversionDetails()}
-      supportingFormula="Otros cambios"
       symbol={outputMeta.symbol}
     />
   );

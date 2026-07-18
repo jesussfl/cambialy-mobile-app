@@ -13,8 +13,6 @@ export function ExchangeInputBlock() {
     quickAmounts,
     customRate,
     showInputCustomRateInput,
-    customRateHint,
-    selectedBaseRateHint,
     inputSelectedOptionId,
   } = useExchangeScreen();
 
@@ -24,7 +22,6 @@ export function ExchangeInputBlock() {
       code={inputMeta.code}
       editable
       icon={inputMeta.icon}
-      label="Monto"
       onAmountChange={handleInputAmountChange}
       onCustomRateChange={handleCustomRateChange}
       onCurrencySelect={handleInputCurrencySelect}
@@ -33,7 +30,6 @@ export function ExchangeInputBlock() {
       quickAmounts={quickAmounts}
       customRate={customRate}
       showCustomRateInput={showInputCustomRateInput}
-      supportingHint={showInputCustomRateInput ? customRateHint : selectedBaseRateHint}
       selectedOptionId={inputSelectedOptionId}
       symbol={inputMeta.symbol}
     />
