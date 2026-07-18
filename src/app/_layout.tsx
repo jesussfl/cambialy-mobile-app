@@ -12,7 +12,7 @@ import { useEffect } from "react";
 import { AppState } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { type IconName } from "react-native-remix-icon";
-import { StyleSheet, useUnistyles } from "react-native-unistyles";
+import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { CustomTabBar } from "@/components/custom-tabbar/custom-tabbar";
 import { OnboardingGate } from "@/features/onboarding/components/onboarding-gate";
@@ -24,22 +24,6 @@ type TabConfig = {
   label: string;
 };
 
-const tabConfig: Record<string, TabConfig> = {
-  exchange: {
-    icon: "exchange-2-line",
-    label: "Intercambio",
-  },
-  compare: {
-    icon: "calculator-line",
-    label: "Comparar",
-  },
-
-  settings: {
-    icon: "settings-3-line",
-    label: "Ajustes",
-  },
-};
-
 const queryClient = new QueryClient();
 
 SplashScreen.setOptions({
@@ -47,6 +31,8 @@ SplashScreen.setOptions({
   fade: true,
 });
 void SplashScreen.preventAutoHideAsync();
+
+const UniTabs = withUnistyles(Tabs);
 
 export default function RootLayout() {
   return (
@@ -64,7 +50,6 @@ export default function RootLayout() {
 
 function AppTabs() {
   const { isDarkMode } = useThemePreference();
-  const { theme } = useUnistyles();
 
   useEffect(() => {
     void refreshRatesWidget();
@@ -84,21 +69,25 @@ function AppTabs() {
     <>
       <StatusBar style={isDarkMode ? "light" : "dark"} />
       <OnboardingGate>
-        <Tabs
+        <UniTabs
           initialRouteName="exchange"
           tabBar={(props) => <CustomTabBar {...props} />}
           screenOptions={{
             headerShown: false,
-            sceneStyle: {
-              backgroundColor: theme.colors.background,
-            },
             tabBarHideOnKeyboard: true,
           }}
+          uniProps={(theme) => ({
+            screenOptions: {
+              sceneStyle: {
+                backgroundColor: theme.colors.background,
+              },
+            },
+          })}
         >
-          <Tabs.Screen name="exchange" options={{ title: tabConfig.exchange.label }} />
-          <Tabs.Screen name="compare" options={{ title: tabConfig.compare.label }} />
-          <Tabs.Screen name="settings" options={{ title: tabConfig.settings.label }} />
-        </Tabs>
+          <Tabs.Screen name="exchange" options={{ title: "Exchange" }} />
+          <Tabs.Screen name="compare" options={{ title: "Compare" }} />
+          <Tabs.Screen name="settings" options={{ title: "Settings" }} />
+        </UniTabs>
       </OnboardingGate>
     </>
   );

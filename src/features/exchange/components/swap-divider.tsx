@@ -1,10 +1,8 @@
-import { Pressable, View } from "react-native";
-import RemixIcon from "react-native-remix-icon";
-import { StyleSheet, withUnistyles } from "react-native-unistyles";
+import { View } from "react-native";
+import { StyleSheet } from "react-native-unistyles";
 
+import { IconButton } from "@/components/ui/button";
 import { useExchangeScreen } from "../hooks/use-exchange-screen";
-
-const UniRemixIcon = withUnistyles(RemixIcon);
 
 export function SwapDivider() {
   const { handleSwapDirection } = useExchangeScreen();
@@ -12,15 +10,7 @@ export function SwapDivider() {
   return (
     <View style={styles.swapDividerRow}>
       <View style={styles.dividerLine} />
-      <Pressable accessibilityRole="button" onPress={handleSwapDirection} style={styles.swapButton}>
-        <UniRemixIcon
-          name="arrow-up-down-line"
-          size={22}
-          uniProps={(theme: any) => ({
-            color: theme.colors.primaryText,
-          })}
-        />
-      </Pressable>
+      <IconButton icon="arrow-up-down-line" onPress={handleSwapDirection} />
       <View style={styles.dividerLine} />
     </View>
   );

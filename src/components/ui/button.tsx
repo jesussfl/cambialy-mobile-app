@@ -1,46 +1,28 @@
-import type { PressableProps } from "react-native";
-import { Pressable, View } from "react-native";
-import RemixIcon, { IconName } from "react-native-remix-icon";
+import { View } from "react-native";
+import { IconName } from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
+import { CustomPressableProps, PressableScale } from "pressto";
 import { AppText } from "./app-text";
-
+import { UniRemixIcon } from "./icon";
 type ButtonVariant = "primary" | "secondary";
 
-type ButtonProps = PressableProps & {
+type ButtonProps = CustomPressableProps & {
   label: string;
   variant?: ButtonVariant;
   icon?: IconName;
 };
 
-const buttonIcons = {
-  calculator: "calculator-line",
-  switch: "arrow-left-right-line",
-} as const;
-
-const UniRemixIcon = withUnistyles(RemixIcon);
 const UniAppText = withUnistyles(AppText);
 
-export function AppButton({ label, variant = "primary", style, disabled, icon, ...rest }: ButtonProps) {
-  const resolvedIcon = icon ?? (variant === "primary" ? buttonIcons.calculator : buttonIcons.switch);
-
+export const AppButton: React.FC<ButtonProps> = ({ label, variant = "primary", style, disabled, icon, ...rest }) => {
   return (
-    <Pressable
-      {...rest}
-      disabled={disabled}
-      style={(state) => [
-        styles.base,
-        variant === "primary" ? styles.primary : styles.secondary,
-        state.pressed && !disabled ? (variant === "primary" ? styles.primaryPressed : styles.secondaryPressed) : null,
-        disabled ? styles.disabled : null,
-        typeof style === "function" ? style(state) : style,
-      ]}
-    >
+    <PressableScale {...rest}>
       <View style={styles.content}>
         <UniRemixIcon
-          name={resolvedIcon}
+          name={icon}
           size={22}
-          uniProps={(theme:any) => ({
+          uniProps={(theme: any) => ({
             color: variant === "primary" ? theme.colors.primaryText : theme.colors.primary,
           })}
         />
@@ -53,9 +35,28 @@ export function AppButton({ label, variant = "primary", style, disabled, icon, .
           {label}
         </UniAppText>
       </View>
-    </Pressable>
+    </PressableScale>
   );
-}
+};
+
+type IconButtonProps = CustomPressableProps & {
+  icon: IconName;
+  variant?: "primary" | "secondary";
+};
+
+export const IconButton: React.FC<IconButtonProps> = ({ icon, variant = "primary", ...rest }) => {
+  return (
+    <PressableScale style={[styles.iconButtonBase, styles[variant]]} {...rest}>
+      <UniRemixIcon
+        name={icon || "question-line"}
+        size={22}
+        uniProps={(theme: any) => ({
+          color: theme.colors.primaryText,
+        })}
+      />
+    </PressableScale>
+  );
+};
 
 const styles = StyleSheet.create((theme) => ({
   base: {
@@ -64,6 +65,13 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: theme.spacing.xl,
+  },
+  iconButtonBase: {
+    width: 48,
+    height: 48,
+    borderRadius: theme.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
   },
   primary: {
     backgroundColor: theme.colors.primary,

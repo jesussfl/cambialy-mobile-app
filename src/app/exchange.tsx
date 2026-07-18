@@ -1,9 +1,9 @@
-import { Pressable, ScrollView, View } from "react-native";
-import RemixIcon from "react-native-remix-icon";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet, useUnistyles, withUnistyles } from "react-native-unistyles";
+import { StyleSheet } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
+import { IconButton } from "@/components/ui/button";
 import { ExchangeHeader } from "@/features/exchange/components/exchange-header";
 import { ExchangeInputBlock } from "@/features/exchange/components/exchange-input-block";
 import { ExchangeOutputBlock } from "@/features/exchange/components/exchange-output-block";
@@ -11,14 +11,10 @@ import { SwapDivider } from "@/features/exchange/components/swap-divider";
 import { ExchangeProvider } from "@/features/exchange/context/exchange-context";
 import { useExchangeScreen } from "@/features/exchange/hooks/use-exchange-screen";
 
-const UniRemixIcon = withUnistyles(RemixIcon);
-
 export default function ExchangeScreen() {
-  const { theme } = useUnistyles();
-
   return (
     <ExchangeProvider>
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]} edges={["top"]}>
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
         <ExchangeScreenContent />
       </SafeAreaView>
     </ExchangeProvider>
@@ -48,21 +44,7 @@ function ExchangeScreenContent() {
         </View>
       </ScrollView>
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Reiniciar cambio"
-        hitSlop={10}
-        onPress={resetExchange}
-        style={({ pressed }) => [styles.resetButton, pressed ? styles.resetButtonPressed : null]}
-      >
-        <UniRemixIcon
-          name="restart-line"
-          size={24}
-          uniProps={(theme: any) => ({
-            color: theme.colors.primaryText,
-          })}
-        />
-      </Pressable>
+      <IconButton icon="refresh-line" onPress={resetExchange} style={styles.resetButton} />
     </View>
   );
 }
