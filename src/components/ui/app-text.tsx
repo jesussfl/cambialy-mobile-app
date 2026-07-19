@@ -2,7 +2,7 @@ import type { PropsWithChildren } from "react";
 import { Text, type TextProps } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
-type AppTextVariant = "title" | "subtitle" | "sectionTitle" | "cardTitle" | "label" | "body" | "value" | "button" | "tab";
+export type AppTextVariant = "title" | "subtitle" | "sectionTitle" | "cardTitle" | "label" | "body" | "value" | "button" | "tab";
 
 type AppTextProps = PropsWithChildren<
   TextProps & {

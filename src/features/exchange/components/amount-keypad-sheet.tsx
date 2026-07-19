@@ -29,14 +29,15 @@ export function AmountKeypadSheet({ showFieldSwitch, activeField, onFieldChange,
       ref={sheetRef}
       name="amount-keypad-sheet"
       detents={["auto"]}
-      draggable={false}
+      dismissible={true}
+      draggable={true}
       dimmed={false}
       backgroundBlur="default" // 👈 Overrides the default iOS Liquid Glass effect
       blurOptions={{
         intensity: 0,
         interaction: false, // 👈 Prevents extra gesture-based tint/shimmer shifts
       }}
-      grabber={false}
+      grabber={true}
       cornerRadius={24}
     >
       <GestureHandlerRootView style={styles.gestureRoot}>
@@ -85,7 +86,6 @@ const styles = StyleSheet.create((theme) => ({
   container: {
     paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.sm,
-    paddingBottom: theme.spacing.xl,
     backgroundColor: theme.colors.background,
     gap: theme.spacing.md,
   },

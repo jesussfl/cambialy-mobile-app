@@ -1,9 +1,9 @@
-import { View, type ViewStyle, type StyleProp } from "react-native";
+import { View, type StyleProp, type ViewStyle } from "react-native";
 import { IconName } from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { CustomPressableProps, PressableScale } from "pressto";
-import { AppText } from "./app-text";
+import { AppText, AppTextVariant } from "./app-text";
 import { UniRemixIcon } from "./icon";
 type ButtonVariant = "primary" | "secondary";
 
@@ -12,11 +12,12 @@ type ButtonProps = CustomPressableProps & {
   variant?: ButtonVariant;
   icon?: IconName;
   contentStyle?: StyleProp<ViewStyle>;
+  labelVariant?: AppTextVariant;
 };
 
 const UniAppText = withUnistyles(AppText);
 
-export const AppButton: React.FC<ButtonProps> = ({ label, variant = "primary", style, disabled, icon, contentStyle, ...rest }) => {
+export const AppButton: React.FC<ButtonProps> = ({ label, variant = "primary", style, disabled, icon, contentStyle, labelVariant, ...rest }) => {
   return (
     <PressableScale style={style} {...rest}>
       <View style={[styles.content, contentStyle]}>
@@ -30,7 +31,7 @@ export const AppButton: React.FC<ButtonProps> = ({ label, variant = "primary", s
           />
         ) : null}
         <UniAppText
-          variant="button"
+          variant={labelVariant || "button"}
           uniProps={(theme) => ({
             color: variant === "primary" ? theme.colors.primaryText : undefined,
           })}
@@ -44,17 +45,18 @@ export const AppButton: React.FC<ButtonProps> = ({ label, variant = "primary", s
 
 type IconButtonProps = CustomPressableProps & {
   icon: IconName;
+  iconColor?: string;
   variant?: "primary" | "secondary";
 };
 
-export const IconButton: React.FC<IconButtonProps> = ({ icon, variant = "primary", style, ...rest }) => {
+export const IconButton: React.FC<IconButtonProps> = ({ icon, variant = "primary", style, iconColor, ...rest }) => {
   return (
     <PressableScale style={[styles.iconButtonBase, styles[variant], style]} {...rest}>
       <UniRemixIcon
         name={icon || "question-line"}
         size={22}
         uniProps={(theme: any) => ({
-          color: theme.colors.primaryText,
+          color: iconColor || (variant === "primary" ? theme.colors.primaryText : theme.colors.primary),
         })}
       />
     </PressableScale>

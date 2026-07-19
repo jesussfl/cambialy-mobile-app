@@ -88,7 +88,7 @@ export function useExchangeScreen() {
             icon: rate.icon,
             id: rate.id,
             label: rate.info.code,
-            rateText: `1 ${rate.info.code} = ${rateValue}`,
+            rateText: `${rateValue}`,
           };
         });
     }
@@ -105,7 +105,7 @@ export function useExchangeScreen() {
           icon: rate.icon,
           id: rate.id,
           label: rate.info.code,
-          rateText: `1 ${rate.info.code} = ${rateValue}`,
+          rateText: `${rateValue}`,
         };
       });
   };

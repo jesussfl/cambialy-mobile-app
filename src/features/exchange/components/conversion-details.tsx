@@ -66,14 +66,10 @@ export function ConversionDetails({ details, formula, style }: ConversionDetails
             </View>
           </View>
 
-          <View style={{ flex: 1, maxWidth: "44%", flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: 8 }}>
+          <View style={styles.conversionDetailAmountContainer}>
             <AnimatedAmountText containerStyle={styles.conversionDetailAmountRow} style={styles.conversionDetailAmount} text={detail.amountText} />
 
-            <CopyIconButton
-              text={detail.amountText}
-              copied={copiedDetailId === detail.id}
-              onCopy={() => setCopiedDetailId(detail.id)}
-            />
+            <CopyIconButton text={detail.amountText} copied={copiedDetailId === detail.id} onCopy={() => setCopiedDetailId(detail.id)} />
           </View>
         </View>
       ))}
@@ -84,7 +80,7 @@ export function ConversionDetails({ details, formula, style }: ConversionDetails
 const styles = StyleSheet.create((theme) => ({
   conversionDetails: {
     gap: theme.spacing.xs,
-    padding: theme.spacing.xs,
+    padding: 4,
     borderRadius: theme.radius.md,
     backgroundColor: theme.colors.surfaceSoft,
     borderWidth: 1,
@@ -100,7 +96,7 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "center",
     justifyContent: "space-between",
     gap: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.xs,
+    paddingHorizontal: 0,
     paddingVertical: theme.spacing.xxs,
     borderRadius: theme.radius.sm,
   },
@@ -126,7 +122,17 @@ const styles = StyleSheet.create((theme) => ({
   conversionDetailRate: {
     color: theme.colors.textMuted,
   },
+  conversionDetailAmountContainer: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    gap: 8,
+  },
   conversionDetailAmountRow: {
+    flex: 1,
+    minWidth: 0,
     justifyContent: "flex-end",
   },
   conversionDetailAmount: {

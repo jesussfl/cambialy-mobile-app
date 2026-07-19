@@ -48,7 +48,6 @@ export function AnimatedAmountText({ children, containerStyle, numberOfLines = 1
         editable={false}
         numberOfLines={numberOfLines}
         pointerEvents="none"
-        scrollEnabled={false}
         style={[styles.amountText, style, animatedTextStyle]}
       />
       {children}

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 import { useAnimatedStyle, useDerivedValue, withTiming } from "react-native-reanimated";
 import { type IconName } from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
@@ -8,7 +9,6 @@ import { AppText } from "@/components/ui/app-text";
 import { CopyIconButton } from "@/components/ui/copy-icon-button";
 
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
-import { PressableScale } from "pressto";
 import type { CurrencyOption } from "../types";
 import { AmountKeypadSheet } from "./amount-keypad-sheet";
 import { AnimatedAmountText } from "./animated-amount-text";
@@ -58,6 +58,7 @@ export function SwapAmountBlock({
   const safeAmount = amount ?? "";
   const safeCustomRate = customRate ?? "";
   const [activeField, setActiveField] = useState<"amount" | "customRate">("amount");
+  const [hasTyped, setHasTyped] = useState({ amount: false, customRate: false });
 
   const amountFontSize = useDerivedValue(() => {
     const compactLength = safeAmount.replace(/[^\d]/g, "").length;
@@ -72,9 +73,16 @@ export function SwapAmountBlock({
 
   const handleValueInput = (value: string) => {
     const normalizedValue = value === "," ? "." : value;
+    const field = activeField;
+    const isFirst = !hasTyped[field];
+
+    if (isFirst) {
+      setHasTyped((prev) => ({ ...prev, [field]: true }));
+    }
+
     const nextValue = (() => {
-      if (activeField === "amount") {
-        const currentValue = safeAmount ?? "";
+      if (field === "amount") {
+        const currentValue = isFirst ? "" : (safeAmount ?? "");
 
         if (normalizedValue === ".") {
           return currentValue.includes(".") ? currentValue : currentValue ? `${currentValue}.` : "0.";
@@ -83,7 +91,7 @@ export function SwapAmountBlock({
         return `${currentValue}${normalizedValue}`;
       }
 
-      const currentValue = safeCustomRate ?? "";
+      const currentValue = isFirst ? "" : (safeCustomRate ?? "");
 
       if (normalizedValue === ".") {
         return currentValue.includes(".") ? currentValue : currentValue ? `${currentValue}.` : "0.";
@@ -92,7 +100,7 @@ export function SwapAmountBlock({
       return `${currentValue}${normalizedValue}`;
     })();
 
-    if (activeField === "amount") {
+    if (field === "amount") {
       onAmountChange?.(nextValue);
       return;
     }
@@ -114,10 +122,12 @@ export function SwapAmountBlock({
 
   const handleValueClear = () => {
     if (activeField === "amount") {
+      setHasTyped((prev) => ({ ...prev, amount: false }));
       onAmountChange?.("");
       return;
     }
 
+    setHasTyped((prev) => ({ ...prev, customRate: false }));
     onCustomRateChange?.("");
   };
 
@@ -134,11 +144,13 @@ export function SwapAmountBlock({
           </AppText>
           {editable ? (
             <>
-              <PressableScale style={styles.amountInputPanel} onPress={() => TrueSheet.present("amount-keypad-sheet")}>
-                <UniAppText variant="title" style={styles.amountPreview} numberOfLines={1}>
-                  {displayValue}
-                </UniAppText>
-              </PressableScale>
+              <Pressable hitSlop={12} style={styles.amountInputPanel} onPress={() => TrueSheet.present("amount-keypad-sheet")}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.amountPreviewScroll}>
+                  <UniAppText variant="title" style={styles.amountPreview}>
+                    {displayValue}
+                  </UniAppText>
+                </ScrollView>
+              </Pressable>
               <AmountKeypadSheet
                 title={activeField === "customRate" ? "Editar tasa" : "Ingresar monto"}
                 showFieldSwitch={!!showCustomRateInput && !!onCustomRateChange}
@@ -214,7 +226,7 @@ const styles = StyleSheet.create((theme) => ({
   amountInputPanel: {
     flex: 1,
     minWidth: 0,
-    paddingVertical: theme.spacing.xs,
+    paddingVertical: theme.spacing.md,
   },
   amountPreview: {
     color: theme.colors.textPrimary,
@@ -222,5 +234,8 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: 34,
     fontWeight: theme.typography.fontWeight.bold,
     lineHeight: 40,
+  },
+  amountPreviewScroll: {
+    alignItems: "center",
   },
 }));
