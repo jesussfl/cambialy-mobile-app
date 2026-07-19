@@ -3,10 +3,11 @@ import * as SplashScreen from "expo-splash-screen";
 
 import type { ComponentProps } from "react";
 import { Pressable, View } from "react-native";
-import RemixIcon, { type IconName } from "react-native-remix-icon";
+import { type IconName } from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
+import { UniRemixIcon } from "../ui/icon";
 
 type ExpoTabsProps = ComponentProps<typeof Tabs>;
 type BottomTabBarProps = Parameters<NonNullable<ExpoTabsProps["tabBar"]>>[0];
@@ -16,7 +17,7 @@ type TabConfig = {
   label: string;
 };
 
-const tabConfig: Record<string, TabConfig> = {
+const BOTTOM_NAV_CONFIG: Record<string, TabConfig> = {
   exchange: {
     icon: "exchange-2-line",
     label: "Intercambio",
@@ -38,14 +39,13 @@ SplashScreen.setOptions({
 });
 void SplashScreen.preventAutoHideAsync();
 
-const UniRemixIcon = withUnistyles(RemixIcon);
 const UniAppText = withUnistyles(AppText);
 
 export const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   return (
     <View style={styles.tabBar}>
       {state.routes.map((route, index) => {
-        const config = tabConfig[route.name];
+        const config = BOTTOM_NAV_CONFIG[route.name];
         const options = descriptors[route.key]?.options;
         const isFocused = state.index === index;
 

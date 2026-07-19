@@ -1,10 +1,10 @@
-import { Pressable, View, type StyleProp, type ViewStyle } from "react-native";
+import { View, type StyleProp, type ViewStyle } from "react-native";
 import RemixIcon from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
+import { CopyIconButton } from "@/components/ui/copy-icon-button";
 
-import * as Clipboard from "expo-clipboard";
 import { useEffect, useState } from "react";
 import type { ConversionDetail } from "../types";
 import { AnimatedAmountText } from "./animated-amount-text";
@@ -18,13 +18,6 @@ type ConversionDetailsProps = {
 
 export function ConversionDetails({ details, formula, style }: ConversionDetailsProps) {
   const [copiedDetailId, setCopiedDetailId] = useState<string | null>(null);
-
-  const onCopyAmount = async (amount: string, detailId: string) => {
-    if (amount) {
-      await Clipboard.setStringAsync(amount);
-      setCopiedDetailId(detailId);
-    }
-  };
 
   useEffect(() => {
     if (!copiedDetailId) {
@@ -76,25 +69,11 @@ export function ConversionDetails({ details, formula, style }: ConversionDetails
           <View style={{ flex: 1, maxWidth: "44%", flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: 8 }}>
             <AnimatedAmountText containerStyle={styles.conversionDetailAmountRow} style={styles.conversionDetailAmount} text={detail.amountText} />
 
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={copiedDetailId === detail.id ? "Resultado copiado" : "Copiar resultado"}
-              hitSlop={10}
-              onPress={() => onCopyAmount(detail.amountText, detail.id)}
-              style={({ pressed }) => [
-                styles.copyButton,
-                copiedDetailId === detail.id ? styles.copyButtonActive : null,
-                pressed ? styles.copyButtonPressed : null,
-              ]}
-            >
-              <UniRemixIcon
-                name={copiedDetailId === detail.id ? "check-line" : "file-copy-line"}
-                size={18}
-                uniProps={(theme: any) => ({
-                  color: copiedDetailId === detail.id ? theme.colors.primaryText : theme.colors.primary,
-                })}
-              />
-            </Pressable>
+            <CopyIconButton
+              text={detail.amountText}
+              copied={copiedDetailId === detail.id}
+              onCopy={() => setCopiedDetailId(detail.id)}
+            />
           </View>
         </View>
       ))}
@@ -156,22 +135,5 @@ const styles = StyleSheet.create((theme) => ({
     textAlign: "right",
     fontSize: theme.typography.fontSize.xs,
     fontWeight: theme.typography.fontWeight.semibold,
-  },
-  copyButton: {
-    width: 38,
-    height: 38,
-    borderRadius: theme.radius.pill,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: theme.colors.secondarySurface,
-    borderWidth: 1,
-    borderColor: theme.colors.borderSubtle,
-  },
-  copyButtonActive: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  copyButtonPressed: {
-    opacity: 0.75,
   },
 }));

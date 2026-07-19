@@ -11,18 +11,12 @@ import { HeroUINativeProvider } from "heroui-native";
 import { useEffect } from "react";
 import { AppState } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { type IconName } from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { CustomTabBar } from "@/components/custom-tabbar/custom-tabbar";
 import { OnboardingGate } from "@/features/onboarding/components/onboarding-gate";
 import { refreshRatesWidget } from "@/modules/rates-widget";
 import { ThemePreferenceProvider, useThemePreference } from "@/theme/theme-preference";
-
-type TabConfig = {
-  icon: IconName;
-  label: string;
-};
 
 const queryClient = new QueryClient();
 

@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { useAnimatedStyle, useDerivedValue, withTiming } from "react-native-reanimated";
-import RemixIcon, { type IconName } from "react-native-remix-icon";
+import { type IconName } from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
+import { CopyIconButton } from "@/components/ui/copy-icon-button";
 
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { PressableScale } from "pressto";
-import { useCopyResult } from "../hooks/use-copy-result";
 import type { CurrencyOption } from "../types";
 import { AmountKeypadSheet } from "./amount-keypad-sheet";
 import { AnimatedAmountText } from "./animated-amount-text";
@@ -17,7 +17,6 @@ import { QuickAmountPills } from "./quick-amount-pills";
 const AMOUNT_FONT_SIZE = 34;
 const MIN_AMOUNT_FONT_SIZE = 25;
 
-const UniRemixIcon = withUnistyles(RemixIcon);
 const UniAppText = withUnistyles(AppText);
 
 type SwapAmountBlockProps = {
@@ -38,28 +37,6 @@ type SwapAmountBlockProps = {
   symbol: string;
   showCustomRateInput?: boolean;
 };
-
-function CopyButton({ text }: { text: string }) {
-  const { handleCopyResult, resultCopied } = useCopyResult(text);
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={resultCopied ? "Resultado copiado" : "Copiar resultado"}
-      hitSlop={10}
-      onPress={handleCopyResult}
-      style={({ pressed }) => [styles.copyButton, resultCopied ? styles.copyButtonActive : null, pressed ? styles.copyButtonPressed : null]}
-    >
-      <UniRemixIcon
-        name={resultCopied ? "check-line" : "file-copy-line"}
-        size={18}
-        uniProps={(theme: any) => ({
-          color: resultCopied ? theme.colors.primaryText : theme.colors.primary,
-        })}
-      />
-    </Pressable>
-  );
-}
 
 export function SwapAmountBlock({
   amount,
@@ -175,7 +152,7 @@ export function SwapAmountBlock({
           ) : (
             <>
               <AnimatedAmountText containerStyle={styles.amountValueTextRow} style={[styles.amountValue, animatedAmountStyle]} text={safeAmount} />
-              {copyText ? <CopyButton text={copyText} /> : null}
+              {copyText ? <CopyIconButton text={copyText} /> : null}
             </>
           )}
         </View>
@@ -245,22 +222,5 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: 34,
     fontWeight: theme.typography.fontWeight.bold,
     lineHeight: 40,
-  },
-  copyButton: {
-    width: 38,
-    height: 38,
-    borderRadius: theme.radius.pill,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: theme.colors.secondarySurface,
-    borderWidth: 1,
-    borderColor: theme.colors.borderSubtle,
-  },
-  copyButtonActive: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  copyButtonPressed: {
-    opacity: 0.75,
   },
 }));
