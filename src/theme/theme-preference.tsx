@@ -21,11 +21,17 @@ function isThemeName(value: string | null): value is ThemeName {
 }
 
 export function ThemePreferenceProvider({ children }: PropsWithChildren) {
-  const [themeName, setCurrentThemeName] = useState<ThemeName>(DEFAULT_THEME);
+  // Read theme directly from UnistylesRuntime on mount to ensure initial sync
+  const [themeName, setCurrentThemeName] = useState<ThemeName>(() => (UnistylesRuntime.themeName as ThemeName) || DEFAULT_THEME);
 
   const applyTheme = useCallback(async (nextThemeName: ThemeName) => {
-    setCurrentThemeName(nextThemeName);
+    // 1. Update Unistyles C++ runtime FIRST so style objects recalculate
     UnistylesRuntime.setTheme(nextThemeName);
+
+    // 2. Synchronize local React state
+    setCurrentThemeName(nextThemeName);
+
+    // 3. Persist to storage
     await AsyncStorage.setItem(THEME_STORAGE_KEY, nextThemeName);
   }, []);
 
@@ -37,7 +43,8 @@ export function ThemePreferenceProvider({ children }: PropsWithChildren) {
   );
 
   const toggleTheme = useCallback(async () => {
-    await applyTheme(themeName === "dark" ? "light" : "dark");
+    const nextTheme = themeName === "dark" ? "light" : "dark";
+    await applyTheme(nextTheme);
   }, [applyTheme, themeName]);
 
   useEffect(() => {
@@ -50,8 +57,9 @@ export function ThemePreferenceProvider({ children }: PropsWithChildren) {
         return;
       }
 
-      setCurrentThemeName(storedThemeName);
+      // Sync both runtime and state on restore
       UnistylesRuntime.setTheme(storedThemeName);
+      setCurrentThemeName(storedThemeName);
     };
 
     void restoreTheme();

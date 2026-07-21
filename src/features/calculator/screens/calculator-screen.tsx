@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { ScrollView, TextInput, View } from "react-native";
-import RemixIcon from "react-native-remix-icon";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet, useUnistyles, withUnistyles } from "react-native-unistyles";
+import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 import { Card } from "@/components/ui/card";
@@ -12,6 +11,7 @@ import { currencyInfo, fallbackRates, RATE_ORDER, RATES_CACHE_TIME, RATES_STALE_
 import type { CurrencyOption } from "@/features/exchange/types";
 import { formatCompactAmount, formatNumber, formatUpdatedAt, parseCurrencyAmount, sanitizeAmountInput } from "@/features/exchange/utils";
 
+import { UniRemixIcon } from "@/components/ui/icon";
 import { fetchExchangeRates, type ExchangeRateId } from "../api/rates-api";
 
 type PriceCurrencyId = ExchangeRateId | "ves" | "custom";
@@ -66,10 +66,8 @@ const priceCurrencyMeta: Record<PriceCurrencyId, CurrencyOption> = {
 const priceCurrencyOrder: PriceCurrencyId[] = ["ves", "usdt", "bcv", "eur", "custom"];
 
 const UniTextInput = withUnistyles(TextInput);
-const UniRemixIcon = withUnistyles(RemixIcon);
 
 export function CalculatorScreen() {
-  const { theme } = useUnistyles();
   const [firstPrice, setFirstPrice] = useState<PriceInputState>({ amount: "1", customRate: "", currencyId: "usdt" });
   const [secondPrice, setSecondPrice] = useState<PriceInputState>({ amount: "", customRate: "", currencyId: "ves" });
 
@@ -123,7 +121,7 @@ export function CalculatorScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]} edges={["top"]}>
+    <SafeAreaView style={[styles.safeArea]} edges={["top"]}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
         <View style={styles.header}>
           <View style={styles.headerTitleGroup}>

@@ -1,7 +1,3 @@
-import { ScrollView, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet } from "react-native-unistyles";
-
 import { IconButton } from "@/components/ui/button";
 import { ConversionDetails } from "@/features/exchange/components/conversion-details";
 import { ExchangeInputBlock } from "@/features/exchange/components/exchange-input-block";
@@ -9,13 +5,14 @@ import { ExchangeOutputBlock } from "@/features/exchange/components/exchange-out
 import { SwapDivider } from "@/features/exchange/components/swap-divider";
 import { ExchangeProvider } from "@/features/exchange/context/exchange-context";
 import { useExchangeScreen } from "@/features/exchange/hooks/use-exchange-screen";
-
+import { ScrollView, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet, withUnistyles } from "react-native-unistyles";
+const UniSafeAreaView = withUnistyles(SafeAreaView);
 export default function ExchangeScreen() {
   return (
     <ExchangeProvider>
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
-        <ExchangeScreenContent />
-      </SafeAreaView>
+      <ExchangeScreenContent />
     </ExchangeProvider>
   );
 }
@@ -25,7 +22,7 @@ function ExchangeScreenContent() {
   const details = conversionDetails();
 
   return (
-    <View style={styles.screenContent}>
+    <UniSafeAreaView style={styles.screenContent}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
         <View style={styles.swapPanel}>
           <ExchangeInputBlock />
@@ -37,15 +34,11 @@ function ExchangeScreenContent() {
       </ScrollView>
 
       <IconButton icon="refresh-line" onPress={resetExchange} style={styles.resetButton} />
-    </View>
+    </UniSafeAreaView>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
   screenContent: {
     flex: 1,
     backgroundColor: theme.colors.background,

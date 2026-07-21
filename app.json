@@ -56,11 +56,16 @@
               "name": "RatesWidget",
               "displayName": "Tasas Cambialy",
               "description": "Consulta USD BCV, EUR BCV y USDT Binance",
-              "supportedFamilies": ["systemSmall", "systemMedium", "systemLarge"]
+              "supportedFamilies": [
+                "systemSmall",
+                "systemMedium",
+                "systemLarge"
+              ]
             }
           ]
         }
-      ]
+      ],
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": true,

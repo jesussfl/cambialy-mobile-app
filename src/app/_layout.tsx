@@ -2,21 +2,20 @@
 import "../../global.css";
 // Must be imported before any other file that uses unistyles
 import "@/theme/unistyles";
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Tabs } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { StatusBar } from "expo-status-bar";
 import { HeroUINativeProvider } from "heroui-native";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { AppState } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { StyleSheet, withUnistyles } from "react-native-unistyles";
+import { StyleSheet, useUnistyles, withUnistyles } from "react-native-unistyles";
 
 import { CustomTabBar } from "@/components/custom-tabbar/custom-tabbar";
 import { OnboardingGate } from "@/features/onboarding/components/onboarding-gate";
 import { refreshRatesWidget } from "@/modules/rates-widget";
-import { ThemePreferenceProvider, useThemePreference } from "@/theme/theme-preference";
+import { ThemePreferenceProvider } from "@/theme/theme-preference";
+import { StatusBar } from "expo-status-bar";
 
 const queryClient = new QueryClient();
 
@@ -43,8 +42,8 @@ export default function RootLayout() {
 }
 
 function AppTabs() {
-  const { isDarkMode } = useThemePreference();
-
+  const { rt } = useUnistyles();
+  const isDarkMode = rt.themeName === "dark";
   useEffect(() => {
     void refreshRatesWidget();
 
@@ -60,7 +59,7 @@ function AppTabs() {
   }, []);
 
   return (
-    <>
+    <React.Fragment>
       <StatusBar style={isDarkMode ? "light" : "dark"} />
       <OnboardingGate>
         <UniTabs
@@ -83,7 +82,7 @@ function AppTabs() {
           <Tabs.Screen name="settings" options={{ title: "Settings" }} />
         </UniTabs>
       </OnboardingGate>
-    </>
+    </React.Fragment>
   );
 }
 

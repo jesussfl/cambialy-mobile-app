@@ -1,16 +1,15 @@
 import { Switch, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import RemixIcon from "react-native-remix-icon";
-import { StyleSheet, useUnistyles, withUnistyles } from "react-native-unistyles";
+import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 import { Card } from "@/components/ui/card";
+import { UniRemixIcon } from "@/components/ui/icon";
 import { useThemePreference } from "@/theme/theme-preference";
 
-const UniRemixIcon = withUnistyles(RemixIcon);
+const UniSwitch = withUnistyles(Switch);
 
 export default function SettingsScreen() {
-  const { theme } = useUnistyles();
   const { isDarkMode, toggleTheme } = useThemePreference();
 
   return (
@@ -43,16 +42,18 @@ export default function SettingsScreen() {
                   {isDarkMode ? "La app usa el tema oscuro." : "La app usa el tema claro."}
                 </AppText>
               </View>
-              <Switch
+              <UniSwitch
                 accessibilityLabel="Cambiar modo oscuro"
                 onValueChange={() => {
                   void toggleTheme();
                 }}
-                thumbColor={isDarkMode ? theme.colors.primaryText : theme.colors.surface}
-                trackColor={{
-                  false: theme.colors.secondarySurface,
-                  true: theme.colors.primary,
-                }}
+                uniProps={(theme) => ({
+                  thumbColor: isDarkMode ? theme.colors.primaryText : theme.colors.surface,
+                  trackColor: {
+                    false: theme.colors.secondarySurface,
+                    true: theme.colors.primary,
+                  },
+                })}
                 value={isDarkMode}
               />
             </View>
