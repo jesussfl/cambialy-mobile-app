@@ -27,8 +27,8 @@ export interface ExchangeActions {
 export type ExchangeStore = ExchangeState & ExchangeActions;
 
 const initialExchangeState: ExchangeState = {
-  inputAmount: "1",
-  inputAmountDisplay: "1",
+  inputAmount: "1.00",
+  inputAmountDisplay: "1,00",
   selectedBaseRateId: "bcv",
   selectedTargetCurrencyId: "ves",
   customRateInput: "",

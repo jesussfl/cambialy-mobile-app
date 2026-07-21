@@ -11,7 +11,6 @@ export function ExchangeOutputBlock() {
     outputSelectedOptionId,
     customRate,
     showOutputCustomRateInput,
-    conversionDetails,
     outputCopyText,
   } = useExchangeScreen();
 

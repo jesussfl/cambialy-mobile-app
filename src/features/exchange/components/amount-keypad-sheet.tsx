@@ -39,6 +39,7 @@ export function AmountKeypadSheet({ showFieldSwitch, activeField, onFieldChange,
       }}
       grabber={true}
       cornerRadius={24}
+      footer={<View style={styles.footer} />}
     >
       <GestureHandlerRootView style={styles.gestureRoot}>
         <View style={styles.container}>
@@ -78,9 +79,14 @@ export function AmountKeypadSheet({ showFieldSwitch, activeField, onFieldChange,
   );
 }
 
-const styles = StyleSheet.create((theme) => ({
+const styles = StyleSheet.create((theme, rt) => ({
   gestureRoot: {
     flexGrow: 1,
+    backgroundColor: theme.colors.background,
+    paddingBottom: theme.spacing.sm,
+  },
+  footer: {
+    paddingBottom: rt.insets.bottom,
     backgroundColor: theme.colors.background,
   },
   container: {

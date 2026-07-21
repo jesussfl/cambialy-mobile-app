@@ -2,7 +2,7 @@ import { View } from "react-native";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
-import { formatQuickAmountLabel } from "@/features/exchange/utils";
+import { formatQuickAmountLabel, parseCurrencyAmount } from "@/features/exchange/utils";
 import { PressableScale } from "pressto";
 
 type QuickAmountPillsProps = {
@@ -13,10 +13,12 @@ type QuickAmountPillsProps = {
 const UniPressableScale = withUnistyles(PressableScale);
 
 export function QuickAmountPills({ amount, onSelect, values }: QuickAmountPillsProps) {
+  const parsedAmount = parseCurrencyAmount(amount);
+
   return (
     <View style={styles.quickAmountList}>
       {values.map((quickAmount) => {
-        const isSelected = amount === quickAmount;
+        const isSelected = parsedAmount === Number(quickAmount);
 
         return (
           <UniPressableScale

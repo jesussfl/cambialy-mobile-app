@@ -1,12 +1,12 @@
 import { useQueries } from "@tanstack/react-query";
 
 import { exchangeQueries } from "@/api/queries/exchange.queries";
-import { currencyInfo, CUSTOM_RATE_ID, customCurrencyInfo, fallbackRates, RATE_ORDER, RATES_CACHE_TIME, RATES_STALE_TIME } from "@/features/exchange/constants";
+import { currencyInfo, fallbackRates, RATE_ORDER, RATES_CACHE_TIME, RATES_STALE_TIME } from "@/features/exchange/constants";
 import type { ExchangeRate } from "@/models/exchange.models";
 
-import type { BaseRate, BaseRateId } from "./exchange-screen.types";
+import type { BaseRate } from "./exchange-screen.types";
 
-export function useExchangeRates(customRateValue: number) {
+export function useExchangeRates() {
   return useQueries({
     queries: [
       {
@@ -31,25 +31,9 @@ export function useExchangeRates(customRateValue: number) {
         ...rate,
         info: currencyInfo[rate.id],
       }));
-      const customBaseRate: BaseRate = {
-        id: CUSTOM_RATE_ID,
-        label: "Tasa personalizada",
-        value: customRateValue,
-        icon: customCurrencyInfo.icon,
-        info: customCurrencyInfo,
-      };
-      const allRates = [...baseRates, customBaseRate];
-      const ratesById = allRates.reduce(
-        (ratesIndex, rate) => ({
-          ...ratesIndex,
-          [rate.id]: rate,
-        }),
-        {} as Record<BaseRateId, BaseRate>,
-      );
 
       return {
-        rates: allRates,
-        ratesById,
+        baseRates,
         isFetching: results.some((query) => query.isFetching),
         errorMessage: results.some((query) => query.isError) ? "No se pudieron cargar las tasas actualizadas." : null,
       };

@@ -1,4 +1,11 @@
-import { QUICK_AMOUNTS, VES_QUICK_AMOUNTS, targetCurrencyInfo } from "@/features/exchange/constants";
+import { useCallback, useMemo } from "react";
+
+import {
+  customCurrencyInfo,
+  QUICK_AMOUNTS,
+  targetCurrencyInfo,
+  VES_QUICK_AMOUNTS,
+} from "@/features/exchange/constants";
 import type { ConversionDetail, TargetCurrencyId } from "@/features/exchange/types";
 import {
   formatCompactAmount,
@@ -12,7 +19,7 @@ import {
 } from "@/features/exchange/utils";
 
 import { useExchangeContext } from "../context/exchange-context";
-import { CUSTOM_RATE_ID, type BaseRateId } from "./exchange-screen.types";
+import { CUSTOM_RATE_ID, type BaseRate, type BaseRateId } from "./exchange-screen.types";
 import { useExchangeHistory } from "./use-exchange-history";
 import { useExchangeRates } from "./use-exchange-rates";
 
@@ -32,11 +39,32 @@ export function useExchangeScreen() {
     resetExchange,
   } = useExchangeContext((state) => state);
 
-  const selectedTargetCurrency = targetCurrencyInfo[selectedTargetCurrencyId];
+  const selectedTargetCurrency = useMemo(() => targetCurrencyInfo[selectedTargetCurrencyId], [selectedTargetCurrencyId]);
 
-  const { rates, ratesById, errorMessage: ratesError, isFetching: isRatesFetching } = useExchangeRates(customRateValue);
+  const { baseRates = [], errorMessage: ratesError, isFetching: isRatesFetching } = useExchangeRates();
 
-  const selectedBaseRate = ratesById[selectedBaseRateId] ?? rates[rates.length - 1]!;
+  const rates = useMemo<BaseRate[]>(() => {
+    const customBaseRate: BaseRate = {
+      id: CUSTOM_RATE_ID,
+      label: "Tasa personalizada",
+      value: customRateValue,
+      icon: customCurrencyInfo.icon,
+      info: customCurrencyInfo,
+    };
+    return [...baseRates, customBaseRate];
+  }, [baseRates, customRateValue]);
+
+  const ratesById = useMemo<Record<BaseRateId, BaseRate>>(() => {
+    return rates.reduce(
+      (ratesIndex, rate) => ({
+        ...ratesIndex,
+        [rate.id]: rate,
+      }),
+      {} as Record<BaseRateId, BaseRate>,
+    );
+  }, [rates]);
+
+  const selectedBaseRate = useMemo(() => ratesById[selectedBaseRateId] ?? rates[rates.length - 1]!, [ratesById, selectedBaseRateId, rates]);
 
   const { historyPickerOptions, isHistoryFetching } = useExchangeHistory({
     selectedBaseRate,
@@ -44,38 +72,38 @@ export function useExchangeScreen() {
     selectedBaseRateId: selectedBaseRate.id,
   });
 
-  const bcvRate = ratesById.bcv.value;
-  const targetCurrencyRate = getCurrencyRate(selectedTargetCurrency.id, bcvRate);
+  const bcvRate = useMemo(() => ratesById.bcv?.value ?? 0, [ratesById]);
+  const targetCurrencyRate = useMemo(() => getCurrencyRate(selectedTargetCurrency.id, bcvRate), [selectedTargetCurrency.id, bcvRate]);
 
-  const inputMeta = isReversed ? selectedTargetCurrency : selectedBaseRate.info;
-  const outputMeta = isReversed ? selectedBaseRate.info : selectedTargetCurrency;
+  const inputMeta = useMemo(() => (isReversed ? selectedTargetCurrency : selectedBaseRate.info), [isReversed, selectedTargetCurrency, selectedBaseRate]);
+  const outputMeta = useMemo(() => (isReversed ? selectedBaseRate.info : selectedTargetCurrency), [isReversed, selectedBaseRate, selectedTargetCurrency]);
 
-  const baseRateOptions = rates.map((rate) => rate.info);
+  const baseRateOptions = useMemo(() => rates.map((rate) => rate.info), [rates]);
 
-  const targetCurrencyOptions = Object.values(targetCurrencyInfo);
+  const targetCurrencyOptions = useMemo(() => Object.values(targetCurrencyInfo), []);
 
-  const inputOptions = isReversed ? targetCurrencyOptions : baseRateOptions;
-  const outputOptions = isReversed ? baseRateOptions : targetCurrencyOptions;
+  const inputOptions = useMemo(() => (isReversed ? targetCurrencyOptions : baseRateOptions), [isReversed, targetCurrencyOptions, baseRateOptions]);
+  const outputOptions = useMemo(() => (isReversed ? baseRateOptions : targetCurrencyOptions), [isReversed, baseRateOptions, targetCurrencyOptions]);
 
-  const inputSelectedOptionId = isReversed ? selectedTargetCurrency.id : selectedBaseRate.id;
-  const outputSelectedOptionId = isReversed ? selectedBaseRate.id : selectedTargetCurrency.id;
+  const inputSelectedOptionId = useMemo(() => (isReversed ? selectedTargetCurrency.id : selectedBaseRate.id), [isReversed, selectedTargetCurrency, selectedBaseRate]);
+  const outputSelectedOptionId = useMemo(() => (isReversed ? selectedBaseRate.id : selectedTargetCurrency.id), [isReversed, selectedBaseRate, selectedTargetCurrency]);
 
-  const parsedAmount = parseCurrencyAmount(inputAmount);
-  const safeAmount = Number.isFinite(parsedAmount) && parsedAmount > 0 ? parsedAmount : 0;
+  const parsedAmount = useMemo(() => parseCurrencyAmount(inputAmount), [inputAmount]);
+  const safeAmount = useMemo(() => (Number.isFinite(parsedAmount) && parsedAmount > 0 ? parsedAmount : 0), [parsedAmount]);
 
-  const inputRate = isReversed ? targetCurrencyRate : selectedBaseRate.value;
-  const outputRate = isReversed ? selectedBaseRate.value : targetCurrencyRate;
+  const inputRate = useMemo(() => (isReversed ? targetCurrencyRate : selectedBaseRate.value), [isReversed, targetCurrencyRate, selectedBaseRate.value]);
+  const outputRate = useMemo(() => (isReversed ? selectedBaseRate.value : targetCurrencyRate), [isReversed, selectedBaseRate.value, targetCurrencyRate]);
 
-  const inputAmountInVes = toVes(safeAmount, inputRate);
-  const convertedAmount = fromVes(inputAmountInVes, outputRate);
+  const inputAmountInVes = useMemo(() => toVes(safeAmount, inputRate), [safeAmount, inputRate]);
+  const convertedAmount = useMemo(() => fromVes(inputAmountInVes, outputRate), [inputAmountInVes, outputRate]);
 
-  const selectedEquivalentValue = formatExchangeRate(selectedBaseRate.value, selectedTargetCurrency, bcvRate);
-  const selectedBaseRateHint = `1 ${selectedBaseRate.info.code} equivale ${selectedEquivalentValue}`;
-  const customRateHint = customRateValue > 0 ? selectedBaseRateHint : "Ingresa la tasa personalizada";
-  const outputAmountText = formatCompactAmount(convertedAmount);
-  const outputCopyText = `${outputMeta.symbol} ${outputAmountText} ${outputMeta.code}`;
+  const selectedEquivalentValue = useMemo(() => formatExchangeRate(selectedBaseRate.value, selectedTargetCurrency, bcvRate), [selectedBaseRate.value, selectedTargetCurrency, bcvRate]);
+  const selectedBaseRateHint = useMemo(() => `1 ${selectedBaseRate.info.code} equivale ${selectedEquivalentValue}`, [selectedBaseRate.info.code, selectedEquivalentValue]);
+  const customRateHint = useMemo(() => (customRateValue > 0 ? selectedBaseRateHint : "Ingresa la tasa personalizada"), [customRateValue, selectedBaseRateHint]);
+  const outputAmountText = useMemo(() => formatCompactAmount(convertedAmount), [convertedAmount]);
+  const outputCopyText = useMemo(() => `${outputMeta.symbol} ${outputAmountText} ${outputMeta.code}`, [outputMeta.symbol, outputAmountText, outputMeta.code]);
 
-  const conversionDetails = (): ConversionDetail[] => {
+  const conversionDetails = useMemo<ConversionDetail[]>(() => {
     if (isReversed) {
       return rates
         .filter((rate) => rate.id !== selectedBaseRate.id)
@@ -108,46 +136,56 @@ export function useExchangeScreen() {
           rateText: `${rateValue}`,
         };
       });
-  };
+  }, [
+    isReversed,
+    rates,
+    selectedBaseRate.id,
+    selectedTargetCurrency,
+    bcvRate,
+    inputAmountInVes,
+    safeAmount,
+    targetCurrencyRate,
+  ]);
 
-  const handleInputAmountChange = (value: string) => {
-    setInputAmount(normalizeAmountInputChange(value, inputAmount));
-  };
+  const handleInputAmountChange = useCallback((value: string) => {
+    setInputAmount(normalizeAmountInputChange(value, ""));
+  }, [setInputAmount]);
 
-  const handleQuickAmountSelect = (value: string) => {
-    setInputAmount(value);
-  };
+  const handleQuickAmountSelect = useCallback((value: string) => {
+    const num = Number(value);
+    setInputAmount(Number.isFinite(num) ? num.toFixed(2) : value);
+  }, [setInputAmount]);
 
-  const handleCustomRateChange = (value: string) => {
+  const handleCustomRateChange = useCallback((value: string) => {
     setCustomRate(value);
-  };
+  }, [setCustomRate]);
 
-  const handleInputCurrencySelect = (optionId: string) => {
+  const handleInputCurrencySelect = useCallback((optionId: string) => {
     if (isReversed) {
       setSelectedTargetCurrencyId(optionId as TargetCurrencyId);
       return;
     }
 
     setSelectedBaseRateId(optionId as BaseRateId);
-  };
+  }, [isReversed, setSelectedTargetCurrencyId, setSelectedBaseRateId]);
 
-  const handleOutputCurrencySelect = (optionId: string) => {
+  const handleOutputCurrencySelect = useCallback((optionId: string) => {
     if (isReversed) {
       setSelectedBaseRateId(optionId as BaseRateId);
       return;
     }
 
     setSelectedTargetCurrencyId(optionId as TargetCurrencyId);
-  };
+  }, [isReversed, setSelectedBaseRateId, setSelectedTargetCurrencyId]);
 
-  const handleSwapDirection = () => {
+  const handleSwapDirection = useCallback(() => {
     if (convertedAmount > 0) {
-      setInputAmount(convertedAmount.toFixed(2).replace(/\.00$/, ""));
+      setInputAmount(convertedAmount.toFixed(2));
     }
     toggleReverse();
-  };
+  }, [convertedAmount, setInputAmount, toggleReverse]);
 
-  const quickAmounts = isReversed ? VES_QUICK_AMOUNTS : QUICK_AMOUNTS;
+  const quickAmounts = useMemo(() => (isReversed ? VES_QUICK_AMOUNTS : QUICK_AMOUNTS), [isReversed]);
 
   return {
     inputAmountText: getDisplayAmount(inputAmount),

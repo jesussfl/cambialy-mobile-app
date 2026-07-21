@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Pressable, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { useAnimatedStyle, useDerivedValue, withTiming } from "react-native-reanimated";
@@ -26,6 +26,7 @@ type SwapAmountBlockProps = {
   customRate?: string;
   editable?: boolean;
   icon: IconName;
+  label?: string;
   onAmountChange?: (value: string) => void;
   onCustomRateChange?: (value: string) => void;
   onCurrencySelect: (optionId: string) => void;
@@ -38,7 +39,7 @@ type SwapAmountBlockProps = {
   showCustomRateInput?: boolean;
 };
 
-export function SwapAmountBlock({
+export const SwapAmountBlock = memo(function SwapAmountBlock({
   amount,
   code,
   copyText,
@@ -131,7 +132,7 @@ export function SwapAmountBlock({
     onCustomRateChange?.("");
   };
 
-  const displayValue = activeField === "amount" ? safeAmount || "0" : safeCustomRate || "0";
+  const displayValue = activeField === "amount" ? safeAmount || "0,00" : safeCustomRate || "0,00";
 
   return (
     <View style={styles.amountBlock}>
@@ -175,7 +176,7 @@ export function SwapAmountBlock({
       ) : null}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create((theme) => ({
   amountBlock: {

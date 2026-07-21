@@ -19,7 +19,7 @@ export default function ExchangeScreen() {
 
 function ExchangeScreenContent() {
   const { conversionDetails, resetExchange } = useExchangeScreen();
-  const details = conversionDetails();
+  const details = conversionDetails;
 
   return (
     <UniSafeAreaView style={styles.screenContent}>

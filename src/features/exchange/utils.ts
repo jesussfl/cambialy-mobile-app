@@ -137,41 +137,50 @@ export const getDisplayAmount = (amount: string) => {
   return formatAmountNumber(sanitizedAmount).replace(",", ",");
 };
 
-export const sanitizeAmountInput = (value: string) => {
+/**
+ * Sanitizes an input string to be a valid decimal amount string.
+ * This implementation is cents-based (fixed decimal entry from the right).
+ * E.g., "5" -> "0.05", "55" -> "0.55", "555" -> "5.55"
+ */
+export const sanitizeAmountInput = (value: string): string => {
+  // Extract all digit characters from the input string
   const digits = value.replace(/[^\d]/g, "");
 
   if (!digits) {
     return "";
   }
 
+  // Remove leading zeros, preserving at least one digit (e.g., "005" -> "5", "000" -> "0")
   const trimmedDigits = digits.replace(/^0+(?=\d)/, "");
 
   if (!trimmedDigits) {
-    return "0";
+    return "0.00";
   }
 
-  if (trimmedDigits.length <= 2) {
-    return trimmedDigits;
+  // Format the digits as a fixed-point decimal string with 2 decimal places
+  if (trimmedDigits.length === 1) {
+    return `0.0${trimmedDigits}`;
+  }
+
+  if (trimmedDigits.length === 2) {
+    return `0.${trimmedDigits}`;
   }
 
   return `${trimmedDigits.slice(0, -2)}.${trimmedDigits.slice(-2)}`;
 };
 
-export const formatQuickAmountLabel = (value: string) => {
-  const sanitizedAmount = sanitizeAmountInput(value);
-
-  if (!sanitizedAmount) {
-    return "";
-  }
-
-  const [wholePart, decimalPart] = sanitizedAmount.split(".");
-  const numberValue = Number(wholePart);
+/**
+ * Formats a quick amount label for display, displaying it as a whole integer representation.
+ * E.g., "5" -> "5", "10000" -> "10.000"
+ */
+export const formatQuickAmountLabel = (value: string): string => {
+  const numberValue = Number(value);
 
   if (!Number.isFinite(numberValue)) {
     return "";
   }
 
-  return new Intl.NumberFormat("es-VE", { maximumFractionDigits: 0 }).format(numberValue).replace(/\u202F/g, ".");
+  return new Intl.NumberFormat("es-VE", { maximumFractionDigits: 0 }).format(numberValue);
 };
 
 export const normalizeAmountInputChange = (value: string, previousAmount: string) => {
