@@ -6,9 +6,7 @@ import { SwapDivider } from "@/features/exchange/components/swap-divider";
 import { ExchangeProvider } from "@/features/exchange/context/exchange-context";
 import { useExchangeScreen } from "@/features/exchange/hooks/use-exchange-screen";
 import { ScrollView, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { StyleSheet, withUnistyles } from "react-native-unistyles";
-const UniSafeAreaView = withUnistyles(SafeAreaView);
+import { StyleSheet } from "react-native-unistyles";
 export default function ExchangeScreen() {
   return (
     <ExchangeProvider>
@@ -22,7 +20,7 @@ function ExchangeScreenContent() {
   const details = conversionDetails;
 
   return (
-    <UniSafeAreaView style={styles.screenContent}>
+    <View style={styles.screenContent}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
         <View style={styles.swapPanel}>
           <ExchangeInputBlock />
@@ -33,8 +31,8 @@ function ExchangeScreenContent() {
         {details.length ? <ConversionDetails details={details} formula="Otros cambios" style={styles.conversionDetails} /> : null}
       </ScrollView>
 
-      <IconButton icon="refresh-line" onPress={resetExchange} style={styles.resetButton} />
-    </UniSafeAreaView>
+      <IconButton icon="reset-left-line" onPress={resetExchange} style={styles.resetButton} />
+    </View>
   );
 }
 

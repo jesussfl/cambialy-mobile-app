@@ -15,7 +15,8 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear }: AmountKeypadProp
       <View style={styles.keypadGrid}>
         <View style={styles.keypadRow}>
           <AppButton
-            labelVariant="cardTitle"
+            labelVariant="sectionTitle"
+            labelColor="#000"
             label="1"
             variant="secondary"
             contentStyle={styles.keyContent}
@@ -23,7 +24,8 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear }: AmountKeypadProp
             onPress={() => onKeyPress("1")}
           />
           <AppButton
-            labelVariant="cardTitle"
+            labelVariant="sectionTitle"
+            labelColor="#000"
             label="2"
             variant="secondary"
             contentStyle={styles.keyContent}
@@ -31,7 +33,8 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear }: AmountKeypadProp
             onPress={() => onKeyPress("2")}
           />
           <AppButton
-            labelVariant="cardTitle"
+            labelVariant="sectionTitle"
+            labelColor="#000"
             label="3"
             variant="secondary"
             contentStyle={styles.keyContent}
@@ -41,7 +44,8 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear }: AmountKeypadProp
         </View>
         <View style={styles.keypadRow}>
           <AppButton
-            labelVariant="cardTitle"
+            labelVariant="sectionTitle"
+            labelColor="#000"
             label="4"
             variant="secondary"
             contentStyle={styles.keyContent}
@@ -49,7 +53,8 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear }: AmountKeypadProp
             onPress={() => onKeyPress("4")}
           />
           <AppButton
-            labelVariant="cardTitle"
+            labelVariant="sectionTitle"
+            labelColor="#000"
             label="5"
             variant="secondary"
             contentStyle={styles.keyContent}
@@ -57,7 +62,8 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear }: AmountKeypadProp
             onPress={() => onKeyPress("5")}
           />
           <AppButton
-            labelVariant="cardTitle"
+            labelVariant="sectionTitle"
+            labelColor="#000"
             label="6"
             variant="secondary"
             contentStyle={styles.keyContent}
@@ -67,7 +73,8 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear }: AmountKeypadProp
         </View>
         <View style={styles.keypadRow}>
           <AppButton
-            labelVariant="cardTitle"
+            labelVariant="sectionTitle"
+            labelColor="#000"
             label="7"
             variant="secondary"
             contentStyle={styles.keyContent}
@@ -75,7 +82,8 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear }: AmountKeypadProp
             onPress={() => onKeyPress("7")}
           />
           <AppButton
-            labelVariant="cardTitle"
+            labelVariant="sectionTitle"
+            labelColor="#000"
             label="8"
             variant="secondary"
             contentStyle={styles.keyContent}
@@ -83,7 +91,8 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear }: AmountKeypadProp
             onPress={() => onKeyPress("8")}
           />
           <AppButton
-            labelVariant="cardTitle"
+            labelVariant="sectionTitle"
+            labelColor="#000"
             label="9"
             variant="secondary"
             contentStyle={styles.keyContent}
@@ -93,7 +102,8 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear }: AmountKeypadProp
         </View>
         <View style={styles.keypadRow}>
           <AppButton
-            labelVariant="cardTitle"
+            labelVariant="sectionTitle"
+            labelColor="#000"
             label=","
             variant="secondary"
             contentStyle={styles.keyContent}
@@ -101,7 +111,8 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear }: AmountKeypadProp
             onPress={() => onKeyPress(",")}
           />
           <AppButton
-            labelVariant="cardTitle"
+            labelVariant="sectionTitle"
+            labelColor="#000"
             label="0"
             variant="secondary"
             contentStyle={styles.keyContent}
@@ -132,9 +143,9 @@ const styles = StyleSheet.create((theme) => ({
   keyButton: {
     flex: 1,
     height: 52,
-    borderRadius: theme.radius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.borderSubtle,
+    borderRadius: theme.radius.pill,
+
+    backgroundColor: "white",
   },
   keyContent: {
     justifyContent: "center",
@@ -145,11 +156,15 @@ const styles = StyleSheet.create((theme) => ({
     flex: 1,
     width: "100%",
     height: 52,
-    borderRadius: theme.radius.md,
+    borderRadius: theme.radius.pill,
+    backgroundColor: theme.gray[300],
+    borderWidth: 1,
+    borderColor: theme.gray[200],
   },
   resetButton: {
     alignSelf: "stretch",
     width: 52,
+    height: 52,
     borderRadius: theme.radius.md,
     backgroundColor: theme.colors.primary,
   },

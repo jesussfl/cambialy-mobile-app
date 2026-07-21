@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from "react";
 import { Text, type TextProps } from "react-native";
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 export type AppTextVariant = "title" | "subtitle" | "sectionTitle" | "cardTitle" | "label" | "body" | "value" | "button" | "tab";
 
@@ -11,11 +11,13 @@ type AppTextProps = PropsWithChildren<
   }
 >;
 
+const UniText = withUnistyles(Text);
+
 export function AppText({ children, style, variant = "body", color, ...rest }: AppTextProps) {
   return (
-    <Text {...rest} style={[styles.base, styles[variant], color ? { color } : null, style]}>
+    <UniText {...rest} style={[styles.base, styles[variant], color ? { color } : null, style]}>
       {children}
-    </Text>
+    </UniText>
   );
 }
 

@@ -13,13 +13,14 @@ type ButtonProps = CustomPressableProps & {
   icon?: IconName;
   contentStyle?: StyleProp<ViewStyle>;
   labelVariant?: AppTextVariant;
+  labelColor?: string;
 };
 
 const UniAppText = withUnistyles(AppText);
-
-export const AppButton: React.FC<ButtonProps> = ({ label, variant = "primary", style, disabled, icon, contentStyle, labelVariant, ...rest }) => {
+const UniPressableScale = withUnistyles(PressableScale);
+export const AppButton: React.FC<ButtonProps> = ({ label, variant = "primary", style, disabled, icon, contentStyle, labelVariant, labelColor, ...rest }) => {
   return (
-    <PressableScale style={style} {...rest}>
+    <UniPressableScale style={style} {...rest}>
       <View style={[styles.content, contentStyle]}>
         {icon ? (
           <UniRemixIcon
@@ -33,13 +34,13 @@ export const AppButton: React.FC<ButtonProps> = ({ label, variant = "primary", s
         <UniAppText
           variant={labelVariant || "button"}
           uniProps={(theme) => ({
-            color: variant === "primary" ? theme.colors.primaryText : undefined,
+            color: labelColor || (variant === "primary" ? theme.colors.primaryText : undefined),
           })}
         >
           {label}
         </UniAppText>
       </View>
-    </PressableScale>
+    </UniPressableScale>
   );
 };
 
@@ -51,7 +52,7 @@ type IconButtonProps = CustomPressableProps & {
 
 export const IconButton: React.FC<IconButtonProps> = ({ icon, variant = "primary", style, iconColor, ...rest }) => {
   return (
-    <PressableScale style={[styles.iconButtonBase, styles[variant], style]} {...rest}>
+    <UniPressableScale style={[styles.iconButtonBase, styles[variant], style]} {...rest}>
       <UniRemixIcon
         name={icon || "question-line"}
         size={22}
@@ -59,7 +60,7 @@ export const IconButton: React.FC<IconButtonProps> = ({ icon, variant = "primary
           color: iconColor || (variant === "primary" ? theme.colors.primaryText : theme.colors.primary),
         })}
       />
-    </PressableScale>
+    </UniPressableScale>
   );
 };
 

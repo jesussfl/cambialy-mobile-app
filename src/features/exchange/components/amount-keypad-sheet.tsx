@@ -2,7 +2,7 @@ import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useRef } from "react";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 
@@ -18,14 +18,15 @@ type AmountKeypadSheetProps = {
   onDelete: () => void;
   onClear: () => void;
 };
-
+const UniTrueSheet = withUnistyles(TrueSheet);
+const UniGestureHandlerRootView = withUnistyles(GestureHandlerRootView);
 export function AmountKeypadSheet({ showFieldSwitch, activeField, onFieldChange, onKeyPress, onDelete, onClear }: AmountKeypadSheetProps) {
   const sheetRef = useRef<TrueSheet>(null);
   const onClose = () => {
     sheetRef.current?.dismiss();
   };
   return (
-    <TrueSheet
+    <UniTrueSheet
       ref={sheetRef}
       name="amount-keypad-sheet"
       detents={["auto"]}
@@ -37,11 +38,11 @@ export function AmountKeypadSheet({ showFieldSwitch, activeField, onFieldChange,
         intensity: 0,
         interaction: false, // 👈 Prevents extra gesture-based tint/shimmer shifts
       }}
-      grabber={true}
+      grabber={false}
       cornerRadius={24}
       footer={<View style={styles.footer} />}
     >
-      <GestureHandlerRootView style={styles.gestureRoot}>
+      <UniGestureHandlerRootView style={styles.gestureRoot}>
         <View style={styles.container}>
           <View style={styles.header}>
             <PressableScale onPress={onClose} style={styles.closeButton}>
@@ -74,25 +75,24 @@ export function AmountKeypadSheet({ showFieldSwitch, activeField, onFieldChange,
 
           <AmountKeypad onKeyPress={onKeyPress} onDelete={onDelete} onClear={onClear} />
         </View>
-      </GestureHandlerRootView>
-    </TrueSheet>
+      </UniGestureHandlerRootView>
+    </UniTrueSheet>
   );
 }
 
 const styles = StyleSheet.create((theme, rt) => ({
   gestureRoot: {
     flexGrow: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.gray[200],
     paddingBottom: theme.spacing.sm,
   },
   footer: {
     paddingBottom: rt.insets.bottom,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.gray[200],
   },
   container: {
     paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.sm,
-    backgroundColor: theme.colors.background,
     gap: theme.spacing.md,
   },
   header: {
