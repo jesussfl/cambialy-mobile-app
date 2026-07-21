@@ -67,7 +67,7 @@
     "android:bundle": "NODE_ENV=production expo prebuild --platform android && cd android && ANDROID_KEYSTORE_FILE=$PWD/app/release.keystore ANDROID_KEYSTORE_PASSWORD=android ANDROID_KEY_ALIAS=androidreleasekey ANDROID_KEY_PASSWORD=android ./gradlew bundleRelease",
     "android:release:firebase": "NODE_ENV=production expo prebuild --platform android && cd android && ./gradlew assembleRelease appDistributionUploadRelease",
     "ios": "expo run:ios --device",
-    "buid:ios": "expo run:ios --device --configuration Release",
+    "build:ios": "expo run:ios --device --configuration Release",
     "web": "expo start --web",
     "lint": "expo lint"
   },
