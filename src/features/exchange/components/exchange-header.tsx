@@ -5,12 +5,14 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 
-import { useExchangeScreen } from "../hooks/use-exchange-screen";
+import { useExchangeContext } from "../context/exchange-context";
+import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
 
 const UniRemixIcon = withUnistyles(RemixIcon);
 
 export function ExchangeHeader() {
-  const { historyPickerOptions, selectedBaseRate } = useExchangeScreen();
+  const { selectedBaseRateId, customRateValue } = useExchangeContext((state) => state);
+  const { historyPickerOptions, selectedBaseRate } = useExchangeRatesList(selectedBaseRateId, customRateValue);
 
   const selectedOption = historyPickerOptions[0];
   const label = selectedBaseRate.label;

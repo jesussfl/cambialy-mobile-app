@@ -1,37 +1,45 @@
-import { useExchangeScreen } from "../hooks/use-exchange-screen";
+import { getDisplayAmount } from "@/features/exchange/utils";
+
+import { useExchangeContext } from "../context/exchange-context";
+import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
+import { useExchangeInput } from "../hooks/use-exchange-input";
 import { SwapAmountBlock } from "./swap-amount-block";
 
 export function ExchangeInputBlock() {
+  const { selectedBaseRateId, customRateValue } = useExchangeContext((state) => state);
+  const { rates, selectedBaseRate } = useExchangeRatesList(selectedBaseRateId, customRateValue);
+
+  const baseRateOptions = rates.map((rate) => rate.info);
+
   const {
-    inputAmountText,
-    inputMeta,
+    inputAmount,
+    inputCurrency,
     handleInputAmountChange,
     handleQuickAmountSelect,
     handleCustomRateChange,
     handleInputCurrencySelect,
     inputOptions,
     quickAmounts,
-    customRate,
-    showInputCustomRateInput,
+    customRateInput,
     inputSelectedOptionId,
-  } = useExchangeScreen();
+  } = useExchangeInput({ selectedBaseRate, baseRateOptions });
 
   return (
     <SwapAmountBlock
-      amount={inputAmountText}
-      code={inputMeta.code}
+      amount={getDisplayAmount(inputAmount)}
+      code={inputCurrency.code}
       editable
-      icon={inputMeta.icon}
+      icon={inputCurrency.icon}
       onAmountChange={handleInputAmountChange}
       onCustomRateChange={handleCustomRateChange}
       onCurrencySelect={handleInputCurrencySelect}
       onQuickAmountSelect={handleQuickAmountSelect}
       options={inputOptions}
       quickAmounts={quickAmounts}
-      customRate={customRate}
-      showCustomRateInput={showInputCustomRateInput}
+      customRate={customRateInput}
+      showCustomRateInput={inputSelectedOptionId === "custom"}
       selectedOptionId={inputSelectedOptionId}
-      symbol={inputMeta.symbol}
+      symbol={inputCurrency.symbol}
     />
   );
 }

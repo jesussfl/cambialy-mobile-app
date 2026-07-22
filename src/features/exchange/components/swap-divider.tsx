@@ -2,15 +2,34 @@ import { View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
 import { IconButton } from "@/components/ui/button";
-import { useExchangeScreen } from "../hooks/use-exchange-screen";
+import { useExchangeContext } from "../context/exchange-context";
+import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
+import { useExchangeConversion } from "../hooks/use-exchange-conversion";
+import { useExchangeInput } from "../hooks/use-exchange-input";
 
 export function SwapDivider() {
-  const { handleSwapDirection } = useExchangeScreen();
+  const { selectedBaseRateId, customRateValue, selectedTargetCurrencyId, inputAmount, isReversed } =
+    useExchangeContext((state) => state);
+
+  const { rates, selectedBaseRate } = useExchangeRatesList(selectedBaseRateId, customRateValue);
+
+  const baseRateOptions = rates.map((rate) => rate.info);
+
+  const { handleSwapDirection } = useExchangeInput({ selectedBaseRate, baseRateOptions });
+
+  const { convertedAmount } = useExchangeConversion({
+    inputAmount,
+    isReversed,
+    rates,
+    selectedBaseRate,
+    selectedTargetCurrencyId,
+    customRateValue,
+  });
 
   return (
     <View style={styles.swapDividerRow}>
       <View style={styles.dividerLine} />
-      <IconButton icon="arrow-up-down-line" onPress={handleSwapDirection} />
+      <IconButton icon="arrow-up-down-line" onPress={() => handleSwapDirection(convertedAmount)} />
       <View style={styles.dividerLine} />
     </View>
   );
