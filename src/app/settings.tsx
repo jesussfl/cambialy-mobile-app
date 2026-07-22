@@ -1,5 +1,5 @@
+import { SafeAreaView } from "@/components/ui/safe-area-view";
 import { Switch, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
