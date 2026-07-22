@@ -7,7 +7,6 @@ import { CopyIconButton } from "@/components/ui/copy-icon-button";
 
 import { useEffect, useState } from "react";
 import type { ConversionDetail } from "../types";
-import { AnimatedAmountText } from "./animated-amount-text";
 const UniRemixIcon = withUnistyles(RemixIcon);
 
 type ConversionDetailsProps = {
@@ -67,7 +66,9 @@ export function ConversionDetails({ details, formula, style }: ConversionDetails
           </View>
 
           <View style={styles.conversionDetailAmountContainer}>
-            <AnimatedAmountText containerStyle={styles.conversionDetailAmountRow} style={styles.conversionDetailAmount} text={detail.amountText} />
+            <AppText variant="tab" style={[styles.conversionDetailAmount, styles.conversionDetailAmountRow]} numberOfLines={1}>
+              {detail.amountText}
+            </AppText>
 
             <CopyIconButton text={detail.amountText} copied={copiedDetailId === detail.id} onCopy={() => setCopiedDetailId(detail.id)} />
           </View>

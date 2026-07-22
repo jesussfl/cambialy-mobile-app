@@ -1,5 +1,4 @@
 import { View } from "react-native";
-import { useAnimatedStyle, useDerivedValue, withTiming } from "react-native-reanimated";
 import { StyleSheet } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
@@ -9,11 +8,9 @@ import { useExchangeContext } from "../context/exchange-context";
 import { useExchangeConversion } from "../hooks/use-exchange-conversion";
 import { useExchangeInput } from "../hooks/use-exchange-input";
 import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
-import { AnimatedAmountText } from "./animated-amount-text";
 import { CurrencyPicker } from "./currency-picker";
 
 const AMOUNT_FONT_SIZE = 34;
-const MIN_AMOUNT_FONT_SIZE = 25;
 
 export function SwapOutputBlock() {
   const { selectedBaseRateId, customRateValue, selectedTargetCurrencyId, inputAmount, isReversed } = useExchangeContext();
@@ -40,18 +37,6 @@ export function SwapOutputBlock() {
 
   const safeAmount = outputAmountText ?? "";
 
-  const amountFontSize = useDerivedValue(() => {
-    const compactLength = safeAmount.replace(/[^\d]/g, "").length;
-    const nextFontSize = compactLength <= 5 ? AMOUNT_FONT_SIZE : Math.max(MIN_AMOUNT_FONT_SIZE, AMOUNT_FONT_SIZE - (compactLength - 5) * 2);
-
-    return withTiming(nextFontSize, { duration: 160 });
-  }, [safeAmount]);
-
-  const animatedAmountStyle = useAnimatedStyle(() => ({
-    fontSize: amountFontSize.value,
-    lineHeight: amountFontSize.value + 6,
-  }));
-
   return (
     <View style={styles.amountBlock}>
       <View style={styles.amountTopRow}>
@@ -62,7 +47,9 @@ export function SwapOutputBlock() {
             {outputCurrency.symbol}
           </AppText>
 
-          <AnimatedAmountText containerStyle={styles.amountValueTextRow} style={[styles.amountValue, animatedAmountStyle]} text={safeAmount} />
+          <AppText variant="title" style={[styles.amountValue, styles.amountValueTextRow]} numberOfLines={1}>
+            {safeAmount}
+          </AppText>
           <CopyIconButton text={outputCopyText} />
         </View>
       </View>
