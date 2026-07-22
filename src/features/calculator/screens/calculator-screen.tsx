@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { ScrollView, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
@@ -121,75 +120,73 @@ export function CalculatorScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea]} edges={["top"]}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
-        <View style={styles.header}>
-          <View style={styles.headerTitleGroup}>
-            <AppText variant="cardTitle" style={styles.headerTitle}>
-              Comparar precios
-            </AppText>
-            <AppText variant="tab" style={styles.headerSubtitle} numberOfLines={1}>
-              {ratesQuery.isFetching ? "Actualizando tasas" : formatUpdatedAt(latestUpdate)}
-            </AppText>
-          </View>
-          {/* <View style={styles.headerButton}>
+    <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
+      <View style={styles.header}>
+        <View style={styles.headerTitleGroup}>
+          <AppText variant="cardTitle" style={styles.headerTitle}>
+            Comparar precios
+          </AppText>
+          <AppText variant="tab" style={styles.headerSubtitle} numberOfLines={1}>
+            {ratesQuery.isFetching ? "Actualizando tasas" : formatUpdatedAt(latestUpdate)}
+          </AppText>
+        </View>
+        {/* <View style={styles.headerButton}>
             <View style={[styles.statusDot, ratesQuery.isFetching ? styles.statusDotLoading : null]} />
           </View> */}
-        </View>
+      </View>
 
-        <View style={styles.comparePanel}>
-          <PriceComparisonBlock
-            amount={firstPrice.amount}
-            currency={priceCurrencyMeta[firstPrice.currencyId]}
-            customRate={firstPrice.customRate}
-            label="Precio A"
-            onAmountChange={(value) => handleAmountChange("first", value)}
-            onCustomRateChange={(value) => handleCustomRateChange("first", value)}
-            onCurrencySelect={(currencyId) => handleCurrencySelect("first", currencyId)}
-            options={currencyOptions}
-            rate={firstOption.rate}
-            selectedCurrencyId={firstPrice.currencyId}
-            valueInVes={firstOption.valueInVes}
-          />
+      <View style={styles.comparePanel}>
+        <PriceComparisonBlock
+          amount={firstPrice.amount}
+          currency={priceCurrencyMeta[firstPrice.currencyId]}
+          customRate={firstPrice.customRate}
+          label="Precio A"
+          onAmountChange={(value) => handleAmountChange("first", value)}
+          onCustomRateChange={(value) => handleCustomRateChange("first", value)}
+          onCurrencySelect={(currencyId) => handleCurrencySelect("first", currencyId)}
+          options={currencyOptions}
+          rate={firstOption.rate}
+          selectedCurrencyId={firstPrice.currencyId}
+          valueInVes={firstOption.valueInVes}
+        />
 
-          <View style={styles.dividerRow}>
-            <View style={styles.dividerLine} />
-            <View style={styles.compareIcon}>
-              <UniRemixIcon
-                name="arrow-left-right-line"
-                size={22}
-                uniProps={(theme: any) => ({
-                  color: theme.colors.primaryText,
-                })}
-              />
-            </View>
-            <View style={styles.dividerLine} />
+        <View style={styles.dividerRow}>
+          <View style={styles.dividerLine} />
+          <View style={styles.compareIcon}>
+            <UniRemixIcon
+              name="arrow-left-right-line"
+              size={22}
+              uniProps={(theme: any) => ({
+                color: theme.colors.primaryText,
+              })}
+            />
           </View>
-
-          <PriceComparisonBlock
-            amount={secondPrice.amount}
-            currency={priceCurrencyMeta[secondPrice.currencyId]}
-            customRate={secondPrice.customRate}
-            label="Precio B"
-            onAmountChange={(value) => handleAmountChange("second", value)}
-            onCustomRateChange={(value) => handleCustomRateChange("second", value)}
-            onCurrencySelect={(currencyId) => handleCurrencySelect("second", currencyId)}
-            options={currencyOptions}
-            rate={secondOption.rate}
-            selectedCurrencyId={secondPrice.currencyId}
-            valueInVes={secondOption.valueInVes}
-          />
+          <View style={styles.dividerLine} />
         </View>
 
-        <ComparisonSummary firstOption={firstOption} secondOption={secondOption} result={result} />
+        <PriceComparisonBlock
+          amount={secondPrice.amount}
+          currency={priceCurrencyMeta[secondPrice.currencyId]}
+          customRate={secondPrice.customRate}
+          label="Precio B"
+          onAmountChange={(value) => handleAmountChange("second", value)}
+          onCustomRateChange={(value) => handleCustomRateChange("second", value)}
+          onCurrencySelect={(currencyId) => handleCurrencySelect("second", currencyId)}
+          options={currencyOptions}
+          rate={secondOption.rate}
+          selectedCurrencyId={secondPrice.currencyId}
+          valueInVes={secondOption.valueInVes}
+        />
+      </View>
 
-        {ratesError ? (
-          <AppText variant="tab" style={styles.errorText} numberOfLines={1}>
-            {ratesError}
-          </AppText>
-        ) : null}
-      </ScrollView>
-    </SafeAreaView>
+      <ComparisonSummary firstOption={firstOption} secondOption={secondOption} result={result} />
+
+      {ratesError ? (
+        <AppText variant="tab" style={styles.errorText} numberOfLines={1}>
+          {ratesError}
+        </AppText>
+      ) : null}
+    </ScrollView>
   );
 }
 
@@ -401,7 +398,7 @@ function SummaryMetric({ isActive, label, value }: SummaryMetricProps) {
   );
 }
 
-const styles = StyleSheet.create((theme) => ({
+const styles = StyleSheet.create((theme, rt) => ({
   safeArea: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -413,7 +410,7 @@ const styles = StyleSheet.create((theme) => ({
   content: {
     flexGrow: 1,
     paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing.lg,
+    paddingTop: rt.insets.top,
     paddingBottom: theme.spacing["3xl"],
     gap: theme.spacing.lg,
   },

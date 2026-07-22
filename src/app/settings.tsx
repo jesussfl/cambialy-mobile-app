@@ -1,4 +1,3 @@
-import { SafeAreaView } from "@/components/ui/safe-area-view";
 import { Switch, View } from "react-native";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
@@ -13,95 +12,89 @@ export default function SettingsScreen() {
   const { isDarkMode, toggleTheme } = useThemePreference();
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <View style={styles.content}>
-        <AppText variant="title" style={styles.title}>
-          Ajustes
-        </AppText>
+    <View style={styles.content}>
+      <AppText variant="title" style={styles.title}>
+        Ajustes
+      </AppText>
 
-        <View style={styles.section}>
-          <AppText variant="sectionTitle" style={styles.sectionHeader}>
-            Apariencia
-          </AppText>
-          <Card style={styles.card}>
-            <View style={styles.preferenceRow}>
-              <View style={styles.preferenceCopy}>
-                <View style={styles.preferenceTitleRow}>
-                  <UniRemixIcon
-                    name={isDarkMode ? "moon-line" : "sun-line"}
-                    size={20}
-                    uniProps={(theme: any) => ({
-                      color: theme.colors.primary,
-                    })}
-                  />
-                  <AppText variant="body" style={styles.preferenceTitle}>
-                    Modo oscuro
-                  </AppText>
-                </View>
-                <AppText variant="subtitle" style={styles.preferenceDescription}>
-                  {isDarkMode ? "La app usa el tema oscuro." : "La app usa el tema claro."}
+      <View style={styles.section}>
+        <AppText variant="sectionTitle" style={styles.sectionHeader}>
+          Apariencia
+        </AppText>
+        <Card style={styles.card}>
+          <View style={styles.preferenceRow}>
+            <View style={styles.preferenceCopy}>
+              <View style={styles.preferenceTitleRow}>
+                <UniRemixIcon
+                  name={isDarkMode ? "moon-line" : "sun-line"}
+                  size={20}
+                  uniProps={(theme: any) => ({
+                    color: theme.colors.primary,
+                  })}
+                />
+                <AppText variant="body" style={styles.preferenceTitle}>
+                  Modo oscuro
                 </AppText>
               </View>
-              <UniSwitch
-                accessibilityLabel="Cambiar modo oscuro"
-                onValueChange={() => {
-                  void toggleTheme();
-                }}
-                uniProps={(theme) => ({
-                  thumbColor: isDarkMode ? theme.colors.primaryText : theme.colors.surface,
-                  trackColor: {
-                    false: theme.colors.secondarySurface,
-                    true: theme.colors.primary,
-                  },
-                })}
-                value={isDarkMode}
-              />
+              <AppText variant="subtitle" style={styles.preferenceDescription}>
+                {isDarkMode ? "La app usa el tema oscuro." : "La app usa el tema claro."}
+              </AppText>
             </View>
-          </Card>
-        </View>
-
-        <View style={styles.section}>
-          <AppText variant="sectionTitle" style={styles.sectionHeader}>
-            Acerca de la aplicación
-          </AppText>
-          <Card style={styles.card}>
-            <AppText variant="body" style={styles.description}>
-              Cambialy te ayuda a comparar y calcular de manera rápida y transparente tus opciones de pago, asegurando decisiones financieras más claras.
-            </AppText>
-          </Card>
-        </View>
-
-        <View style={styles.section}>
-          <AppText variant="sectionTitle" style={styles.sectionHeader}>
-            Privacidad y Datos
-          </AppText>
-          <Card style={styles.card}>
-            <AppText variant="body" style={styles.privacyText}>
-              Valoramos tu privacidad. No recopilamos, almacenamos ni compartimos ningún tipo de información personal o datos financieros. Todos los cálculos se
-              realizan localmente en tu dispositivo.
-            </AppText>
-          </Card>
-        </View>
-
-        <View style={styles.footer}>
-          <AppText variant="label" style={styles.versionText}>
-            Versión 1.0.0
-          </AppText>
-        </View>
+            <UniSwitch
+              accessibilityLabel="Cambiar modo oscuro"
+              onValueChange={() => {
+                void toggleTheme();
+              }}
+              uniProps={(theme) => ({
+                thumbColor: isDarkMode ? theme.colors.primaryText : theme.colors.surface,
+                trackColor: {
+                  false: theme.colors.secondarySurface,
+                  true: theme.colors.primary,
+                },
+              })}
+              value={isDarkMode}
+            />
+          </View>
+        </Card>
       </View>
-    </SafeAreaView>
+
+      <View style={styles.section}>
+        <AppText variant="sectionTitle" style={styles.sectionHeader}>
+          Acerca de la aplicación
+        </AppText>
+        <Card style={styles.card}>
+          <AppText variant="body" style={styles.description}>
+            Cambialy te ayuda a comparar y calcular de manera rápida y transparente tus opciones de pago, asegurando decisiones financieras más claras.
+          </AppText>
+        </Card>
+      </View>
+
+      <View style={styles.section}>
+        <AppText variant="sectionTitle" style={styles.sectionHeader}>
+          Privacidad y Datos
+        </AppText>
+        <Card style={styles.card}>
+          <AppText variant="body" style={styles.privacyText}>
+            Valoramos tu privacidad. No recopilamos, almacenamos ni compartimos ningún tipo de información personal o datos financieros. Todos los cálculos se
+            realizan localmente en tu dispositivo.
+          </AppText>
+        </Card>
+      </View>
+
+      <View style={styles.footer}>
+        <AppText variant="label" style={styles.versionText}>
+          Versión 1.0.0
+        </AppText>
+      </View>
+    </View>
   );
 }
 
-const styles = StyleSheet.create((theme) => ({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
+const styles = StyleSheet.create((theme, rt) => ({
   content: {
     flex: 1,
     paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing["2xl"],
+    paddingTop: rt.insets.top,
     gap: theme.spacing.xl,
   },
   title: {
