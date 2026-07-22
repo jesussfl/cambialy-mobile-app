@@ -18,7 +18,7 @@ type TabConfig = {
 };
 
 const BOTTOM_NAV_CONFIG: Record<string, TabConfig> = {
-  exchange: {
+  index: {
     icon: "exchange-2-line",
     label: "Intercambio",
   },

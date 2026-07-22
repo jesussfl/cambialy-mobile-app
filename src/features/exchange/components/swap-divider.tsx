@@ -3,13 +3,12 @@ import { StyleSheet } from "react-native-unistyles";
 
 import { IconButton } from "@/components/ui/button";
 import { useExchangeContext } from "../context/exchange-context";
-import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
 import { useExchangeConversion } from "../hooks/use-exchange-conversion";
 import { useExchangeInput } from "../hooks/use-exchange-input";
+import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
 
 export function SwapDivider() {
-  const { selectedBaseRateId, customRateValue, selectedTargetCurrencyId, inputAmount, isReversed } =
-    useExchangeContext((state) => state);
+  const { selectedBaseRateId, customRateValue, selectedTargetCurrencyId, inputAmount, isReversed } = useExchangeContext();
 
   const { rates, selectedBaseRate } = useExchangeRatesList(selectedBaseRateId, customRateValue);
 
@@ -45,14 +44,5 @@ const styles = StyleSheet.create((theme) => ({
     flex: 1,
     height: 1,
     backgroundColor: theme.colors.borderSubtle,
-  },
-  swapButton: {
-    width: 52,
-    height: 52,
-    borderRadius: theme.radius.pill,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: theme.colors.primary,
-    ...theme.shadows.card,
   },
 }));

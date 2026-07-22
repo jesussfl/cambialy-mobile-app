@@ -1,8 +1,8 @@
 import { IconButton } from "@/components/ui/button";
 import { ConversionDetails } from "@/features/exchange/components/conversion-details";
-import { ExchangeInputBlock } from "@/features/exchange/components/exchange-input-block";
-import { ExchangeOutputBlock } from "@/features/exchange/components/exchange-output-block";
 import { SwapDivider } from "@/features/exchange/components/swap-divider";
+import { SwapInputBlock } from "@/features/exchange/components/swap-input-block";
+import { SwapOutputBlock } from "@/features/exchange/components/swap-output-block";
 import { ExchangeProvider, useExchangeContext } from "@/features/exchange/context/exchange-context";
 import { useExchangeConversion } from "@/features/exchange/hooks/use-exchange-conversion";
 import { useExchangeRatesList } from "@/features/exchange/hooks/use-exchange-rates-list";
@@ -18,7 +18,7 @@ export default function ExchangeScreen() {
 }
 
 function ExchangeScreenContent() {
-  const { selectedBaseRateId, customRateValue, selectedTargetCurrencyId, inputAmount, isReversed, resetExchange } = useExchangeContext((state) => state);
+  const { selectedBaseRateId, customRateValue, selectedTargetCurrencyId, inputAmount, isReversed, resetExchange } = useExchangeContext();
 
   const { rates, selectedBaseRate } = useExchangeRatesList(selectedBaseRateId, customRateValue);
 
@@ -35,9 +35,9 @@ function ExchangeScreenContent() {
     <View style={styles.screenContent}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
         <View style={styles.swapPanel}>
-          <ExchangeInputBlock />
+          <SwapInputBlock />
           <SwapDivider />
-          <ExchangeOutputBlock />
+          <SwapOutputBlock />
         </View>
 
         {conversionDetails.length ? <ConversionDetails details={conversionDetails} formula="Otros cambios" /> : null}

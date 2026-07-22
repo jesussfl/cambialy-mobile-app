@@ -25,7 +25,7 @@ export function useExchangeInput({ selectedBaseRate, baseRateOptions }: UseExcha
     setCustomRate,
     toggleReverse,
     selectedTargetCurrencyId,
-  } = useExchangeContext((state) => state);
+  } = useExchangeContext();
 
   // --- Currency metadata (flips when reversed) ---
 

@@ -11,7 +11,7 @@ import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
 const UniRemixIcon = withUnistyles(RemixIcon);
 
 export function ExchangeHeader() {
-  const { selectedBaseRateId, customRateValue } = useExchangeContext((state) => state);
+  const { selectedBaseRateId, customRateValue } = useExchangeContext();
   const { historyPickerOptions, selectedBaseRate } = useExchangeRatesList(selectedBaseRateId, customRateValue);
 
   const selectedOption = historyPickerOptions[0];
