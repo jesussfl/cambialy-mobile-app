@@ -44,10 +44,10 @@ export const brand = {
 
 export const typography = {
   fontFamily: {
-    regular: 'System',
-    medium: 'System',
-    semibold: 'System',
-    bold: 'System',
+    regular: 'Figtree',
+    medium: 'Figtree',
+    semibold: 'Figtree',
+    bold: 'Figtree',
   },
   fontSize: {
     xs: 13,

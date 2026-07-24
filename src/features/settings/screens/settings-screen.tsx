@@ -96,6 +96,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingHorizontal: theme.spacing.md,
     paddingTop: rt.insets.top,
     gap: theme.spacing.xl,
+    backgroundColor: theme.colors.background,
   },
   title: {
     marginBottom: theme.spacing.xs,
