@@ -17,10 +17,21 @@ type AmountKeypadSheetProps = {
   onKeyPress: (value: string) => void;
   onDelete: () => void;
   onClear: () => void;
+  onOperatorPress: (op: "+" | "-" | "×" | "÷") => void;
+  onEvaluate: () => void;
 };
 const UniTrueSheet = withUnistyles(TrueSheet);
 const UniGestureHandlerRootView = withUnistyles(GestureHandlerRootView);
-export function AmountKeypadSheet({ showFieldSwitch, activeField, onFieldChange, onKeyPress, onDelete, onClear }: AmountKeypadSheetProps) {
+export function AmountKeypadSheet({
+  showFieldSwitch,
+  activeField,
+  onFieldChange,
+  onKeyPress,
+  onDelete,
+  onClear,
+  onOperatorPress,
+  onEvaluate,
+}: AmountKeypadSheetProps) {
   const sheetRef = useRef<TrueSheet>(null);
   const onClose = () => {
     sheetRef.current?.dismiss();
@@ -73,7 +84,13 @@ export function AmountKeypadSheet({ showFieldSwitch, activeField, onFieldChange,
             </View>
           ) : null}
 
-          <AmountKeypad onKeyPress={onKeyPress} onDelete={onDelete} onClear={onClear} />
+          <AmountKeypad
+            onKeyPress={onKeyPress}
+            onDelete={onDelete}
+            onClear={onClear}
+            onOperatorPress={onOperatorPress}
+            onEvaluate={onEvaluate}
+          />
         </View>
       </UniGestureHandlerRootView>
     </UniTrueSheet>

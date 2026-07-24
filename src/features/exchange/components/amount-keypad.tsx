@@ -7,9 +7,11 @@ type AmountKeypadProps = {
   onKeyPress: (value: string) => void;
   onDelete: () => void;
   onClear: () => void;
+  onOperatorPress: (op: "+" | "-" | "×" | "÷") => void;
+  onEvaluate: () => void;
 };
 
-export function AmountKeypad({ onKeyPress, onDelete, onClear }: AmountKeypadProps) {
+export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, onEvaluate }: AmountKeypadProps) {
   return (
     <View style={styles.keypad}>
       <View style={styles.keypadGrid}>
@@ -41,6 +43,15 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear }: AmountKeypadProp
             style={styles.keyButton}
             onPress={() => onKeyPress("3")}
           />
+          <AppButton
+            labelVariant="sectionTitle"
+            labelColor="#000"
+            label="÷"
+            variant="secondary"
+            contentStyle={styles.keyContent}
+            style={styles.operatorButton}
+            onPress={() => onOperatorPress("÷")}
+          />
         </View>
         <View style={styles.keypadRow}>
           <AppButton
@@ -69,6 +80,15 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear }: AmountKeypadProp
             contentStyle={styles.keyContent}
             style={styles.keyButton}
             onPress={() => onKeyPress("6")}
+          />
+          <AppButton
+            labelVariant="sectionTitle"
+            labelColor="#000"
+            label="×"
+            variant="secondary"
+            contentStyle={styles.keyContent}
+            style={styles.operatorButton}
+            onPress={() => onOperatorPress("×")}
           />
         </View>
         <View style={styles.keypadRow}>
@@ -99,6 +119,15 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear }: AmountKeypadProp
             style={styles.keyButton}
             onPress={() => onKeyPress("9")}
           />
+          <AppButton
+            labelVariant="sectionTitle"
+            labelColor="#000"
+            label="-"
+            variant="secondary"
+            contentStyle={styles.keyContent}
+            style={styles.operatorButton}
+            onPress={() => onOperatorPress("-")}
+          />
         </View>
         <View style={styles.keypadRow}>
           <AppButton
@@ -120,20 +149,31 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear }: AmountKeypadProp
             onPress={() => onKeyPress("0")}
           />
           <IconButton icon="delete-back-2-line" variant="secondary" style={styles.iconButton} onPress={onDelete} />
+          <AppButton
+            labelVariant="sectionTitle"
+            labelColor="#000"
+            label="+"
+            variant="secondary"
+            contentStyle={styles.keyContent}
+            style={styles.operatorButton}
+            onPress={() => onOperatorPress("+")}
+          />
         </View>
       </View>
-      <AppButton labelVariant="cardTitle" label="C" variant="primary" contentStyle={styles.keyContent} style={styles.resetButton} onPress={onClear} />
+      <View style={styles.sideActions}>
+        <AppButton labelVariant="cardTitle" label="C" variant="primary" contentStyle={styles.keyContent} style={styles.resetButton} onPress={onClear} />
+        <AppButton labelVariant="cardTitle" label="=" variant="primary" contentStyle={styles.keyContent} style={styles.equalsButton} onPress={onEvaluate} />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
   keypad: {
-    flexDirection: "row",
+    flexDirection: "column",
     gap: theme.spacing.sm,
   },
   keypadGrid: {
-    flex: 1,
     gap: theme.spacing.sm,
   },
   keypadRow: {
@@ -144,8 +184,13 @@ const styles = StyleSheet.create((theme) => ({
     flex: 1,
     height: 52,
     borderRadius: theme.radius.pill,
-
     backgroundColor: "white",
+  },
+  operatorButton: {
+    flex: 1,
+    height: 52,
+    borderRadius: theme.radius.pill,
+    backgroundColor: theme.gray[300],
   },
   keyContent: {
     justifyContent: "center",
@@ -161,9 +206,18 @@ const styles = StyleSheet.create((theme) => ({
     borderWidth: 1,
     borderColor: theme.gray[200],
   },
+  sideActions: {
+    flexDirection: "row",
+    gap: theme.spacing.sm,
+  },
   resetButton: {
-    alignSelf: "stretch",
-    width: 52,
+    flex: 1,
+    height: 52,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.gray[400],
+  },
+  equalsButton: {
+    flex: 2,
     height: 52,
     borderRadius: theme.radius.md,
     backgroundColor: theme.colors.primary,

@@ -9,6 +9,12 @@ import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useExchangeContext } from "../context/exchange-context";
 import { useExchangeInput } from "../hooks/use-exchange-input";
 import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
+import {
+  appendOperatorToExpression,
+  evaluateExpression,
+  formatExpressionForDisplay,
+  type MathOperator,
+} from "../utils/calculator";
 import { AmountKeypadSheet } from "./amount-keypad-sheet";
 import { CurrencyPicker } from "./currency-picker";
 import { QuickAmountPills } from "./quick-amount-pills";
@@ -38,9 +44,17 @@ export function SwapInputBlock() {
   const safeCustomRate = customRateInput ?? "";
   const [activeField, setActiveField] = useState<"amount" | "customRate">("amount");
   const [hasTyped, setHasTyped] = useState({ amount: false, customRate: false });
+  const [expression, setExpression] = useState("");
+
+  const updateFieldValue = (nextValue: string) => {
+    if (activeField === "amount") {
+      handleInputAmountChange(nextValue);
+    } else {
+      handleCustomRateChange(nextValue);
+    }
+  };
 
   const handleValueInput = (value: string) => {
-    const normalizedValue = value === "," ? "." : value;
     const field = activeField;
     const isFirst = !hasTyped[field];
 
@@ -48,55 +62,77 @@ export function SwapInputBlock() {
       setHasTyped((prev) => ({ ...prev, [field]: true }));
     }
 
-    const nextValue = (() => {
-      if (field === "amount") {
-        const currentValue = isFirst ? "" : (safeAmount ?? "");
+    const currentBase = isFirst
+      ? ""
+      : expression
+        ? expression
+        : field === "amount"
+          ? safeAmount
+          : safeCustomRate;
 
-        if (normalizedValue === ".") {
-          return currentValue.includes(".") ? currentValue : currentValue ? `${currentValue}.` : "0.";
-        }
+    const nextExpr = `${currentBase}${value}`;
+    setExpression(nextExpr);
 
-        return `${currentValue}${normalizedValue}`;
-      }
-
-      const currentValue = isFirst ? "" : (safeCustomRate ?? "");
-
-      if (normalizedValue === ".") {
-        return currentValue.includes(".") ? currentValue : currentValue ? `${currentValue}.` : "0.";
-      }
-
-      return `${currentValue}${normalizedValue}`;
-    })();
-
-    if (field === "amount") {
-      handleInputAmountChange(nextValue);
-      return;
+    const { formattedResult } = evaluateExpression(nextExpr);
+    if (formattedResult) {
+      updateFieldValue(formattedResult);
     }
+  };
 
-    handleCustomRateChange(nextValue);
+  const handleOperatorPress = (op: MathOperator) => {
+    const field = activeField;
+    const currentBase = expression
+      ? expression
+      : field === "amount"
+        ? safeAmount
+        : safeCustomRate;
+
+    if (!currentBase) return;
+
+    setHasTyped((prev) => ({ ...prev, [field]: true }));
+    const nextExpr = appendOperatorToExpression(currentBase, op);
+    setExpression(nextExpr);
+  };
+
+  const handleEvaluate = () => {
+    if (!expression) return;
+    const { formattedResult } = evaluateExpression(expression);
+    if (formattedResult) {
+      updateFieldValue(formattedResult);
+    }
+    setExpression("");
   };
 
   const handleValueDelete = () => {
-    const currentValue = activeField === "amount" ? safeAmount : safeCustomRate;
-    const nextValue = currentValue.slice(0, -1);
+    if (expression.length > 0) {
+      const nextExpr = expression.slice(0, -1);
+      setExpression(nextExpr);
 
-    if (activeField === "amount") {
-      handleInputAmountChange(nextValue);
+      if (nextExpr.length === 0) {
+        updateFieldValue("");
+      } else {
+        const { formattedResult } = evaluateExpression(nextExpr);
+        if (formattedResult) {
+          updateFieldValue(formattedResult);
+        }
+      }
       return;
     }
 
-    handleCustomRateChange(nextValue);
+    const currentValue = activeField === "amount" ? safeAmount : safeCustomRate;
+    const nextValue = currentValue.slice(0, -1);
+    updateFieldValue(nextValue);
   };
 
   const handleValueClear = () => {
+    setExpression("");
     if (activeField === "amount") {
       setHasTyped((prev) => ({ ...prev, amount: false }));
       handleInputAmountChange("");
-      return;
+    } else {
+      setHasTyped((prev) => ({ ...prev, customRate: false }));
+      handleCustomRateChange("");
     }
-
-    setHasTyped((prev) => ({ ...prev, customRate: false }));
-    handleCustomRateChange("");
   };
 
   const displayValue = activeField === "amount" ? safeAmount || "0,00" : safeCustomRate || "0,00";
@@ -118,21 +154,33 @@ export function SwapInputBlock() {
           </AppText>
 
           <Pressable hitSlop={12} style={styles.amountInputPanel} onPress={() => TrueSheet.present("amount-keypad-sheet")}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.amountPreviewScroll}>
-              <UniAppText variant="title" style={styles.amountPreview}>
-                {displayValue}
-              </UniAppText>
-            </ScrollView>
+            <View style={styles.amountDisplayContainer}>
+              {expression ? (
+                <AppText variant="label" style={styles.expressionPreview}>
+                  {formatExpressionForDisplay(expression)}
+                </AppText>
+              ) : null}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.amountPreviewScroll}>
+                <UniAppText variant="title" style={styles.amountPreview}>
+                  {displayValue}
+                </UniAppText>
+              </ScrollView>
+            </View>
           </Pressable>
 
           <AmountKeypadSheet
             title={activeField === "customRate" ? "Editar tasa" : "Ingresar monto"}
             showFieldSwitch={inputSelectedOptionId === "custom"}
             activeField={activeField}
-            onFieldChange={setActiveField}
+            onFieldChange={(field) => {
+              setExpression("");
+              setActiveField(field);
+            }}
             onKeyPress={handleValueInput}
             onDelete={handleValueDelete}
             onClear={handleValueClear}
+            onOperatorPress={handleOperatorPress}
+            onEvaluate={handleEvaluate}
           />
         </View>
       </View>
@@ -166,7 +214,17 @@ const styles = StyleSheet.create((theme) => ({
   amountInputPanel: {
     flex: 1,
     minWidth: 0,
-    paddingVertical: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+  },
+  amountDisplayContainer: {
+    flexDirection: "column",
+    justifyContent: "center",
+  },
+  expressionPreview: {
+    color: theme.colors.textMuted,
+    fontSize: 14,
+    lineHeight: 18,
+    marginBottom: 2,
   },
   amountPreview: {
     color: theme.colors.textPrimary,
