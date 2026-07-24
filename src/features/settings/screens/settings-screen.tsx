@@ -1,4 +1,4 @@
-import { Pressable, Switch, View } from "react-native";
+import { Pressable, ScrollView, Switch, View } from "react-native";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
@@ -14,7 +14,7 @@ export function SettingsScreen() {
   const { amountInputMode, setAmountInputMode } = useSettingsStore();
 
   return (
-    <View style={styles.content}>
+    <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <AppText variant="title" style={styles.title}>
         Ajustes
       </AppText>
@@ -79,13 +79,7 @@ export function SettingsScreen() {
                 23 → 0,23
               </AppText>
             </View>
-            {amountInputMode === "automatic" ? (
-              <UniRemixIcon
-                name="check-line"
-                size={20}
-                uniProps={(theme: any) => ({ color: theme.colors.primary })}
-              />
-            ) : null}
+            {amountInputMode === "automatic" ? <UniRemixIcon name="check-line" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /> : null}
           </Pressable>
 
           <View style={styles.modeSeparator} />
@@ -104,13 +98,7 @@ export function SettingsScreen() {
                 23 → 23
               </AppText>
             </View>
-            {amountInputMode === "manual" ? (
-              <UniRemixIcon
-                name="check-line"
-                size={20}
-                uniProps={(theme: any) => ({ color: theme.colors.primary })}
-              />
-            ) : null}
+            {amountInputMode === "manual" ? <UniRemixIcon name="check-line" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /> : null}
           </Pressable>
         </Card>
       </View>
@@ -143,13 +131,16 @@ export function SettingsScreen() {
           Versión 1.0.0
         </AppText>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create((theme, rt) => ({
-  content: {
+  scrollView: {
     flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  content: {
     paddingHorizontal: theme.spacing.md,
     paddingTop: rt.insets.top,
     gap: theme.spacing.xl,

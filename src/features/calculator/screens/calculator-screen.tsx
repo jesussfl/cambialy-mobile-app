@@ -120,7 +120,7 @@ export function CalculatorScreen() {
   };
 
   return (
-    <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
+    <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <View style={styles.headerTitleGroup}>
           <AppText variant="cardTitle" style={styles.headerTitle}>

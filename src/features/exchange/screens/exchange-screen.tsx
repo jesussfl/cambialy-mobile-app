@@ -33,7 +33,7 @@ function ExchangeScreenContent() {
 
   return (
     <View style={styles.screenContent}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.swapPanel}>
           <SwapInputBlock />
           <SwapDivider />
@@ -61,7 +61,8 @@ const styles = StyleSheet.create((theme, rt) => ({
   content: {
     flexGrow: 1,
     paddingHorizontal: theme.spacing.md,
-    paddingBottom: theme.spacing["3xl"],
+    paddingBottom: 150,
+
     gap: theme.spacing.lg,
   },
   swapPanel: {
