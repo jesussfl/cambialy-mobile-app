@@ -1,5 +1,6 @@
 import { formatNumber as formatCurrencyNumber } from "react-native-currency-input";
 
+import type { DecimalSeparator } from "@/features/settings/context/settings-context";
 import type { TargetCurrencyOption } from "./types";
 
 export const parseCurrencyAmount = (value: string) => {
@@ -14,25 +15,28 @@ export const parseCurrencyAmount = (value: string) => {
   return Number(normalizedValue);
 };
 
-export const formatNumber = (value: number, digits = 2) =>
+export const formatNumber = (value: number, digits = 2, decimalSeparator: DecimalSeparator = "comma") =>
   formatCurrencyNumber(Number.isFinite(value) ? value : 0, {
-    delimiter: ".",
-    separator: ",",
+    delimiter: decimalSeparator === "comma" ? "." : ",",
+    separator: decimalSeparator === "comma" ? "," : ".",
     precision: digits,
   });
 
-export const formatCompactAmount = (value: number) => {
+export const formatCompactAmount = (value: number, decimalSeparator: DecimalSeparator = "comma") => {
   if (!Number.isFinite(value)) {
     return "0";
   }
 
-  return new Intl.NumberFormat("es-VE", {
+  const locale = decimalSeparator === "comma" ? "es-VE" : "en-US";
+
+  return new Intl.NumberFormat(locale, {
     minimumFractionDigits: value % 1 === 0 ? 0 : 2,
     maximumFractionDigits: 2,
   }).format(value);
 };
 
-export const formatRate = (value: number) => (value > 0 ? `${formatNumber(value)} Bs.` : "Sin datos");
+export const formatRate = (value: number, decimalSeparator: DecimalSeparator = "comma") =>
+  value > 0 ? `${formatNumber(value, 2, decimalSeparator)} Bs.` : "Sin datos";
 
 /**
  * Gets the conversion rate to VES for a given currency ID.
@@ -53,7 +57,7 @@ export const fromVes = (vesAmount: number, rate: number) => (rate > 0 ? vesAmoun
 /**
  * Formats an exchange rate label (e.g., "Bs. 60,00" or "1,20 BCV").
  */
-export const formatExchangeRate = (baseRate: number, targetCurrency: TargetCurrencyOption, bcvRate: number) => {
+export const formatExchangeRate = (baseRate: number, targetCurrency: TargetCurrencyOption, bcvRate: number, decimalSeparator: DecimalSeparator = "comma") => {
   const targetRate = getCurrencyRate(targetCurrency.id, bcvRate);
 
   if (targetRate <= 0 || baseRate <= 0) {
@@ -61,7 +65,7 @@ export const formatExchangeRate = (baseRate: number, targetCurrency: TargetCurre
   }
 
   const value = baseRate / targetRate;
-  const formattedValue = formatNumber(value);
+  const formattedValue = formatNumber(value, 2, decimalSeparator);
 
   return targetCurrency.id === "ves" ? `${targetCurrency.symbol} ${formattedValue}` : `${formattedValue} ${targetCurrency.code}`;
 };
@@ -106,7 +110,7 @@ export const formatHistoryDate = (value?: string) => {
   return `${day} ${month} - ${hour}:${minutes} ${meridiem}`;
 };
 
-const formatAmountNumber = (sanitizedAmount: string) => {
+export const formatAmountNumber = (sanitizedAmount: string, decimalSeparator: DecimalSeparator = "comma") => {
   if (!sanitizedAmount) {
     return "";
   }
@@ -118,12 +122,13 @@ const formatAmountNumber = (sanitizedAmount: string) => {
     return "";
   }
 
+  const locale = decimalSeparator === "comma" ? "es-VE" : "en-US";
   const formatOptions = decimalPart !== undefined ? { minimumFractionDigits: decimalPart.length, maximumFractionDigits: decimalPart.length } : {};
 
-  return new Intl.NumberFormat("es-VE", formatOptions).format(numberValue).replace(/\u202F/g, ".");
+  return new Intl.NumberFormat(locale, formatOptions).format(numberValue);
 };
 
-export const getDisplayAmount = (amount: string, mode: "automatic" | "manual" = "automatic") => {
+export const getDisplayAmount = (amount: string, mode: "automatic" | "manual" = "automatic", decimalSeparator: DecimalSeparator = "comma") => {
   if (!amount) {
     return "";
   }
@@ -134,7 +139,7 @@ export const getDisplayAmount = (amount: string, mode: "automatic" | "manual" = 
     return "";
   }
 
-  return formatAmountNumber(sanitizedAmount).replace(",", ",");
+  return formatAmountNumber(sanitizedAmount, decimalSeparator);
 };
 
 /**
@@ -198,14 +203,16 @@ export const sanitizeAmountInput = (value: string, mode: "automatic" | "manual" 
  * Formats a quick amount label for display, displaying it as a whole integer representation.
  * E.g., "5" -> "5", "10000" -> "10.000"
  */
-export const formatQuickAmountLabel = (value: string): string => {
+export const formatQuickAmountLabel = (value: string, decimalSeparator: DecimalSeparator = "comma"): string => {
   const numberValue = Number(value);
 
   if (!Number.isFinite(numberValue)) {
     return "";
   }
 
-  return new Intl.NumberFormat("es-VE", { maximumFractionDigits: 0 }).format(numberValue);
+  const locale = decimalSeparator === "comma" ? "es-VE" : "en-US";
+
+  return new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(numberValue);
 };
 
 export const normalizeAmountInputChange = (value: string, previousAmount: string, mode: "automatic" | "manual" = "automatic") => {

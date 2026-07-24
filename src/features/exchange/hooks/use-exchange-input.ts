@@ -17,6 +17,7 @@ type UseExchangeInputParams = {
 export function useExchangeInput({ selectedBaseRate, baseRateOptions }: UseExchangeInputParams) {
   const {
     inputAmount,
+    inputAmountDisplay,
     customRateInput,
     isReversed,
     setInputAmount,
@@ -98,6 +99,7 @@ export function useExchangeInput({ selectedBaseRate, baseRateOptions }: UseExcha
 
   return {
     inputAmount,
+    inputAmountDisplay,
     customRateInput,
     inputCurrency,
     outputCurrency,

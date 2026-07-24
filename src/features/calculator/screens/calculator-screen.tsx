@@ -11,6 +11,7 @@ import type { CurrencyOption } from "@/features/exchange/types";
 import { formatCompactAmount, formatNumber, formatUpdatedAt, parseCurrencyAmount, sanitizeAmountInput } from "@/features/exchange/utils";
 
 import { UniRemixIcon } from "@/components/ui/icon";
+import { useSettingsStore } from "@/features/settings/context/settings-context";
 import { fetchExchangeRates, type ExchangeRateId } from "../api/rates-api";
 
 type PriceCurrencyId = ExchangeRateId | "ves" | "custom";
@@ -253,9 +254,13 @@ function PriceComparisonBlock({
   selectedCurrencyId,
   valueInVes,
 }: PriceComparisonBlockProps) {
+  const { decimalSeparator } = useSettingsStore();
   const isCustomRate = selectedCurrencyId === "custom";
-  const rateText = selectedCurrencyId === "ves" ? "Precio directo en bolivares" : `1 ${currency.code} equivale Bs. ${formatNumber(rate)}`;
-  const amountPlaceholder = selectedCurrencyId === "ves" ? "0,00" : "0";
+  const rateText = selectedCurrencyId === "ves" ? "Precio directo en bolivares" : `1 ${currency.code} equivale Bs. ${formatNumber(rate, 2, decimalSeparator)}`;
+  const amountPlaceholder = decimalSeparator === "comma" ? "0,00" : "0.00";
+  const displayAmount = decimalSeparator === "comma" ? amount.replace(/\./g, ",") : amount.replace(/,/g, ".");
+  const displayCustomRate = decimalSeparator === "comma" ? customRate.replace(/\./g, ",") : customRate.replace(/,/g, ".");
+  const customRatePlaceholder = decimalSeparator === "comma" ? "0,00" : "0.00";
 
   return (
     <View style={styles.priceBlock}>
@@ -269,7 +274,7 @@ function PriceComparisonBlock({
               {currency.symbol}
             </AppText>
             <UniTextInput
-              value={amount.replace(".", ",")}
+              value={displayAmount}
               onChangeText={onAmountChange}
               keyboardType="decimal-pad"
               autoCapitalize="none"
@@ -292,7 +297,7 @@ function PriceComparisonBlock({
           {rate > 0 ? rateText : isCustomRate ? "Ingresa la tasa personalizada" : "Tasa no disponible"}
         </AppText>
         <AppText variant="tab" style={styles.vesValue} numberOfLines={1}>
-          Bs. {formatCompactAmount(valueInVes)}
+          Bs. {formatCompactAmount(valueInVes, decimalSeparator)}
         </AppText>
       </View>
 
@@ -305,12 +310,12 @@ function PriceComparisonBlock({
             Bs.
           </AppText>
           <UniTextInput
-            value={customRate.replace(".", ",")}
+            value={displayCustomRate}
             onChangeText={onCustomRateChange}
             keyboardType="decimal-pad"
             autoCapitalize="none"
             autoCorrect={false}
-            placeholder="0,00"
+            placeholder={customRatePlaceholder}
             style={styles.customRateInput}
             uniProps={(theme) => ({
               placeholderTextColor: theme.colors.textMuted,
@@ -330,6 +335,7 @@ type ComparisonSummaryProps = {
 };
 
 function ComparisonSummary({ firstOption, secondOption, result }: ComparisonSummaryProps) {
+  const { decimalSeparator } = useSettingsStore();
   const hasValues = firstOption.valueInVes > 0 || secondOption.valueInVes > 0;
   const winnerLabel = result?.isEquivalent ? "Precios equivalentes" : result?.betterSide === "first" ? "Precio A conviene mas" : "Precio B conviene mas";
 
@@ -356,20 +362,20 @@ function ComparisonSummary({ firstOption, secondOption, result }: ComparisonSumm
       </View>
 
       <View style={styles.summaryGrid}>
-        <SummaryMetric label="Precio A en Bs." value={`Bs. ${formatCompactAmount(firstOption.valueInVes)}`} isActive={result?.betterSide === "first"} />
-        <SummaryMetric label="Precio B en Bs." value={`Bs. ${formatCompactAmount(secondOption.valueInVes)}`} isActive={result?.betterSide === "second"} />
+        <SummaryMetric label="Precio A en Bs." value={`Bs. ${formatCompactAmount(firstOption.valueInVes, decimalSeparator)}`} isActive={result?.betterSide === "first"} />
+        <SummaryMetric label="Precio B en Bs." value={`Bs. ${formatCompactAmount(secondOption.valueInVes, decimalSeparator)}`} isActive={result?.betterSide === "second"} />
       </View>
 
       <View style={styles.differenceBox}>
         <AppText variant="label">Diferencia</AppText>
         <AppText variant="title" style={styles.differenceValue} numberOfLines={1}>
-          {result ? `Bs. ${formatCompactAmount(result.differenceVes)}` : "Bs. 0"}
+          {result ? `Bs. ${formatCompactAmount(result.differenceVes, decimalSeparator)}` : "Bs. 0"}
         </AppText>
         <AppText variant="body">
           {result
             ? result.isEquivalent
               ? "Ambos precios tienen el mismo costo en bolivares."
-              : `Ahorras ${formatNumber(result.savingPercent)}% frente a la opcion mas cara.`
+              : `Ahorras ${formatNumber(result.savingPercent, 2, decimalSeparator)}% frente a la opcion mas cara.`
             : hasValues
               ? "Falta completar uno de los precios para comparar."
               : "Compara precios usando VES, BCV, Divisa (USDT), EUR o una tasa personalizada."}

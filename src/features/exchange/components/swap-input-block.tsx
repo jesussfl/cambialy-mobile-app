@@ -16,6 +16,7 @@ import {
   type MathOperator,
 } from "../utils/calculator";
 import { useSettingsStore } from "@/features/settings/context/settings-context";
+import { formatAmountNumber } from "../utils";
 import { AmountKeypadSheet } from "./amount-keypad-sheet";
 import { CurrencyPicker } from "./currency-picker";
 import { QuickAmountPills } from "./quick-amount-pills";
@@ -30,6 +31,7 @@ export function SwapInputBlock() {
 
   const {
     inputAmount,
+    inputAmountDisplay,
     inputCurrency,
     handleInputAmountChange,
     handleQuickAmountSelect,
@@ -47,7 +49,7 @@ export function SwapInputBlock() {
   const [hasTyped, setHasTyped] = useState({ amount: false, customRate: false });
   const [expression, setExpression] = useState("");
 
-  const { amountInputMode } = useSettingsStore();
+  const { amountInputMode, decimalSeparator } = useSettingsStore();
 
   const updateFieldValue = (nextValue: string) => {
     if (activeField === "amount") {
@@ -76,7 +78,7 @@ export function SwapInputBlock() {
     const nextExpr = `${currentBase}${value}`;
     setExpression(nextExpr);
 
-    const { formattedResult } = evaluateExpression(nextExpr, amountInputMode);
+    const { formattedResult } = evaluateExpression(nextExpr, amountInputMode, decimalSeparator);
     if (formattedResult) {
       updateFieldValue(formattedResult);
     }
@@ -99,7 +101,7 @@ export function SwapInputBlock() {
 
   const handleEvaluate = () => {
     if (!expression) return;
-    const { formattedResult } = evaluateExpression(expression, amountInputMode);
+    const { formattedResult } = evaluateExpression(expression, amountInputMode, decimalSeparator);
     if (formattedResult) {
       updateFieldValue(formattedResult);
     }
@@ -114,7 +116,7 @@ export function SwapInputBlock() {
       if (nextExpr.length === 0) {
         updateFieldValue("");
       } else {
-        const { formattedResult } = evaluateExpression(nextExpr, amountInputMode);
+        const { formattedResult } = evaluateExpression(nextExpr, amountInputMode, decimalSeparator);
         if (formattedResult) {
           updateFieldValue(formattedResult);
         }
@@ -138,7 +140,8 @@ export function SwapInputBlock() {
     }
   };
 
-  const displayValue = activeField === "amount" ? safeAmount || "0,00" : safeCustomRate || "0,00";
+  const placeholder = decimalSeparator === "comma" ? "0,00" : "0.00";
+  const displayValue = activeField === "amount" ? inputAmountDisplay || placeholder : (safeCustomRate ? formatAmountNumber(safeCustomRate, decimalSeparator) : placeholder);
 
   return (
     <View style={styles.amountBlock}>
@@ -160,7 +163,7 @@ export function SwapInputBlock() {
             <View style={styles.amountDisplayContainer}>
               {expression ? (
                 <AppText variant="label" style={styles.expressionPreview}>
-                  {formatExpressionForDisplay(expression, amountInputMode)}
+                  {formatExpressionForDisplay(expression, amountInputMode, decimalSeparator)}
                 </AppText>
               ) : null}
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.amountPreviewScroll}>

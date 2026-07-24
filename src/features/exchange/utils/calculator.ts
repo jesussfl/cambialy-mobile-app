@@ -1,3 +1,5 @@
+import type { DecimalSeparator } from "@/features/settings/context/settings-context";
+
 import { sanitizeAmountInput } from "../utils";
 
 export type AmountInputMode = "automatic" | "manual";
@@ -150,6 +152,7 @@ export function evaluateTokens(tokens: (number | MathOperator)[]): number | null
 export function evaluateExpression(
   expression: string,
   mode: AmountInputMode = "automatic",
+  decimalSeparator: DecimalSeparator = "comma",
 ): { result: string | null; formattedResult: string } {
   if (!expression.trim()) {
     return { result: null, formattedResult: "" };
@@ -163,7 +166,8 @@ export function evaluateExpression(
   }
 
   const rounded = Math.round(numResult * 100) / 100;
-  const resultStr = rounded.toFixed(2).replace(/\./g, ",");
+  const separatorChar = decimalSeparator === "comma" ? "," : ".";
+  const resultStr = rounded.toFixed(2).replace(/\./g, separatorChar);
 
   return { result: rounded.toFixed(2), formattedResult: resultStr };
 }
@@ -190,9 +194,10 @@ export function appendOperatorToExpression(expression: string, operator: MathOpe
  * - "automatic": "23+23" -> "0,23 + 0,23"
  * - "manual": "23+23" -> "23 + 23", "23,5+23,5" -> "23,5 + 23,5"
  */
-export function formatExpressionForDisplay(expression: string, mode: AmountInputMode = "automatic"): string {
+export function formatExpressionForDisplay(expression: string, mode: AmountInputMode = "automatic", decimalSeparator: DecimalSeparator = "comma"): string {
   if (!expression) return "";
 
+  const separatorChar = decimalSeparator === "comma" ? "," : ".";
   const parts: string[] = [];
   let currentSegment = "";
 
@@ -202,10 +207,9 @@ export function formatExpressionForDisplay(expression: string, mode: AmountInput
     if (["+", "-", "×", "÷"].includes(char)) {
       if (currentSegment) {
         if (mode === "manual") {
-          // In manual mode, display the segment as-is (comma as decimal separator)
-          parts.push(currentSegment.replace(/\./g, ","));
+          parts.push(currentSegment.replace(/\./g, separatorChar));
         } else {
-          const numStr = sanitizeAmountInput(currentSegment, "automatic").replace(".", ",");
+          const numStr = sanitizeAmountInput(currentSegment, "automatic").replace(/\./g, separatorChar);
           parts.push(numStr);
         }
         currentSegment = "";
@@ -218,9 +222,9 @@ export function formatExpressionForDisplay(expression: string, mode: AmountInput
 
   if (currentSegment) {
     if (mode === "manual") {
-      parts.push(currentSegment.replace(/\./g, ","));
+      parts.push(currentSegment.replace(/\./g, separatorChar));
     } else {
-      const numStr = sanitizeAmountInput(currentSegment, "automatic").replace(".", ",");
+      const numStr = sanitizeAmountInput(currentSegment, "automatic").replace(/\./g, separatorChar);
       parts.push(numStr);
     }
   }

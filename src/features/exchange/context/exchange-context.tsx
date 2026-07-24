@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 
+import { useSettingsStore } from "@/features/settings/context/settings-context";
 import type { BaseRateId } from "../hooks/exchange-screen.types";
 import type { TargetCurrencyId } from "../types";
 import { getDisplayAmount, parseCurrencyAmount, sanitizeAmountInput } from "../utils";
@@ -44,12 +45,16 @@ export function ExchangeProvider({ children, initialState: initialStateProp }: E
   const resolvedInitialState = useMemo(() => ({ ...defaultState, ...initialStateProp }), [initialStateProp]);
 
   const [state, setState] = useState<ExchangeState>(resolvedInitialState);
+  const decimalSeparator = useSettingsStore((s) => s.decimalSeparator);
 
-  const setInputAmount = useCallback((amount: string, displayAmount?: string) => {
-    const sanitizedAmount = sanitizeAmountInput(amount);
-    const nextDisplayAmount = displayAmount ?? getDisplayAmount(sanitizedAmount);
-    setState((prev) => ({ ...prev, inputAmount: sanitizedAmount, inputAmountDisplay: nextDisplayAmount }));
-  }, []);
+  const setInputAmount = useCallback(
+    (amount: string, displayAmount?: string) => {
+      const sanitizedAmount = sanitizeAmountInput(amount);
+      const nextDisplayAmount = displayAmount ?? getDisplayAmount(sanitizedAmount, "automatic", decimalSeparator);
+      setState((prev) => ({ ...prev, inputAmount: sanitizedAmount, inputAmountDisplay: nextDisplayAmount }));
+    },
+    [decimalSeparator],
+  );
 
   const setSelectedBaseRateId = useCallback((id: BaseRateId) => {
     setState((prev) => ({ ...prev, selectedBaseRateId: id }));

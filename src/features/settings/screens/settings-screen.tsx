@@ -11,7 +11,7 @@ const UniSwitch = withUnistyles(Switch);
 
 export function SettingsScreen() {
   const { isDarkMode, toggleTheme } = useThemePreference();
-  const { amountInputMode, setAmountInputMode } = useSettingsStore();
+  const { amountInputMode, setAmountInputMode, decimalSeparator, setDecimalSeparator } = useSettingsStore();
 
   return (
     <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -99,6 +99,49 @@ export function SettingsScreen() {
               </AppText>
             </View>
             {amountInputMode === "manual" ? <UniRemixIcon name="check-line" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /> : null}
+          </Pressable>
+        </Card>
+      </View>
+
+      <View style={styles.section}>
+        <AppText variant="sectionTitle" style={styles.sectionHeader}>
+          Formato numérico
+        </AppText>
+        <Card style={styles.card}>
+          <Pressable
+            accessibilityRole="radio"
+            accessibilityState={{ checked: decimalSeparator === "comma" }}
+            style={styles.modeRow}
+            onPress={() => void setDecimalSeparator("comma")}
+          >
+            <View style={styles.modeCopy}>
+              <AppText variant="body" style={styles.modeTitle}>
+                Coma (1.234,56)
+              </AppText>
+              <AppText variant="subtitle" style={styles.modeDescription}>
+                Separador decimal: coma
+              </AppText>
+            </View>
+            {decimalSeparator === "comma" ? <UniRemixIcon name="check-line" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /> : null}
+          </Pressable>
+
+          <View style={styles.modeSeparator} />
+
+          <Pressable
+            accessibilityRole="radio"
+            accessibilityState={{ checked: decimalSeparator === "dot" }}
+            style={styles.modeRow}
+            onPress={() => void setDecimalSeparator("dot")}
+          >
+            <View style={styles.modeCopy}>
+              <AppText variant="body" style={styles.modeTitle}>
+                Punto (1,234.56)
+              </AppText>
+              <AppText variant="subtitle" style={styles.modeDescription}>
+                Separador decimal: punto
+              </AppText>
+            </View>
+            {decimalSeparator === "dot" ? <UniRemixIcon name="check-line" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /> : null}
           </Pressable>
         </Card>
       </View>
