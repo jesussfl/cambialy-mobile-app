@@ -1,6 +1,4 @@
 import { Tabs } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
-
 import type { ComponentProps } from "react";
 import { Pressable, View } from "react-native";
 import { type IconName } from "react-native-remix-icon";
@@ -18,26 +16,19 @@ type TabConfig = {
 };
 
 const BOTTOM_NAV_CONFIG: Record<string, TabConfig> = {
-  index: {
+  "(exchange)": {
     icon: "exchange-2-line",
     label: "Intercambio",
   },
-  compare: {
+  "(compare)": {
     icon: "calculator-line",
     label: "Comparar",
   },
-
-  settings: {
+  "(settings)": {
     icon: "settings-3-line",
     label: "Ajustes",
   },
 };
-
-SplashScreen.setOptions({
-  duration: 350,
-  fade: true,
-});
-void SplashScreen.preventAutoHideAsync();
 
 const UniAppText = withUnistyles(AppText);
 

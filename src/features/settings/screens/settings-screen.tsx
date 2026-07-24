@@ -8,7 +8,7 @@ import { useThemePreference } from "@/theme/theme-preference";
 
 const UniSwitch = withUnistyles(Switch);
 
-export default function SettingsScreen() {
+export function SettingsScreen() {
   const { isDarkMode, toggleTheme } = useThemePreference();
 
   return (

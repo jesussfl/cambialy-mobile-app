@@ -63,7 +63,7 @@ function AppTabs() {
       <StatusBar style={isDarkMode ? "light" : "dark"} />
       <OnboardingGate>
         <UniTabs
-          initialRouteName="index"
+          initialRouteName="(exchange)"
           tabBar={(props) => <CustomTabBar {...props} />}
           screenOptions={{
             headerShown: false,
@@ -77,9 +77,9 @@ function AppTabs() {
             },
           })}
         >
-          <Tabs.Screen name="index" options={{ title: "Exchange" }} />
-          <Tabs.Screen name="compare" options={{ title: "Compare" }} />
-          <Tabs.Screen name="settings" options={{ title: "Settings" }} />
+          <Tabs.Screen name="(exchange)" options={{ title: "Exchange" }} />
+          <Tabs.Screen name="(compare)" options={{ title: "Compare" }} />
+          <Tabs.Screen name="(settings)" options={{ title: "Settings" }} />
         </UniTabs>
       </OnboardingGate>
     </React.Fragment>

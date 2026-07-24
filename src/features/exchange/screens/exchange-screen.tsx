@@ -9,7 +9,7 @@ import { useExchangeRatesList } from "@/features/exchange/hooks/use-exchange-rat
 import { ScrollView, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
-export default function ExchangeScreen() {
+export function ExchangeScreen() {
   return (
     <ExchangeProvider>
       <ExchangeScreenContent />
@@ -61,6 +61,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   content: {
     flexGrow: 1,
     paddingHorizontal: theme.spacing.md,
+    paddingBottom: theme.spacing["3xl"],
     gap: theme.spacing.lg,
   },
   swapPanel: {
