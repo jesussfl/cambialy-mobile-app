@@ -98,13 +98,6 @@ function AppTabs() {
             headerShown: false,
             tabBarHideOnKeyboard: true,
           }}
-          uniProps={(theme) => ({
-            screenOptions: {
-              sceneStyle: {
-                backgroundColor: theme.colors.background,
-              },
-            },
-          })}
         >
           <Tabs.Screen name="index" options={{ title: "Exchange" }} />
           <Tabs.Screen name="(compare)" options={{ title: "Compare" }} />
