@@ -123,12 +123,12 @@ const formatAmountNumber = (sanitizedAmount: string) => {
   return new Intl.NumberFormat("es-VE", formatOptions).format(numberValue).replace(/\u202F/g, ".");
 };
 
-export const getDisplayAmount = (amount: string) => {
+export const getDisplayAmount = (amount: string, mode: "automatic" | "manual" = "automatic") => {
   if (!amount) {
     return "";
   }
 
-  const sanitizedAmount = sanitizeAmountInput(amount);
+  const sanitizedAmount = sanitizeAmountInput(amount, mode);
 
   if (!sanitizedAmount) {
     return "";
@@ -139,10 +139,35 @@ export const getDisplayAmount = (amount: string) => {
 
 /**
  * Sanitizes an input string to be a valid decimal amount string.
- * This implementation is cents-based (fixed decimal entry from the right).
- * E.g., "5" -> "0.05", "55" -> "0.55", "555" -> "5.55"
+ *
+ * - "automatic" mode (default): cents-based fixed decimal entry from the right.
+ *   E.g., "5" -> "0.05", "55" -> "0.55", "555" -> "5.55"
+ *
+ * - "manual" mode: the user types digits and optionally a comma/dot as the decimal
+ *   separator. The raw entry is returned as a dot-decimal string.
+ *   E.g., "23" -> "23", "235" -> "235", "23,5" -> "23.5", "23,50" -> "23.50"
  */
-export const sanitizeAmountInput = (value: string): string => {
+export const sanitizeAmountInput = (value: string, mode: "automatic" | "manual" = "automatic"): string => {
+  if (mode === "manual") {
+    // Allow digits and at most one decimal separator (comma or dot)
+    const normalized = value.replace(/,/g, ".");
+    // Keep only digits and the first dot
+    const firstDot = normalized.indexOf(".");
+    const digits =
+      firstDot === -1
+        ? normalized.replace(/[^\d]/g, "")
+        : normalized.slice(0, firstDot).replace(/[^\d]/g, "") + "." + normalized.slice(firstDot + 1).replace(/[^\d]/g, "");
+
+    if (!digits || digits === ".") {
+      return "";
+    }
+
+    // Remove leading zeros unless followed by a decimal point
+    const trimmed = digits.replace(/^0+(\d)/, "$1");
+    return trimmed;
+  }
+
+  // --- automatic (cents-based) ---
   // Extract all digit characters from the input string
   const digits = value.replace(/[^\d]/g, "");
 
@@ -183,12 +208,12 @@ export const formatQuickAmountLabel = (value: string): string => {
   return new Intl.NumberFormat("es-VE", { maximumFractionDigits: 0 }).format(numberValue);
 };
 
-export const normalizeAmountInputChange = (value: string, previousAmount: string) => {
+export const normalizeAmountInputChange = (value: string, previousAmount: string, mode: "automatic" | "manual" = "automatic") => {
   void previousAmount;
 
   if (!value) {
     return "";
   }
 
-  return sanitizeAmountInput(value);
+  return sanitizeAmountInput(value, mode);
 };

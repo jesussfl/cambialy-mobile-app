@@ -1,15 +1,17 @@
-import { Switch, View } from "react-native";
+import { Pressable, Switch, View } from "react-native";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 import { Card } from "@/components/ui/card";
 import { UniRemixIcon } from "@/components/ui/icon";
+import { useSettingsStore } from "@/features/settings/context/settings-context";
 import { useThemePreference } from "@/theme/theme-preference";
 
 const UniSwitch = withUnistyles(Switch);
 
 export function SettingsScreen() {
   const { isDarkMode, toggleTheme } = useThemePreference();
+  const { amountInputMode, setAmountInputMode } = useSettingsStore();
 
   return (
     <View style={styles.content}>
@@ -55,6 +57,61 @@ export function SettingsScreen() {
               value={isDarkMode}
             />
           </View>
+        </Card>
+      </View>
+
+      <View style={styles.section}>
+        <AppText variant="sectionTitle" style={styles.sectionHeader}>
+          Entrada de montos
+        </AppText>
+        <Card style={styles.card}>
+          <Pressable
+            accessibilityRole="radio"
+            accessibilityState={{ checked: amountInputMode === "automatic" }}
+            style={styles.modeRow}
+            onPress={() => void setAmountInputMode("automatic")}
+          >
+            <View style={styles.modeCopy}>
+              <AppText variant="body" style={styles.modeTitle}>
+                Automático (centavos)
+              </AppText>
+              <AppText variant="subtitle" style={styles.modeDescription}>
+                23 → 0,23
+              </AppText>
+            </View>
+            {amountInputMode === "automatic" ? (
+              <UniRemixIcon
+                name="check-line"
+                size={20}
+                uniProps={(theme: any) => ({ color: theme.colors.primary })}
+              />
+            ) : null}
+          </Pressable>
+
+          <View style={styles.modeSeparator} />
+
+          <Pressable
+            accessibilityRole="radio"
+            accessibilityState={{ checked: amountInputMode === "manual" }}
+            style={styles.modeRow}
+            onPress={() => void setAmountInputMode("manual")}
+          >
+            <View style={styles.modeCopy}>
+              <AppText variant="body" style={styles.modeTitle}>
+                Manual (con coma/punto)
+              </AppText>
+              <AppText variant="subtitle" style={styles.modeDescription}>
+                23 → 23
+              </AppText>
+            </View>
+            {amountInputMode === "manual" ? (
+              <UniRemixIcon
+                name="check-line"
+                size={20}
+                uniProps={(theme: any) => ({ color: theme.colors.primary })}
+              />
+            ) : null}
+          </Pressable>
         </Card>
       </View>
 
@@ -154,5 +211,29 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   versionText: {
     color: theme.colors.textMuted,
+  },
+  modeRow: {
+    minHeight: 52,
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    justifyContent: "space-between" as const,
+    gap: theme.spacing.md,
+  },
+  modeCopy: {
+    flex: 1,
+    minWidth: 0,
+    gap: theme.spacing.xxs,
+  },
+  modeTitle: {
+    color: theme.colors.textPrimary,
+    fontWeight: theme.typography.fontWeight.semibold,
+  },
+  modeDescription: {
+    color: theme.colors.textSecondary,
+  },
+  modeSeparator: {
+    height: 1,
+    backgroundColor: theme.colors.secondarySurface,
+    marginVertical: theme.spacing.xs,
   },
 }));

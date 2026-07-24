@@ -1,21 +1,31 @@
 import { sanitizeAmountInput } from "../utils";
 
+export type AmountInputMode = "automatic" | "manual";
 export type MathOperator = "+" | "-" | "×" | "÷";
 
 /**
- * Parses raw typed expression string where number segments are raw digit entries
- * formatted via the cents-based system (e.g. "23" -> 0.23, "500" -> 5.00).
+ * Parses raw typed expression segment into a number, respecting the input mode.
+ *
+ * - "automatic": digits are cents-based (e.g. "23" -> 0.23, "500" -> 5.00)
+ * - "manual": digits are direct values (e.g. "23" -> 23, "23,5" -> 23.5)
  */
-export function parseSegmentToNumber(rawSegment: string): number {
+export function parseSegmentToNumber(rawSegment: string, mode: AmountInputMode = "automatic"): number {
   if (!rawSegment) return 0;
 
+  if (mode === "manual") {
+    // In manual mode, commas are decimal separators
+    const num = parseFloat(rawSegment.replace(/,/g, "."));
+    return isNaN(num) ? 0 : num;
+  }
+
+  // automatic mode
   // If segment already contains a decimal dot/comma (e.g. calculated result), parse directly
   if (rawSegment.includes(".") || rawSegment.includes(",")) {
     const num = parseFloat(rawSegment.replace(/,/g, "."));
     return isNaN(num) ? 0 : num;
   }
 
-  const sanitized = sanitizeAmountInput(rawSegment);
+  const sanitized = sanitizeAmountInput(rawSegment, "automatic");
   const num = parseFloat(sanitized);
   return isNaN(num) ? 0 : num;
 }
@@ -23,7 +33,7 @@ export function parseSegmentToNumber(rawSegment: string): number {
 /**
  * Tokenize a raw expression string (e.g. "23+23" or "500×20") into numbers and operators.
  */
-export function tokenizeExpression(expression: string): (number | MathOperator)[] {
+export function tokenizeExpression(expression: string, mode: AmountInputMode = "automatic"): (number | MathOperator)[] {
   const tokens: (number | MathOperator)[] = [];
   let currentSegment = "";
 
@@ -32,7 +42,7 @@ export function tokenizeExpression(expression: string): (number | MathOperator)[
 
     if (["+", "-", "×", "÷", "*", "/"].includes(char)) {
       if (currentSegment.length > 0) {
-        tokens.push(parseSegmentToNumber(currentSegment));
+        tokens.push(parseSegmentToNumber(currentSegment, mode));
         currentSegment = "";
       } else if (char === "-" && (tokens.length === 0 || typeof tokens[tokens.length - 1] !== "number")) {
         // Negative sign
@@ -57,7 +67,7 @@ export function tokenizeExpression(expression: string): (number | MathOperator)[
   }
 
   if (currentSegment.length > 0) {
-    tokens.push(parseSegmentToNumber(currentSegment));
+    tokens.push(parseSegmentToNumber(currentSegment, mode));
   }
 
   return tokens;
@@ -132,14 +142,20 @@ export function evaluateTokens(tokens: (number | MathOperator)[]): number | null
 }
 
 /**
- * Evaluates a raw expression string and returns formatted cents-based string for app inputs.
+ * Evaluates a raw expression string and returns a formatted result string.
+ *
+ * - "automatic": result is cents-formatted (e.g. 0,46 for 23+23)
+ * - "manual": result is a standard decimal (e.g. 46 for 23+23, 47 for 23,5+23,5)
  */
-export function evaluateExpression(expression: string): { result: string | null; formattedResult: string } {
+export function evaluateExpression(
+  expression: string,
+  mode: AmountInputMode = "automatic",
+): { result: string | null; formattedResult: string } {
   if (!expression.trim()) {
     return { result: null, formattedResult: "" };
   }
 
-  const tokens = tokenizeExpression(expression);
+  const tokens = tokenizeExpression(expression, mode);
   const numResult = evaluateTokens(tokens);
 
   if (numResult === null || !isFinite(numResult)) {
@@ -169,9 +185,12 @@ export function appendOperatorToExpression(expression: string, operator: MathOpe
 }
 
 /**
- * Formats a raw expression string for visual presentation (e.g. "23+23" -> "0,23 + 0,23").
+ * Formats a raw expression string for visual presentation.
+ *
+ * - "automatic": "23+23" -> "0,23 + 0,23"
+ * - "manual": "23+23" -> "23 + 23", "23,5+23,5" -> "23,5 + 23,5"
  */
-export function formatExpressionForDisplay(expression: string): string {
+export function formatExpressionForDisplay(expression: string, mode: AmountInputMode = "automatic"): string {
   if (!expression) return "";
 
   const parts: string[] = [];
@@ -182,8 +201,13 @@ export function formatExpressionForDisplay(expression: string): string {
 
     if (["+", "-", "×", "÷"].includes(char)) {
       if (currentSegment) {
-        const numStr = sanitizeAmountInput(currentSegment).replace(".", ",");
-        parts.push(numStr);
+        if (mode === "manual") {
+          // In manual mode, display the segment as-is (comma as decimal separator)
+          parts.push(currentSegment.replace(/\./g, ","));
+        } else {
+          const numStr = sanitizeAmountInput(currentSegment, "automatic").replace(".", ",");
+          parts.push(numStr);
+        }
         currentSegment = "";
       }
       parts.push(char);
@@ -193,8 +217,12 @@ export function formatExpressionForDisplay(expression: string): string {
   }
 
   if (currentSegment) {
-    const numStr = sanitizeAmountInput(currentSegment).replace(".", ",");
-    parts.push(numStr);
+    if (mode === "manual") {
+      parts.push(currentSegment.replace(/\./g, ","));
+    } else {
+      const numStr = sanitizeAmountInput(currentSegment, "automatic").replace(".", ",");
+      parts.push(numStr);
+    }
   }
 
   return parts.join(" ");

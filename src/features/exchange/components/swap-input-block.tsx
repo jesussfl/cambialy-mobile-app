@@ -15,6 +15,7 @@ import {
   formatExpressionForDisplay,
   type MathOperator,
 } from "../utils/calculator";
+import { useSettingsStore } from "@/features/settings/context/settings-context";
 import { AmountKeypadSheet } from "./amount-keypad-sheet";
 import { CurrencyPicker } from "./currency-picker";
 import { QuickAmountPills } from "./quick-amount-pills";
@@ -46,6 +47,8 @@ export function SwapInputBlock() {
   const [hasTyped, setHasTyped] = useState({ amount: false, customRate: false });
   const [expression, setExpression] = useState("");
 
+  const { amountInputMode } = useSettingsStore();
+
   const updateFieldValue = (nextValue: string) => {
     if (activeField === "amount") {
       handleInputAmountChange(nextValue);
@@ -73,7 +76,7 @@ export function SwapInputBlock() {
     const nextExpr = `${currentBase}${value}`;
     setExpression(nextExpr);
 
-    const { formattedResult } = evaluateExpression(nextExpr);
+    const { formattedResult } = evaluateExpression(nextExpr, amountInputMode);
     if (formattedResult) {
       updateFieldValue(formattedResult);
     }
@@ -96,7 +99,7 @@ export function SwapInputBlock() {
 
   const handleEvaluate = () => {
     if (!expression) return;
-    const { formattedResult } = evaluateExpression(expression);
+    const { formattedResult } = evaluateExpression(expression, amountInputMode);
     if (formattedResult) {
       updateFieldValue(formattedResult);
     }
@@ -111,7 +114,7 @@ export function SwapInputBlock() {
       if (nextExpr.length === 0) {
         updateFieldValue("");
       } else {
-        const { formattedResult } = evaluateExpression(nextExpr);
+        const { formattedResult } = evaluateExpression(nextExpr, amountInputMode);
         if (formattedResult) {
           updateFieldValue(formattedResult);
         }
@@ -157,7 +160,7 @@ export function SwapInputBlock() {
             <View style={styles.amountDisplayContainer}>
               {expression ? (
                 <AppText variant="label" style={styles.expressionPreview}>
-                  {formatExpressionForDisplay(expression)}
+                  {formatExpressionForDisplay(expression, amountInputMode)}
                 </AppText>
               ) : null}
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.amountPreviewScroll}>
