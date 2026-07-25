@@ -2,9 +2,11 @@ import { View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
-import { CopyIconButton } from "@/components/ui/copy-icon-button";
 
+import { useToast } from "heroui-native";
+import { PressableOpacity } from "pressto";
 import { useExchangeContext } from "../context/exchange-context";
+import { useCopyResult } from "../hooks/use-copy-result";
 import { useExchangeConversion } from "../hooks/use-exchange-conversion";
 import { useExchangeInput } from "../hooks/use-exchange-input";
 import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
@@ -30,11 +32,27 @@ export function SwapOutputBlock() {
     customRateValue,
   });
 
+  const { handleCopyResult } = useCopyResult(outputCopyText);
+  const { toast } = useToast();
   const safeAmount = outputAmountText ?? "";
+
+  const copyResult = async () => {
+    handleCopyResult();
+    toast.show({
+      label: "Resultado copiado",
+    });
+  };
 
   return (
     <View style={styles.amountBlock}>
       <View style={styles.amountTopRow}>
+        <View style={styles.amountRow}>
+          <PressableOpacity onPress={copyResult} hitSlop={12}>
+            <AppText variant="title" style={[styles.amountValue, styles.amountValueTextRow]} numberOfLines={1}>
+              {outputCurrency.symbol} {safeAmount}
+            </AppText>
+          </PressableOpacity>
+        </View>
         <CurrencyPicker
           code={outputCurrency.code}
           icon={outputCurrency.icon}
@@ -42,17 +60,6 @@ export function SwapOutputBlock() {
           options={outputOptions}
           selectedOptionId={outputSelectedOptionId}
         />
-
-        <View style={styles.amountRow}>
-          <AppText variant="title" style={styles.amountSymbol}>
-            {outputCurrency.symbol}
-          </AppText>
-
-          <AppText variant="title" style={[styles.amountValue, styles.amountValueTextRow]} numberOfLines={1}>
-            {safeAmount}
-          </AppText>
-          <CopyIconButton text={outputCopyText} />
-        </View>
       </View>
     </View>
   );
@@ -64,26 +71,23 @@ const styles = StyleSheet.create((theme) => ({
     gap: theme.spacing.md,
   },
   amountTopRow: {
-    flexDirection: "column",
+    flexDirection: "row",
     gap: theme.spacing.xs,
   },
   amountRow: {
+    flex: 1,
     minHeight: 58,
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing.xs,
   },
-  amountSymbol: {
-    color: theme.colors.textSecondary,
-    fontSize: 34,
-    lineHeight: 40,
-  },
+
   amountValue: {
     color: theme.colors.textPrimary,
     fontFamily: theme.typography.fontFamily.bold,
-    fontSize: AMOUNT_FONT_SIZE,
+    fontSize: 24,
     fontWeight: theme.typography.fontWeight.bold,
-    lineHeight: AMOUNT_FONT_SIZE + 6,
+    lineHeight: AMOUNT_FONT_SIZE + 9,
   },
   amountValueTextRow: {
     flex: 1,

@@ -81,9 +81,9 @@ export function ConversionDetails({ details, formula, style }: ConversionDetails
 const styles = StyleSheet.create((theme) => ({
   conversionDetails: {
     gap: theme.spacing.xs,
-    padding: 4,
+    padding: 8,
     borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.surfaceSoft,
+    // backgroundColor: theme.gray["100"],
     borderWidth: 1,
     borderColor: theme.colors.borderSubtle,
   },

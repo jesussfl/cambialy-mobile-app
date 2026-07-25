@@ -55,7 +55,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   screenContent: {
     paddingTop: rt.insets.top,
     flex: 1,
-    backgroundColor: theme.gray["800"],
+    backgroundColor: theme.gray["900"],
   },
   scrollView: {
     flex: 1,
@@ -67,8 +67,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     flexGrow: 1,
     paddingHorizontal: theme.spacing.md,
     paddingBottom: 150,
-
-    gap: theme.spacing.lg,
   },
   swapPanel: {
     gap: theme.spacing.md,

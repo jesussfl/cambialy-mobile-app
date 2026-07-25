@@ -112,6 +112,7 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
+    marginTop: 4,
     borderColor: theme.colors.borderSubtle,
   },
   currencyIcon: {

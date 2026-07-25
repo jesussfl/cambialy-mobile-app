@@ -141,29 +141,17 @@ export function SwapInputBlock() {
   return (
     <View style={styles.amountBlock}>
       <View style={styles.amountTopRow}>
-        <CurrencyPicker
-          code={inputCurrency.code}
-          icon={inputCurrency.icon}
-          onSelect={handleInputCurrencySelect}
-          options={inputOptions}
-          selectedOptionId={inputSelectedOptionId}
-        />
-
         <View style={styles.amountRow}>
-          <AppText variant="title" style={styles.amountSymbol}>
-            {inputCurrency.symbol}
-          </AppText>
-
+          {expression ? (
+            <AppText variant="label" style={styles.expressionPreview}>
+              {formatExpressionForDisplay(expression, amountInputMode, decimalSeparator)}
+            </AppText>
+          ) : null}
           <Pressable hitSlop={12} style={styles.amountInputPanel} onPress={() => TrueSheet.present("amount-keypad-sheet")}>
             <View style={styles.amountDisplayContainer}>
-              {expression ? (
-                <AppText variant="label" style={styles.expressionPreview}>
-                  {formatExpressionForDisplay(expression, amountInputMode, decimalSeparator)}
-                </AppText>
-              ) : null}
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.amountPreviewScroll}>
-                <UniAppText variant="title" style={styles.amountPreview}>
-                  {displayValue}
+                <UniAppText variant="body" style={styles.amountPreview}>
+                  {`${inputCurrency.symbol} ${displayValue}`}
                 </UniAppText>
               </ScrollView>
             </View>
@@ -184,6 +172,13 @@ export function SwapInputBlock() {
             onEvaluate={handleEvaluate}
           />
         </View>
+        <CurrencyPicker
+          code={inputCurrency.code}
+          icon={inputCurrency.icon}
+          onSelect={handleInputCurrencySelect}
+          options={inputOptions}
+          selectedOptionId={inputSelectedOptionId}
+        />
       </View>
 
       {quickAmounts.length ? <QuickAmountPills amount={safeAmount} onSelect={handleQuickAmountSelect} values={quickAmounts} /> : null}
@@ -193,24 +188,18 @@ export function SwapInputBlock() {
 
 const styles = StyleSheet.create((theme) => ({
   amountBlock: {
-    minHeight: 142,
     justifyContent: "center",
     gap: theme.spacing.md,
+    marginTop: 12,
   },
   amountTopRow: {
-    flexDirection: "column",
+    flexDirection: "row",
     gap: theme.spacing.xs,
   },
   amountRow: {
-    minHeight: 58,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.xs,
-  },
-  amountSymbol: {
-    color: theme.colors.textSecondary,
-    fontSize: 34,
-    lineHeight: 40,
+    flex: 1,
+    flexDirection: "column",
+    justifyContent: "center",
   },
   amountInputPanel: {
     flex: 1,
@@ -225,14 +214,15 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.textMuted,
     fontSize: 14,
     lineHeight: 18,
-    marginBottom: 2,
+    position: "absolute",
+    top: -12,
+    left: 0,
   },
   amountPreview: {
     color: theme.colors.textPrimary,
     fontFamily: theme.typography.fontFamily.bold,
-    fontSize: 34,
+    fontSize: 28,
     fontWeight: theme.typography.fontWeight.bold,
-    lineHeight: 40,
   },
   amountPreviewScroll: {
     alignItems: "center",
