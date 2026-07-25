@@ -1,5 +1,5 @@
 import { View } from "react-native";
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 
@@ -13,6 +13,7 @@ import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
 import { CurrencyPicker } from "./currency-picker";
 
 const AMOUNT_FONT_SIZE = 34;
+const UniPressableOpacity = withUnistyles(PressableOpacity);
 
 export function SwapOutputBlock() {
   const { selectedBaseRateId, customRateValue, selectedTargetCurrencyId, inputAmount, isReversed } = useExchangeContext();
@@ -47,11 +48,11 @@ export function SwapOutputBlock() {
     <View style={styles.amountBlock}>
       <View style={styles.amountTopRow}>
         <View style={styles.amountRow}>
-          <PressableOpacity onPress={copyResult} hitSlop={12}>
+          <UniPressableOpacity onPress={copyResult} hitSlop={12} rippleColor={"transparent"}>
             <AppText variant="title" style={[styles.amountValue, styles.amountValueTextRow]} numberOfLines={1}>
               {outputCurrency.symbol} {safeAmount}
             </AppText>
-          </PressableOpacity>
+          </UniPressableOpacity>
         </View>
         <CurrencyPicker
           code={outputCurrency.code}

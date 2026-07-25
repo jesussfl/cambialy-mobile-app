@@ -63,7 +63,7 @@ export function AmountKeypadSheet({
               </AppText>
             </PressableOpacity>
 
-            <PressableOpacity onPress={onClose} style={styles.headerButton}>
+            <PressableOpacity onPress={onClose} style={styles.closeButton}>
               <AppText variant="tab" style={styles.closeLabel}>
                 Cerrar
               </AppText>
@@ -117,10 +117,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  closeButton: {
-    paddingVertical: theme.spacing.xs,
-    backgroundColor: "red",
-  },
+
   closeLabel: {
     color: "white",
   },
@@ -152,7 +149,16 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingVertical: theme.spacing.xs,
     minWidth: 84,
     height: 42,
-    backgroundColor: theme.gray[800],
+    backgroundColor: theme.colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: theme.radius.pill,
+  },
+  closeButton: {
+    paddingVertical: theme.spacing.xs,
+    minWidth: 84,
+    height: 42,
+    backgroundColor: theme.gray["700"],
     justifyContent: "center",
     alignItems: "center",
     borderRadius: theme.radius.pill,

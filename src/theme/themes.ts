@@ -59,7 +59,7 @@ export const themes = {
       accentText: gray[1000],
       secondarySurface: gray[100],
       secondaryText: gray[800],
-      tabSurface: gray[900],
+      tabSurface: gray[0],
       tabBorder: gray[200],
       inputSurface: gray[100],
       icon: gray[600],

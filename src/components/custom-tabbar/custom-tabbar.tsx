@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import { type ComponentProps, useEffect } from "react";
-import { Pressable, View } from "react-native";
+import { Platform, Pressable, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { type IconName } from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
@@ -128,7 +128,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     position: "absolute",
     left: 0,
     right: 0,
-    bottom: rt.insets.bottom,
+    bottom: Platform.OS === "android" ? rt.insets.bottom + 16 : rt.insets.bottom,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
@@ -143,6 +143,8 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingHorizontal: theme.spacing.sm,
     backgroundColor: theme.colors.tabSurface,
     borderRadius: theme.radius.pill,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
     gap: 8,
   },
   tabButton: {

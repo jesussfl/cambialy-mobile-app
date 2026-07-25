@@ -6,7 +6,6 @@ import { SwapOutputBlock } from "@/features/exchange/components/swap-output-bloc
 import { useExchangeContext } from "@/features/exchange/context/exchange-context";
 import { useExchangeConversion } from "@/features/exchange/hooks/use-exchange-conversion";
 import { useExchangeRatesList } from "@/features/exchange/hooks/use-exchange-rates-list";
-import { StatusBar } from "expo-status-bar";
 import { ScrollView, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
@@ -26,9 +25,8 @@ export function ExchangeScreen() {
 
   return (
     <View style={styles.screenContent}>
-      <StatusBar style="light" />
       <View style={styles.header}>
-        <AppText variant="cardTitle" color="white" style={{ fontWeight: "bold" }}>
+        <AppText variant="cardTitle" style={{ fontWeight: "bold" }}>
           Cambialy
         </AppText>
       </View>
@@ -55,7 +53,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   screenContent: {
     paddingTop: rt.insets.top,
     flex: 1,
-    backgroundColor: theme.gray["900"],
+    backgroundColor: theme.colors.background,
   },
   scrollView: {
     flex: 1,
