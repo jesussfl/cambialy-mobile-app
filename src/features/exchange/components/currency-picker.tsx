@@ -6,9 +6,11 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 
+import { PressableOpacity } from "pressto";
 import type { CurrencyOption } from "../types";
 
 const UniRemixIcon = withUnistyles(RemixIcon);
+const UniPressableOpacity = withUnistyles(PressableOpacity);
 
 type CurrencyPickerProps = {
   code: string;
@@ -29,7 +31,7 @@ export function CurrencyPicker({ code, icon, onSelect, options, selectedOptionId
   return (
     <Popover isOpen={isPickerOpen} onOpenChange={setIsPickerOpen}>
       <Popover.Trigger asChild>
-        <Pressable accessibilityRole="button" style={styles.currencyPill}>
+        <UniPressableOpacity accessibilityRole="button" style={styles.currencyPill}>
           <View style={styles.currencyIcon}>
             <UniRemixIcon
               name={icon}
@@ -49,7 +51,7 @@ export function CurrencyPicker({ code, icon, onSelect, options, selectedOptionId
               color: theme.colors.textSecondary,
             })}
           />
-        </Pressable>
+        </UniPressableOpacity>
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Overlay />
@@ -102,7 +104,7 @@ export function CurrencyPicker({ code, icon, onSelect, options, selectedOptionId
 const styles = StyleSheet.create((theme) => ({
   currencyPill: {
     maxWidth: 116,
-    minHeight: 46,
+    minHeight: 36,
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing.xxs,

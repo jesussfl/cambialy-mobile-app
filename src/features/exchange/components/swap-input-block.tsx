@@ -5,19 +5,14 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 
+import { useSettingsStore } from "@/features/settings/context/settings-context";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useExchangeContext } from "../context/exchange-context";
 import { useExchangeInput } from "../hooks/use-exchange-input";
-import { useExchangeStore } from "../store/exchange-store";
 import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
-import {
-  appendOperatorToExpression,
-  evaluateExpression,
-  formatExpressionForDisplay,
-  type MathOperator,
-} from "../utils/calculator";
-import { useSettingsStore } from "@/features/settings/context/settings-context";
+import { useExchangeStore } from "../store/exchange-store";
 import { formatAmountNumber } from "../utils";
+import { appendOperatorToExpression, evaluateExpression, formatExpressionForDisplay, type MathOperator } from "../utils/calculator";
 import { AmountKeypadSheet } from "./amount-keypad-sheet";
 import { CurrencyPicker } from "./currency-picker";
 import { QuickAmountPills } from "./quick-amount-pills";
@@ -76,13 +71,7 @@ export function SwapInputBlock() {
       setHasTyped((prev) => ({ ...prev, [field]: true }));
     }
 
-    const currentBase = isFirst
-      ? ""
-      : expression
-        ? expression
-        : field === "amount"
-          ? safeAmount
-          : safeCustomRate;
+    const currentBase = isFirst ? "" : expression ? expression : field === "amount" ? safeAmount : safeCustomRate;
 
     const nextExpr = `${currentBase}${value}`;
     setExpression(nextExpr);
@@ -95,11 +84,7 @@ export function SwapInputBlock() {
 
   const handleOperatorPress = (op: MathOperator) => {
     const field = activeField;
-    const currentBase = expression
-      ? expression
-      : field === "amount"
-        ? safeAmount
-        : safeCustomRate;
+    const currentBase = expression ? expression : field === "amount" ? safeAmount : safeCustomRate;
 
     if (!currentBase) return;
 
@@ -150,7 +135,8 @@ export function SwapInputBlock() {
   };
 
   const placeholder = decimalSeparator === "comma" ? "0,00" : "0.00";
-  const displayValue = activeField === "amount" ? inputAmountDisplay || placeholder : (safeCustomRate ? formatAmountNumber(safeCustomRate, decimalSeparator) : placeholder);
+  const displayValue =
+    activeField === "amount" ? inputAmountDisplay || placeholder : safeCustomRate ? formatAmountNumber(safeCustomRate, decimalSeparator) : placeholder;
 
   return (
     <View style={styles.amountBlock}>
@@ -213,7 +199,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   amountTopRow: {
     flexDirection: "column",
-    gap: theme.spacing.sm,
+    gap: theme.spacing.xs,
   },
   amountRow: {
     minHeight: 58,

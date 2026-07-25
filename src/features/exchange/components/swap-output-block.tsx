@@ -19,12 +19,7 @@ export function SwapOutputBlock() {
 
   const baseRateOptions = rates.map((rate) => rate.info);
 
-  const {
-    outputCurrency,
-    handleOutputCurrencySelect,
-    outputOptions,
-    outputSelectedOptionId,
-  } = useExchangeInput({ selectedBaseRate, baseRateOptions });
+  const { outputCurrency, handleOutputCurrencySelect, outputOptions, outputSelectedOptionId } = useExchangeInput({ selectedBaseRate, baseRateOptions });
 
   const { outputAmountText, outputCopyText } = useExchangeConversion({
     inputAmount,
@@ -40,7 +35,13 @@ export function SwapOutputBlock() {
   return (
     <View style={styles.amountBlock}>
       <View style={styles.amountTopRow}>
-        <CurrencyPicker code={outputCurrency.code} icon={outputCurrency.icon} onSelect={handleOutputCurrencySelect} options={outputOptions} selectedOptionId={outputSelectedOptionId} />
+        <CurrencyPicker
+          code={outputCurrency.code}
+          icon={outputCurrency.icon}
+          onSelect={handleOutputCurrencySelect}
+          options={outputOptions}
+          selectedOptionId={outputSelectedOptionId}
+        />
 
         <View style={styles.amountRow}>
           <AppText variant="title" style={styles.amountSymbol}>
@@ -59,13 +60,12 @@ export function SwapOutputBlock() {
 
 const styles = StyleSheet.create((theme) => ({
   amountBlock: {
-    minHeight: 142,
     justifyContent: "center",
     gap: theme.spacing.md,
   },
   amountTopRow: {
     flexDirection: "column",
-    gap: theme.spacing.sm,
+    gap: theme.spacing.xs,
   },
   amountRow: {
     minHeight: 58,

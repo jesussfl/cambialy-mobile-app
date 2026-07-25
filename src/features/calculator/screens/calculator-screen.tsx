@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { CurrencyPicker } from "@/features/exchange/components/currency-picker";
 import { currencyInfo, fallbackRates, RATE_ORDER, RATES_CACHE_TIME, RATES_STALE_TIME } from "@/features/exchange/constants";
 import type { CurrencyOption } from "@/features/exchange/types";
-import { formatCompactAmount, formatNumber, formatUpdatedAt, parseCurrencyAmount, sanitizeAmountInput } from "@/features/exchange/utils";
+import { formatCompactAmount, formatNumber, parseCurrencyAmount, sanitizeAmountInput } from "@/features/exchange/utils";
 
 import { UniRemixIcon } from "@/components/ui/icon";
 import { useSettingsStore } from "@/features/settings/context/settings-context";
@@ -123,17 +123,9 @@ export function CalculatorScreen() {
   return (
     <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <View style={styles.headerTitleGroup}>
-          <AppText variant="cardTitle" style={styles.headerTitle}>
-            Comparar precios
-          </AppText>
-          <AppText variant="tab" style={styles.headerSubtitle} numberOfLines={1}>
-            {ratesQuery.isFetching ? "Actualizando tasas" : formatUpdatedAt(latestUpdate)}
-          </AppText>
-        </View>
-        {/* <View style={styles.headerButton}>
-            <View style={[styles.statusDot, ratesQuery.isFetching ? styles.statusDotLoading : null]} />
-          </View> */}
+        <AppText variant="cardTitle" style={styles.headerTitle}>
+          Compara precios
+        </AppText>
       </View>
 
       <View style={styles.comparePanel}>
@@ -266,9 +258,6 @@ function PriceComparisonBlock({
     <View style={styles.priceBlock}>
       <View style={styles.priceTopRow}>
         <View style={styles.priceValueGroup}>
-          <AppText variant="tab" style={styles.blockLabel}>
-            {label}
-          </AppText>
           <View style={styles.amountRow}>
             <AppText variant="title" style={styles.amountSymbol}>
               {currency.symbol}
@@ -293,9 +282,6 @@ function PriceComparisonBlock({
       </View>
 
       <View style={styles.priceFooter}>
-        <AppText variant="tab" style={styles.rateHint} numberOfLines={1}>
-          {rate > 0 ? rateText : isCustomRate ? "Ingresa la tasa personalizada" : "Tasa no disponible"}
-        </AppText>
         <AppText variant="tab" style={styles.vesValue} numberOfLines={1}>
           Bs. {formatCompactAmount(valueInVes, decimalSeparator)}
         </AppText>

@@ -1,3 +1,4 @@
+import { AppText } from "@/components/ui/app-text";
 import { ConversionDetails } from "@/features/exchange/components/conversion-details";
 import { SwapDivider } from "@/features/exchange/components/swap-divider";
 import { SwapInputBlock } from "@/features/exchange/components/swap-input-block";
@@ -5,6 +6,7 @@ import { SwapOutputBlock } from "@/features/exchange/components/swap-output-bloc
 import { useExchangeContext } from "@/features/exchange/context/exchange-context";
 import { useExchangeConversion } from "@/features/exchange/hooks/use-exchange-conversion";
 import { useExchangeRatesList } from "@/features/exchange/hooks/use-exchange-rates-list";
+import { StatusBar } from "expo-status-bar";
 import { ScrollView, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
@@ -24,6 +26,12 @@ export function ExchangeScreen() {
 
   return (
     <View style={styles.screenContent}>
+      <StatusBar style="light" />
+      <View style={styles.header}>
+        <AppText variant="cardTitle" color="white" style={{ fontWeight: "bold" }}>
+          Cambialy
+        </AppText>
+      </View>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.swapPanel}>
           <SwapInputBlock />
@@ -33,21 +41,27 @@ export function ExchangeScreen() {
 
         {conversionDetails.length ? <ConversionDetails details={conversionDetails} formula="Otros cambios" /> : null}
       </ScrollView>
-
-      {/* <IconButton icon="reset-left-line" onPress={resetExchange} style={styles.resetButton} /> */}
     </View>
   );
 }
 
 const styles = StyleSheet.create((theme, rt) => ({
+  header: {
+    height: 44,
+    paddingHorizontal: theme.spacing.md,
+    alignItems: "flex-start",
+    justifyContent: "center",
+  },
   screenContent: {
     paddingTop: rt.insets.top,
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.gray["800"],
   },
   scrollView: {
     flex: 1,
     backgroundColor: theme.colors.background,
+    borderTopRightRadius: theme.radius.lg,
+    borderTopLeftRadius: theme.radius.lg,
   },
   content: {
     flexGrow: 1,
