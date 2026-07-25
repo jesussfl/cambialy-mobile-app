@@ -11,6 +11,7 @@ import type { CurrencyOption } from "../types";
 
 const UniRemixIcon = withUnistyles(RemixIcon);
 const UniPressableOpacity = withUnistyles(PressableOpacity);
+const UniPopoverContent = withUnistyles(Popover.Content);
 
 type CurrencyPickerProps = {
   code: string;
@@ -55,7 +56,7 @@ export function CurrencyPicker({ code, icon, onSelect, options, selectedOptionId
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Overlay />
-        <Popover.Content presentation="popover" placement="bottom" align="end" width={220} style={styles.currencyPopover}>
+        <UniPopoverContent presentation="popover" placement="bottom" align="end" width={220} style={styles.currencyPopover}>
           {options.map((option) => {
             const isSelected = option.id === selectedOptionId;
 
@@ -95,7 +96,7 @@ export function CurrencyPicker({ code, icon, onSelect, options, selectedOptionId
               </Pressable>
             );
           })}
-        </Popover.Content>
+        </UniPopoverContent>
       </Popover.Portal>
     </Popover>
   );

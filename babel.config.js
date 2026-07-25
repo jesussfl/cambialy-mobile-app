@@ -13,8 +13,8 @@ module.exports = function (api) {
   return {
     presets: ["babel-preset-expo"],
     plugins: [
-      ["babel-plugin-react-compiler", ReactCompilerConfig],
       ["react-native-unistyles/plugin", unistylesPluginOptions],
+      ["babel-plugin-react-compiler", ReactCompilerConfig],
     ],
   };
 };

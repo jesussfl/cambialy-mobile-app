@@ -9,6 +9,9 @@ import { AppText } from "@/components/ui/app-text";
 import { PressableOpacity, PressableScale } from "pressto";
 import { AmountKeypad } from "./amount-keypad";
 
+const UniPressableOpacity = withUnistyles(PressableOpacity);
+const UniPressableScale = withUnistyles(PressableScale);
+
 type AmountKeypadSheetProps = {
   name?: string;
   title: string;
@@ -59,37 +62,37 @@ export function AmountKeypadSheet({
       <UniGestureHandlerRootView style={styles.gestureRoot}>
         <View style={styles.container}>
           <View style={styles.header}>
-            <PressableOpacity onPress={onClear} style={styles.headerButton}>
+            <UniPressableOpacity onPress={onClear} style={styles.headerButton}>
               <AppText variant="cardTitle" style={styles.closeLabel}>
                 C
               </AppText>
-            </PressableOpacity>
+            </UniPressableOpacity>
 
-            <PressableOpacity onPress={onClose} style={styles.closeButton}>
+            <UniPressableOpacity onPress={onClose} style={styles.closeButton}>
               <AppText variant="tab" style={styles.closeLabel}>
                 Cerrar
               </AppText>
-            </PressableOpacity>
+            </UniPressableOpacity>
           </View>
 
           {showFieldSwitch ? (
             <View style={styles.fieldSwitchRow}>
-              <PressableScale
+              <UniPressableScale
                 style={[styles.fieldSwitchButton, activeField === "amount" ? styles.fieldSwitchButtonActive : null]}
                 onPress={() => onFieldChange("amount")}
               >
                 <AppText variant="tab" style={[styles.fieldSwitchLabel, activeField === "amount" ? styles.fieldSwitchLabelActive : null]}>
                   Monto
                 </AppText>
-              </PressableScale>
-              <PressableScale
+              </UniPressableScale>
+              <UniPressableScale
                 style={[styles.fieldSwitchButton, activeField === "customRate" ? styles.fieldSwitchButtonActive : null]}
                 onPress={() => onFieldChange("customRate")}
               >
                 <AppText variant="tab" style={[styles.fieldSwitchLabel, activeField === "customRate" ? styles.fieldSwitchLabelActive : null]}>
                   Tasa
                 </AppText>
-              </PressableScale>
+              </UniPressableScale>
             </View>
           ) : null}
 

@@ -58,66 +58,68 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, 
 
   return (
     <View style={styles.tabBar}>
-      <Animated.View style={[styles.tabBarContent, pillStyle]}>
-        {state.routes.map((route, index) => {
-          const config = BOTTOM_NAV_CONFIG[route.name];
-          const options = descriptors[route.key]?.options;
-          const isFocused = state.index === index;
+      <Animated.View style={pillStyle}>
+        <View style={styles.tabBarContent}>
+          {state.routes.map((route, index) => {
+            const config = BOTTOM_NAV_CONFIG[route.name];
+            const options = descriptors[route.key]?.options;
+            const isFocused = state.index === index;
 
-          if (!config) {
-            return null;
-          }
-
-          const handlePress = () => {
-            const event = navigation.emit({
-              type: "tabPress",
-              target: route.key,
-              canPreventDefault: true,
-            });
-
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name, route.params);
+            if (!config) {
+              return null;
             }
-          };
 
-          const handleLongPress = () => {
-            navigation.emit({
-              type: "tabLongPress",
-              target: route.key,
-            });
-          };
+            const handlePress = () => {
+              const event = navigation.emit({
+                type: "tabPress",
+                target: route.key,
+                canPreventDefault: true,
+              });
 
-          return (
-            <Pressable
-              key={route.key}
-              accessibilityLabel={options.tabBarAccessibilityLabel}
-              accessibilityRole="button"
-              accessibilityState={isFocused ? { selected: true } : undefined}
-              onLongPress={handleLongPress}
-              onPress={handlePress}
-              style={styles.tabButton}
-            >
-              <UniRemixIcon
-                name={config.icon}
-                size={22}
-                uniProps={(theme: any) => ({
-                  color: isFocused ? theme.colors.primary : theme.colors.textMuted,
-                })}
-              />
-              <UniAppText
-                variant="tab"
-                style={styles.tabLabel}
-                uniProps={(theme) => ({
-                  color: isFocused ? theme.colors.primary : theme.colors.textMuted,
-                })}
+              if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate(route.name, route.params);
+              }
+            };
+
+            const handleLongPress = () => {
+              navigation.emit({
+                type: "tabLongPress",
+                target: route.key,
+              });
+            };
+
+            return (
+              <Pressable
+                key={route.key}
+                accessibilityLabel={options.tabBarAccessibilityLabel}
+                accessibilityRole="button"
+                accessibilityState={isFocused ? { selected: true } : undefined}
+                onLongPress={handleLongPress}
+                onPress={handlePress}
+                style={styles.tabButton}
               >
-                {config.label}
-              </UniAppText>
-            </Pressable>
-          );
-        })}
+                <UniRemixIcon
+                  name={config.icon}
+                  size={22}
+                  uniProps={(theme: any) => ({
+                    color: isFocused ? theme.colors.primary : theme.colors.textMuted,
+                  })}
+                />
+                <UniAppText
+                  variant="tab"
+                  style={styles.tabLabel}
+                  uniProps={(theme) => ({
+                    color: isFocused ? theme.colors.primary : theme.colors.textMuted,
+                  })}
+                >
+                  {config.label}
+                </UniAppText>
+              </Pressable>
+            );
+          })}
+        </View>
       </Animated.View>
-      <Animated.View style={[styles.resetButtonContainer, resetButtonStyle]}>
+      <Animated.View style={resetButtonStyle}>
         <IconButton icon="reset-left-line" onPress={resetExchange} style={styles.resetButton} />
       </Animated.View>
     </View>
@@ -157,7 +159,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   tabLabel: {
     lineHeight: theme.typography.lineHeight.xs,
   },
-  resetButtonContainer: {},
+
   resetButton: {
     width: 56,
     height: 56,

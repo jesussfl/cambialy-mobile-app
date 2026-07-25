@@ -9,6 +9,9 @@ import { useExchangeContext } from "../context/exchange-context";
 import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
 
 const UniRemixIcon = withUnistyles(RemixIcon);
+const UniSelectTrigger = withUnistyles(Select.Trigger);
+const UniSelectOverlay = withUnistyles(Select.Overlay);
+const UniSelectContent = withUnistyles(Select.Content);
 
 export function ExchangeHeader() {
   const { selectedBaseRateId, customRateValue } = useExchangeContext();
@@ -20,7 +23,7 @@ export function ExchangeHeader() {
   return (
     <View style={styles.header}>
       <Select presentation="dialog" value={selectedOption}>
-        <Select.Trigger variant="unstyled" style={styles.historyTrigger}>
+        <UniSelectTrigger variant="unstyled" style={styles.historyTrigger}>
           <View style={styles.historyTriggerText} pointerEvents="none">
             <AppText variant="tab" style={styles.historyLabel} numberOfLines={1}>
               {label}
@@ -40,10 +43,10 @@ export function ExchangeHeader() {
               })}
             />
           </View>
-        </Select.Trigger>
+        </UniSelectTrigger>
         <Select.Portal>
-          <Select.Overlay style={styles.overlay} />
-          <Select.Content presentation="dialog" styles={{ content: styles.dialogContent }}>
+          <UniSelectOverlay style={{ backgroundColor: "rgba(15, 23, 42, 0.38)" }} />
+          <UniSelectContent presentation="dialog" styles={{ content: { maxHeight: 440, width: "92%", alignSelf: "center" } }}>
             <Select.Close />
             <ScrollView contentContainerStyle={styles.historyListContent} showsVerticalScrollIndicator={false}>
               <Select.ListLabel>Precio historico</Select.ListLabel>
@@ -57,7 +60,7 @@ export function ExchangeHeader() {
                 </Select.Item>
               ))}
             </ScrollView>
-          </Select.Content>
+          </UniSelectContent>
         </Select.Portal>
       </Select>
     </View>
@@ -68,14 +71,6 @@ const styles = StyleSheet.create((theme) => ({
   header: {
     minHeight: 66,
     flexDirection: "row",
-  },
-  dialogContent: {
-    maxHeight: 440,
-    width: "92%",
-    alignSelf: "center",
-  },
-  overlay: {
-    backgroundColor: "rgba(15, 23, 42, 0.38)",
   },
   historyListContent: {
     paddingBottom: theme.spacing.xl,
