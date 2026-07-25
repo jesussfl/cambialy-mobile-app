@@ -85,6 +85,12 @@
       "skillPath": "skills/heroui-native/SKILL.md",
       "computedHash": "d2fc03a13d03678d40799726a144ba72ba1cb08126176ddbf0a0461c901aef29"
     },
+    "react-compiler": {
+      "source": "saschb2b/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/react-compiler/SKILL.md",
+      "computedHash": "3b88319ed3518e77e61ced136b97ab6d3bb2bfed1ed550e2e3a4e57355744f70"
+    },
     "react-native-best-practices": {
       "source": "callstackincubator/agent-skills",
       "sourceType": "github",
