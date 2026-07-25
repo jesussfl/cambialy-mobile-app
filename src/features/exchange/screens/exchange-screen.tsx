@@ -1,4 +1,3 @@
-import { IconButton } from "@/components/ui/button";
 import { ConversionDetails } from "@/features/exchange/components/conversion-details";
 import { SwapDivider } from "@/features/exchange/components/swap-divider";
 import { SwapInputBlock } from "@/features/exchange/components/swap-input-block";
@@ -43,7 +42,7 @@ function ExchangeScreenContent() {
         {conversionDetails.length ? <ConversionDetails details={conversionDetails} formula="Otros cambios" /> : null}
       </ScrollView>
 
-      <IconButton icon="reset-left-line" onPress={resetExchange} style={styles.resetButton} />
+      {/* <IconButton icon="reset-left-line" onPress={resetExchange} style={styles.resetButton} /> */}
     </View>
   );
 }

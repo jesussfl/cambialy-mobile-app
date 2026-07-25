@@ -41,6 +41,7 @@ export function AmountKeypadSheet({
       ref={sheetRef}
       name="amount-keypad-sheet"
       detents={["auto"]}
+      backgroundColor={"#101828"}
       dismissible={true}
       draggable={true}
       dimmed={false}
@@ -51,7 +52,7 @@ export function AmountKeypadSheet({
       }}
       grabber={false}
       cornerRadius={24}
-      footer={<View style={styles.footer} />}
+      // footer={<View style={styles.footer} />}
     >
       <UniGestureHandlerRootView style={styles.gestureRoot}>
         <View style={styles.container}>
@@ -84,13 +85,7 @@ export function AmountKeypadSheet({
             </View>
           ) : null}
 
-          <AmountKeypad
-            onKeyPress={onKeyPress}
-            onDelete={onDelete}
-            onClear={onClear}
-            onOperatorPress={onOperatorPress}
-            onEvaluate={onEvaluate}
-          />
+          <AmountKeypad onKeyPress={onKeyPress} onDelete={onDelete} onClear={onClear} onOperatorPress={onOperatorPress} onEvaluate={onEvaluate} />
         </View>
       </UniGestureHandlerRootView>
     </UniTrueSheet>
@@ -100,8 +95,7 @@ export function AmountKeypadSheet({
 const styles = StyleSheet.create((theme, rt) => ({
   gestureRoot: {
     flexGrow: 1,
-    backgroundColor: theme.gray[200],
-    paddingBottom: theme.spacing.sm,
+    backgroundColor: theme.gray[900],
   },
   footer: {
     paddingBottom: rt.insets.bottom,

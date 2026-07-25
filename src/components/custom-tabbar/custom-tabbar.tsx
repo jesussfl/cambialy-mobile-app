@@ -5,6 +5,7 @@ import { type IconName } from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
+import { IconButton } from "../ui/button";
 import { UniRemixIcon } from "../ui/icon";
 
 type ExpoTabsProps = ComponentProps<typeof Tabs>;
@@ -16,9 +17,9 @@ type TabConfig = {
 };
 
 const BOTTOM_NAV_CONFIG: Record<string, TabConfig> = {
-  "index": {
+  index: {
     icon: "exchange-2-line",
-    label: "Intercambio",
+    label: "Cambiar",
   },
   "(compare)": {
     icon: "calculator-line",
@@ -33,103 +34,112 @@ const BOTTOM_NAV_CONFIG: Record<string, TabConfig> = {
 const UniAppText = withUnistyles(AppText);
 
 export const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }: BottomTabBarProps) => {
+  const isExchangeRoute = state.index === 0;
+
   return (
     <View style={styles.tabBar}>
-      {state.routes.map((route, index) => {
-        const config = BOTTOM_NAV_CONFIG[route.name];
-        const options = descriptors[route.key]?.options;
-        const isFocused = state.index === index;
+      <View style={styles.tabBarContent}>
+        {state.routes.map((route, index) => {
+          const config = BOTTOM_NAV_CONFIG[route.name];
+          const options = descriptors[route.key]?.options;
+          const isFocused = state.index === index;
 
-        if (!config) {
-          return null;
-        }
-
-        const handlePress = () => {
-          const event = navigation.emit({
-            type: "tabPress",
-            target: route.key,
-            canPreventDefault: true,
-          });
-
-          if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name, route.params);
+          if (!config) {
+            return null;
           }
-        };
 
-        const handleLongPress = () => {
-          navigation.emit({
-            type: "tabLongPress",
-            target: route.key,
-          });
-        };
+          const handlePress = () => {
+            const event = navigation.emit({
+              type: "tabPress",
+              target: route.key,
+              canPreventDefault: true,
+            });
 
-        return (
-          <Pressable
-            key={route.key}
-            accessibilityLabel={options.tabBarAccessibilityLabel}
-            accessibilityRole="button"
-            accessibilityState={isFocused ? { selected: true } : undefined}
-            onLongPress={handleLongPress}
-            onPress={handlePress}
-            style={styles.tabButton}
-          >
-            <View
-              style={[
-                styles.activeDot,
-                {
-                  opacity: isFocused ? 1 : 0,
-                },
-              ]}
-            />
-            <UniRemixIcon
-              name={config.icon}
-              size={22}
-              uniProps={(theme: any) => ({
-                color: isFocused ? theme.colors.primary : theme.colors.textMuted,
-              })}
-            />
-            <UniAppText
-              variant="tab"
-              style={styles.tabLabel}
-              uniProps={(theme) => ({
-                color: isFocused ? theme.colors.primary : theme.colors.textMuted,
-              })}
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name, route.params);
+            }
+          };
+
+          const handleLongPress = () => {
+            navigation.emit({
+              type: "tabLongPress",
+              target: route.key,
+            });
+          };
+
+          return (
+            <Pressable
+              key={route.key}
+              accessibilityLabel={options.tabBarAccessibilityLabel}
+              accessibilityRole="button"
+              accessibilityState={isFocused ? { selected: true } : undefined}
+              onLongPress={handleLongPress}
+              onPress={handlePress}
+              style={styles.tabButton}
             >
-              {config.label}
-            </UniAppText>
-          </Pressable>
-        );
-      })}
+              <UniRemixIcon
+                name={config.icon}
+                size={22}
+                uniProps={(theme: any) => ({
+                  color: isFocused ? theme.colors.primary : theme.colors.textMuted,
+                })}
+              />
+              <UniAppText
+                variant="tab"
+                style={styles.tabLabel}
+                uniProps={(theme) => ({
+                  color: isFocused ? theme.colors.primary : theme.colors.textMuted,
+                })}
+              >
+                {config.label}
+              </UniAppText>
+            </Pressable>
+          );
+        })}
+      </View>
+      {isExchangeRoute && <IconButton icon="reset-left-line" onPress={() => {}} style={styles.resetButton} />}
     </View>
   );
 };
 const styles = StyleSheet.create((theme, rt) => ({
   tabBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: rt.insets.bottom,
     flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-around",
-    minHeight: 92,
-    paddingTop: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.md,
+    justifyContent: "center",
+    alignItems: "center",
+    minWidth: "75%",
+    gap: theme.spacing.md,
+  },
+  tabBarContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.sm,
     backgroundColor: theme.colors.tabSurface,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.tabBorder,
-    paddingBottom: Math.max(rt.insets.bottom, theme.spacing.sm),
+    borderRadius: theme.radius.pill,
+    gap: 8,
   },
   tabButton: {
-    flex: 1,
+    minWidth: 80,
     alignItems: "center",
     justifyContent: "flex-start",
     gap: theme.spacing.xxs,
-    minHeight: 68,
   },
-  activeDot: {
-    width: 18,
-    height: 3,
-    borderRadius: 2,
-    backgroundColor: theme.colors.primary,
-  },
+
   tabLabel: {
     lineHeight: theme.typography.lineHeight.xs,
+  },
+  resetButton: {
+    width: 56,
+    height: 56,
+    borderRadius: theme.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.colors.primary,
+    ...theme.shadows.floating,
   },
 }));

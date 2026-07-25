@@ -1,4 +1,4 @@
-import { brand, gray, radius, shadows, spacing, typography } from './tokens';
+import { brand, gray, radius, shadows, spacing, typography } from "./tokens";
 
 const commonTheme = {
   brand,
@@ -14,10 +14,10 @@ export const themes = {
     ...commonTheme,
     colors: {
       background: gray[1000],
-      backgroundAccent: '#063BAF',
+      backgroundAccent: "#063BAF",
       surface: gray[900],
       surfaceMuted: gray[800],
-      surfaceSoft: '#111B2B',
+      surfaceSoft: "#111B2B",
       border: gray[700],
       borderSubtle: gray[800],
       textPrimary: gray[0],
@@ -35,7 +35,7 @@ export const themes = {
       tabBorder: gray[800],
       inputSurface: gray[800],
       icon: gray[300],
-      error: '#FFB4AB',
+      error: "#FFB4AB",
     },
   },
   light: {
@@ -59,11 +59,11 @@ export const themes = {
       accentText: gray[1000],
       secondarySurface: gray[100],
       secondaryText: gray[800],
-      tabSurface: gray[0],
+      tabSurface: gray[900],
       tabBorder: gray[200],
       inputSurface: gray[100],
       icon: gray[600],
-      error: '#BA1A1A',
+      error: "#BA1A1A",
     },
   },
 } as const;

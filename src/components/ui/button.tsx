@@ -2,7 +2,7 @@ import { View, type StyleProp, type ViewStyle } from "react-native";
 import { IconName } from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
-import { CustomPressableProps, PressableScale } from "pressto";
+import { CustomPressableProps, PressableOpacity, PressableScale } from "pressto";
 import { AppText, AppTextVariant } from "./app-text";
 import { UniRemixIcon } from "./icon";
 type ButtonVariant = "primary" | "secondary";
@@ -14,12 +14,47 @@ type ButtonProps = CustomPressableProps & {
   contentStyle?: StyleProp<ViewStyle>;
   labelVariant?: AppTextVariant;
   labelColor?: string;
+  isPressableOpacity?: boolean;
 };
 
 const UniAppText = withUnistyles(AppText);
 const UniPressableScale = withUnistyles(PressableScale);
-export const AppButton: React.FC<ButtonProps> = ({ label, variant = "primary", style, disabled, icon, contentStyle, labelVariant, labelColor, ...rest }) => {
-  return (
+const UniPressableOpacity = withUnistyles(PressableOpacity);
+export const AppButton: React.FC<ButtonProps> = ({
+  label,
+  variant = "primary",
+  style,
+  disabled,
+  icon,
+  contentStyle,
+  labelVariant,
+  labelColor,
+  isPressableOpacity,
+  ...rest
+}) => {
+  return isPressableOpacity ? (
+    <UniPressableOpacity style={style} {...rest}>
+      <View style={[styles.content, contentStyle]}>
+        {icon ? (
+          <UniRemixIcon
+            name={icon}
+            size={22}
+            uniProps={(theme: any) => ({
+              color: variant === "primary" ? theme.colors.primaryText : theme.colors.primary,
+            })}
+          />
+        ) : null}
+        <UniAppText
+          variant={labelVariant || "button"}
+          uniProps={(theme) => ({
+            color: labelColor || (variant === "primary" ? theme.colors.primaryText : undefined),
+          })}
+        >
+          {label}
+        </UniAppText>
+      </View>
+    </UniPressableOpacity>
+  ) : (
     <UniPressableScale style={style} {...rest}>
       <View style={[styles.content, contentStyle]}>
         {icon ? (
