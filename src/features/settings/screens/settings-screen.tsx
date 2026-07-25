@@ -1,4 +1,5 @@
 import { Pressable, ScrollView, Switch, View } from "react-native";
+import Animated, { FadeOut, ZoomIn } from "react-native-reanimated";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
@@ -79,7 +80,7 @@ export function SettingsScreen() {
                 23 → 0,23
               </AppText>
             </View>
-            {amountInputMode === "automatic" ? <UniRemixIcon name="check-line" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /> : null}
+            {amountInputMode === "automatic" ? <Animated.View entering={ZoomIn.duration(200)} exiting={FadeOut.duration(150)}><UniRemixIcon name="check-line" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /></Animated.View> : null}
           </Pressable>
 
           <View style={styles.modeSeparator} />
@@ -98,7 +99,7 @@ export function SettingsScreen() {
                 23 → 23
               </AppText>
             </View>
-            {amountInputMode === "manual" ? <UniRemixIcon name="check-line" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /> : null}
+            {amountInputMode === "manual" ? <Animated.View entering={ZoomIn.duration(200)} exiting={FadeOut.duration(150)}><UniRemixIcon name="check-line" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /></Animated.View> : null}
           </Pressable>
         </Card>
       </View>
@@ -122,7 +123,7 @@ export function SettingsScreen() {
                 Separador decimal: coma
               </AppText>
             </View>
-            {decimalSeparator === "comma" ? <UniRemixIcon name="check-line" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /> : null}
+            {decimalSeparator === "comma" ? <Animated.View entering={ZoomIn.duration(200)} exiting={FadeOut.duration(150)}><UniRemixIcon name="check-line" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /></Animated.View> : null}
           </Pressable>
 
           <View style={styles.modeSeparator} />
@@ -141,7 +142,7 @@ export function SettingsScreen() {
                 Separador decimal: punto
               </AppText>
             </View>
-            {decimalSeparator === "dot" ? <UniRemixIcon name="check-line" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /> : null}
+            {decimalSeparator === "dot" ? <Animated.View entering={ZoomIn.duration(200)} exiting={FadeOut.duration(150)}><UniRemixIcon name="check-line" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /></Animated.View> : null}
           </Pressable>
         </Card>
       </View>

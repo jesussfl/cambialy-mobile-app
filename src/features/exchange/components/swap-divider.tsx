@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { View } from "react-native";
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { StyleSheet } from "react-native-unistyles";
 
 import { IconButton } from "@/components/ui/button";
@@ -29,10 +31,22 @@ export function SwapDivider() {
     customRateValue,
   });
 
+  const rotation = useSharedValue(0);
+
+  useEffect(() => {
+    rotation.value = withTiming(isReversed ? 180 : 0, { duration: 300 });
+  }, [isReversed]);
+
+  const arrowStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
+
   return (
     <View style={styles.swapDividerRow}>
       <View style={styles.dividerLine} />
-      <IconButton icon="arrow-up-down-line" onPress={() => handleSwapDirection(convertedAmount)} />
+      <Animated.View style={arrowStyle}>
+        <IconButton icon="arrow-up-down-line" onPress={() => handleSwapDirection(convertedAmount)} />
+      </Animated.View>
       <View style={styles.dividerLine} />
     </View>
   );

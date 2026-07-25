@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
+import Animated, { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
@@ -108,76 +109,80 @@ export function PriceComparisonBlock({
   };
 
   return (
-    <View style={styles.priceBlock}>
-      <View style={styles.priceTopRow}>
-        <View style={styles.priceValueGroup}>
-          <View style={styles.amountRow}>
-            {expression ? (
-              <AppText variant="label" style={styles.expressionPreview}>
-                {formatExpressionForDisplay(expression, amountInputMode, decimalSeparator)}
-              </AppText>
-            ) : null}
-            <UniPressableOpacity hitSlop={12} style={styles.amountInputPanel} onPress={() => TrueSheet.present(sheetName)}>
-              <View style={styles.amountDisplayContainer}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.amountPreviewScroll}>
-                  <AppText variant="body" style={styles.amountPreview}>
-                    {`${currency.symbol} ${displayValue}`}
-                  </AppText>
-                </ScrollView>
-              </View>
-            </UniPressableOpacity>
+    <Animated.View layout={LinearTransition.springify().damping(20)}>
+      <View style={styles.priceBlock}>
+        <View style={styles.priceTopRow}>
+          <View style={styles.priceValueGroup}>
+            <View style={styles.amountRow}>
+              {expression ? (
+                <AppText variant="label" style={styles.expressionPreview}>
+                  {formatExpressionForDisplay(expression, amountInputMode, decimalSeparator)}
+                </AppText>
+              ) : null}
+              <UniPressableOpacity hitSlop={12} style={styles.amountInputPanel} onPress={() => TrueSheet.present(sheetName)}>
+                <View style={styles.amountDisplayContainer}>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.amountPreviewScroll}>
+                    <AppText variant="body" style={styles.amountPreview}>
+                      {`${currency.symbol} ${displayValue}`}
+                    </AppText>
+                  </ScrollView>
+                </View>
+              </UniPressableOpacity>
+            </View>
           </View>
+
+          <CurrencyPicker code={currency.code} icon={currency.icon} onSelect={onCurrencySelect} options={options} selectedOptionId={selectedCurrencyId} />
         </View>
 
-        <CurrencyPicker code={currency.code} icon={currency.icon} onSelect={onCurrencySelect} options={options} selectedOptionId={selectedCurrencyId} />
-      </View>
-
-      <View style={styles.priceFooter}>
-        <AppText variant="tab" style={styles.vesValue} numberOfLines={1}>
-          Bs. {formatCompactAmount(valueInVes, decimalSeparator)}
-        </AppText>
-      </View>
-
-      {isCustomRate ? (
-        <View style={styles.customRateRow}>
-          <AppText variant="tab" style={styles.customRateLabel} numberOfLines={1}>
-            Tasa
+        <View style={styles.priceFooter}>
+          <AppText variant="tab" style={styles.vesValue} numberOfLines={1}>
+            Bs. {formatCompactAmount(valueInVes, decimalSeparator)}
           </AppText>
-          <AppText variant="tab" style={styles.customRatePrefix}>
-            Bs.
-          </AppText>
-          <UniPressableOpacity
-            hitSlop={8}
-            style={styles.customRatePressable}
-            onPress={() => {
-              setActiveField("customRate");
-              setExpression("");
-              TrueSheet.present(sheetName);
-            }}
-          >
-            <AppText variant="body" style={styles.customRateDisplay}>
-              {displayCustomRate}
-            </AppText>
-          </UniPressableOpacity>
         </View>
-      ) : null}
 
-      <AmountKeypadSheet
-        name={sheetName}
-        title={activeField === "customRate" ? "Editar tasa" : "Ingresar monto"}
-        showFieldSwitch={isCustomRate}
-        activeField={activeField}
-        onFieldChange={(field) => {
-          setExpression("");
-          setActiveField(field);
-        }}
-        onKeyPress={handleValueInput}
-        onDelete={handleValueDelete}
-        onClear={handleValueClear}
-        onOperatorPress={handleOperatorPress}
-        onEvaluate={handleEvaluate}
-      />
-    </View>
+        {isCustomRate ? (
+          <Animated.View entering={FadeIn.duration(250)} exiting={FadeOut.duration(150)}>
+            <View style={styles.customRateRow}>
+              <AppText variant="tab" style={styles.customRateLabel} numberOfLines={1}>
+                Tasa
+              </AppText>
+              <AppText variant="tab" style={styles.customRatePrefix}>
+                Bs.
+              </AppText>
+              <UniPressableOpacity
+                hitSlop={8}
+                style={styles.customRatePressable}
+                onPress={() => {
+                  setActiveField("customRate");
+                  setExpression("");
+                  TrueSheet.present(sheetName);
+                }}
+              >
+                <AppText variant="body" style={styles.customRateDisplay}>
+                  {displayCustomRate}
+                </AppText>
+              </UniPressableOpacity>
+            </View>
+          </Animated.View>
+        ) : null}
+
+        <AmountKeypadSheet
+          name={sheetName}
+          title={activeField === "customRate" ? "Editar tasa" : "Ingresar monto"}
+          showFieldSwitch={isCustomRate}
+          activeField={activeField}
+          onFieldChange={(field) => {
+            setExpression("");
+            setActiveField(field);
+          }}
+          onKeyPress={handleValueInput}
+          onDelete={handleValueDelete}
+          onClear={handleValueClear}
+          onOperatorPress={handleOperatorPress}
+          onEvaluate={handleEvaluate}
+        />
+      </View>
+    </Animated.View>
   );
 }
 

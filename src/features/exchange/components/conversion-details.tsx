@@ -1,4 +1,5 @@
 import { View, type StyleProp, type ViewStyle } from "react-native";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import RemixIcon from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
@@ -37,44 +38,48 @@ export function ConversionDetails({ details, formula, style }: ConversionDetails
   }
 
   return (
-    <View style={[styles.conversionDetails, style]}>
-      {formula ? (
-        <AppText variant="tab" style={styles.conversionFormula} numberOfLines={1}>
-          {formula}
-        </AppText>
-      ) : null}
-      {details.map((detail) => (
-        <View key={detail.id} style={styles.conversionDetailRow}>
-          <View style={styles.conversionDetailMeta}>
-            <View style={styles.conversionDetailIcon}>
-              <UniRemixIcon
-                name={detail.icon}
-                size={14}
-                uniProps={(theme: any) => ({
-                  color: theme.colors.primary,
-                })}
-              />
-            </View>
-            <View style={styles.conversionDetailCopy}>
-              <AppText variant="tab" numberOfLines={1}>
-                {detail.label}
-              </AppText>
-              <AppText variant="tab" style={styles.conversionDetailRate} numberOfLines={1}>
-                {detail.rateText}
-              </AppText>
-            </View>
-          </View>
-
-          <View style={styles.conversionDetailAmountContainer}>
-            <AppText variant="tab" style={[styles.conversionDetailAmount, styles.conversionDetailAmountRow]} numberOfLines={1}>
-              {detail.amountText}
+    <Animated.View entering={FadeIn.duration(300).springify().damping(20)} exiting={FadeOut.duration(200)}>
+      <View style={[styles.conversionDetails, style]}>
+        {formula ? (
+          <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)}>
+            <AppText variant="tab" style={styles.conversionFormula} numberOfLines={1}>
+              {formula}
             </AppText>
+          </Animated.View>
+        ) : null}
+        {details.map((detail) => (
+          <View key={detail.id} style={styles.conversionDetailRow}>
+            <View style={styles.conversionDetailMeta}>
+              <View style={styles.conversionDetailIcon}>
+                <UniRemixIcon
+                  name={detail.icon}
+                  size={14}
+                  uniProps={(theme: any) => ({
+                    color: theme.colors.primary,
+                  })}
+                />
+              </View>
+              <View style={styles.conversionDetailCopy}>
+                <AppText variant="tab" numberOfLines={1}>
+                  {detail.label}
+                </AppText>
+                <AppText variant="tab" style={styles.conversionDetailRate} numberOfLines={1}>
+                  {detail.rateText}
+                </AppText>
+              </View>
+            </View>
 
-            <CopyIconButton text={detail.amountText} copied={copiedDetailId === detail.id} onCopy={() => setCopiedDetailId(detail.id)} />
+            <View style={styles.conversionDetailAmountContainer}>
+              <AppText variant="tab" style={[styles.conversionDetailAmount, styles.conversionDetailAmountRow]} numberOfLines={1}>
+                {detail.amountText}
+              </AppText>
+
+              <CopyIconButton text={detail.amountText} copied={copiedDetailId === detail.id} onCopy={() => setCopiedDetailId(detail.id)} />
+            </View>
           </View>
-        </View>
-      ))}
-    </View>
+        ))}
+      </View>
+    </Animated.View>
   );
 }
 

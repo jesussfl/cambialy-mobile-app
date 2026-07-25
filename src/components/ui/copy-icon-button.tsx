@@ -1,5 +1,6 @@
 import * as Clipboard from "expo-clipboard";
 import { useEffect, useState } from "react";
+import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming } from "react-native-reanimated";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { CustomPressableProps, PressableScale } from "pressto";
@@ -16,6 +17,7 @@ export const CopyIconButton: React.FC<CopyIconButtonProps> = ({ text, copied: co
   const [internalCopied, setInternalCopied] = useState(false);
   const isControlled = copiedProp !== undefined;
   const isCopied = isControlled ? copiedProp : internalCopied;
+  const scale = useSharedValue(1);
 
   const handlePress = async () => {
     if (!text) return;
@@ -29,6 +31,12 @@ export const CopyIconButton: React.FC<CopyIconButtonProps> = ({ text, copied: co
   };
 
   useEffect(() => {
+    if (isCopied) {
+      scale.value = withSequence(withTiming(1.2, { duration: 100 }), withSpring(1, { damping: 15 }));
+    }
+  }, [isCopied]);
+
+  useEffect(() => {
     if (isControlled || !internalCopied) return;
 
     const timeoutId = setTimeout(() => {
@@ -38,15 +46,21 @@ export const CopyIconButton: React.FC<CopyIconButtonProps> = ({ text, copied: co
     return () => clearTimeout(timeoutId);
   }, [isControlled, internalCopied]);
 
+  const iconStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
   return (
     <UniPressableScale hitSlop={10} onPress={handlePress} style={[styles.copyButton({ isCopied }), style]} {...rest}>
-      <UniRemixIcon
-        name={isCopied ? "check-line" : "file-copy-line"}
-        size={size}
-        uniProps={(theme: any) => ({
-          color: isCopied ? theme.colors.primaryText : theme.colors.primary,
-        })}
-      />
+      <Animated.View style={iconStyle}>
+        <UniRemixIcon
+          name={isCopied ? "check-line" : "file-copy-line"}
+          size={size}
+          uniProps={(theme: any) => ({
+            color: isCopied ? theme.colors.primaryText : theme.colors.primary,
+          })}
+        />
+      </Animated.View>
     </UniPressableScale>
   );
 };
