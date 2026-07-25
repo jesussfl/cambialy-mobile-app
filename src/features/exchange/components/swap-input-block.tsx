@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Pressable, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
@@ -6,8 +6,9 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { AppText } from "@/components/ui/app-text";
 
 import { useSettingsStore } from "@/features/settings/context/settings-context";
+import type { BaseRateId } from "../hooks/exchange-screen.types";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
-import { useExchangeContext } from "../context/exchange-context";
+import { useSelectedBaseRateId, useCustomRateValue } from "../context/exchange-context";
 import { useExchangeInput } from "../hooks/use-exchange-input";
 import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
 import { useExchangeStore } from "../store/exchange-store";
@@ -20,7 +21,14 @@ import { QuickAmountPills } from "./quick-amount-pills";
 const UniAppText = withUnistyles(AppText);
 
 export function SwapInputBlock() {
-  const { selectedBaseRateId, customRateValue } = useExchangeContext();
+  const selectedBaseRateId = useSelectedBaseRateId();
+  const customRateValue = useCustomRateValue();
+  const resetKey = useExchangeStore((s) => s.resetKey);
+
+  return <SwapInputBlockInner key={resetKey} selectedBaseRateId={selectedBaseRateId} customRateValue={customRateValue} />;
+}
+
+function SwapInputBlockInner({ selectedBaseRateId, customRateValue }: { selectedBaseRateId: BaseRateId; customRateValue: number }) {
   const { rates, selectedBaseRate } = useExchangeRatesList(selectedBaseRateId, customRateValue);
 
   const baseRateOptions = rates.map((rate) => rate.info);
@@ -45,15 +53,8 @@ export function SwapInputBlock() {
   const [hasTyped, setHasTyped] = useState({ amount: false, customRate: false });
   const [expression, setExpression] = useState("");
 
-  const resetKey = useExchangeStore((s) => s.resetKey);
-
-  useEffect(() => {
-    setActiveField("amount");
-    setHasTyped({ amount: false, customRate: false });
-    setExpression("");
-  }, [resetKey]);
-
-  const { amountInputMode, decimalSeparator } = useSettingsStore();
+  const amountInputMode = useSettingsStore((s) => s.amountInputMode);
+  const decimalSeparator = useSettingsStore((s) => s.decimalSeparator);
 
   const updateFieldValue = (nextValue: string) => {
     if (activeField === "amount") {

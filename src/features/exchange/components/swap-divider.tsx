@@ -2,13 +2,17 @@ import { View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
 import { IconButton } from "@/components/ui/button";
-import { useExchangeContext } from "../context/exchange-context";
+import { useSelectedBaseRateId, useSelectedTargetCurrencyId, useCustomRateValue, useExchangeInputAmount, useIsReversed } from "../context/exchange-context";
 import { useExchangeConversion } from "../hooks/use-exchange-conversion";
 import { useExchangeInput } from "../hooks/use-exchange-input";
 import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
 
 export function SwapDivider() {
-  const { selectedBaseRateId, customRateValue, selectedTargetCurrencyId, inputAmount, isReversed } = useExchangeContext();
+  const selectedBaseRateId = useSelectedBaseRateId();
+  const customRateValue = useCustomRateValue();
+  const selectedTargetCurrencyId = useSelectedTargetCurrencyId();
+  const inputAmount = useExchangeInputAmount();
+  const isReversed = useIsReversed();
 
   const { rates, selectedBaseRate } = useExchangeRatesList(selectedBaseRateId, customRateValue);
 

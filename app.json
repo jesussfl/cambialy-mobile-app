@@ -109,7 +109,9 @@
           ]
         }
       ],
-      "expo-status-bar"
+      "expo-status-bar",
+      "./plugins/withAndroidR8",
+      "./plugins/withHermesMmap"
     ],
     "experiments": {
       "typedRoutes": true,

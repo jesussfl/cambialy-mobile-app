@@ -5,7 +5,7 @@ import { AppText } from "@/components/ui/app-text";
 
 import { useToast } from "heroui-native";
 import { PressableOpacity } from "pressto";
-import { useExchangeContext } from "../context/exchange-context";
+import { useSelectedBaseRateId, useSelectedTargetCurrencyId, useCustomRateValue, useExchangeInputAmount, useIsReversed } from "../context/exchange-context";
 import { useCopyResult } from "../hooks/use-copy-result";
 import { useExchangeConversion } from "../hooks/use-exchange-conversion";
 import { useExchangeInput } from "../hooks/use-exchange-input";
@@ -16,7 +16,11 @@ const AMOUNT_FONT_SIZE = 34;
 const UniPressableOpacity = withUnistyles(PressableOpacity);
 
 export function SwapOutputBlock() {
-  const { selectedBaseRateId, customRateValue, selectedTargetCurrencyId, inputAmount, isReversed } = useExchangeContext();
+  const selectedBaseRateId = useSelectedBaseRateId();
+  const customRateValue = useCustomRateValue();
+  const selectedTargetCurrencyId = useSelectedTargetCurrencyId();
+  const inputAmount = useExchangeInputAmount();
+  const isReversed = useIsReversed();
 
   const { rates, selectedBaseRate } = useExchangeRatesList(selectedBaseRateId, customRateValue);
 

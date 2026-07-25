@@ -1,5 +1,3 @@
-import { useCallback } from "react";
-
 import { QUICK_AMOUNTS, targetCurrencyInfo, VES_QUICK_AMOUNTS } from "../constants";
 import type { CurrencyOption, TargetCurrencyId } from "../types";
 import { useExchangeContext } from "../context/exchange-context";
@@ -45,55 +43,37 @@ export function useExchangeInput({ selectedBaseRate, baseRateOptions }: UseExcha
 
   // --- Handlers ---
 
-  const handleInputAmountChange = useCallback(
-    (value: string) => setInputAmount(value),
-    [setInputAmount],
-  );
+  const handleInputAmountChange = (value: string) => setInputAmount(value);
 
-  const handleQuickAmountSelect = useCallback(
-    (value: string) => {
-      const num = Number(value);
-      setInputAmount(Number.isFinite(num) ? num.toFixed(2) : value);
-    },
-    [setInputAmount],
-  );
+  const handleQuickAmountSelect = (value: string) => {
+    const num = Number(value);
+    setInputAmount(Number.isFinite(num) ? num.toFixed(2) : value);
+  };
 
-  const handleCustomRateChange = useCallback(
-    (value: string) => setCustomRate(value),
-    [setCustomRate],
-  );
+  const handleCustomRateChange = (value: string) => setCustomRate(value);
 
-  const handleInputCurrencySelect = useCallback(
-    (optionId: string) => {
-      if (isReversed) {
-        setSelectedTargetCurrencyId(optionId as TargetCurrencyId);
-      } else {
-        setSelectedBaseRateId(optionId as BaseRateId);
-      }
-    },
-    [isReversed, setSelectedTargetCurrencyId, setSelectedBaseRateId],
-  );
+  const handleInputCurrencySelect = (optionId: string) => {
+    if (isReversed) {
+      setSelectedTargetCurrencyId(optionId as TargetCurrencyId);
+    } else {
+      setSelectedBaseRateId(optionId as BaseRateId);
+    }
+  };
 
-  const handleOutputCurrencySelect = useCallback(
-    (optionId: string) => {
-      if (isReversed) {
-        setSelectedBaseRateId(optionId as BaseRateId);
-      } else {
-        setSelectedTargetCurrencyId(optionId as TargetCurrencyId);
-      }
-    },
-    [isReversed, setSelectedBaseRateId, setSelectedTargetCurrencyId],
-  );
+  const handleOutputCurrencySelect = (optionId: string) => {
+    if (isReversed) {
+      setSelectedBaseRateId(optionId as BaseRateId);
+    } else {
+      setSelectedTargetCurrencyId(optionId as TargetCurrencyId);
+    }
+  };
 
-  const handleSwapDirection = useCallback(
-    (convertedAmount: number) => {
-      if (convertedAmount > 0) {
-        setInputAmount(convertedAmount.toFixed(2));
-      }
-      toggleReverse();
-    },
-    [setInputAmount, toggleReverse],
-  );
+  const handleSwapDirection = (convertedAmount: number) => {
+    if (convertedAmount > 0) {
+      setInputAmount(convertedAmount.toFixed(2));
+    }
+    toggleReverse();
+  };
 
   const quickAmounts = isReversed ? VES_QUICK_AMOUNTS : QUICK_AMOUNTS;
 

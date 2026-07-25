@@ -77,6 +77,6 @@ export const targetCurrencyInfo: Record<TargetCurrencyId, TargetCurrencyOption> 
 export const RATES_CACHE_TIME = 1000 * 60 * 10;
 export const RATES_STALE_TIME = 1000 * 60 * 5;
 export const QUICK_AMOUNTS = ["5", "10", "15", "20", "30", "50", "100"];
-export const VES_QUICK_AMOUNTS = [, "5000", "10000", "20000", "50000", "100000"];
+export const VES_QUICK_AMOUNTS = ["5000", "10000", "20000", "50000", "100000"];
 
 export const RATE_ORDER: Record<ExchangeRateId, number> = { bcv: 0, usdt: 1, eur: 2 };

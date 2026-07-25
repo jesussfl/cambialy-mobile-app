@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
@@ -27,9 +27,9 @@ export function CalculatorScreen() {
   });
 
   const rates = ratesQuery.data ?? fallbackRates;
-  const sortedRates = useMemo(() => [...rates].sort((a, b) => RATE_ORDER[a.id] - RATE_ORDER[b.id]), [rates]);
-  const ratesById = useMemo(() => new Map(sortedRates.map((rate) => [rate.id, rate])), [sortedRates]);
-  const currencyOptions = useMemo(() => priceCurrencyOrder.map((id) => priceCurrencyMeta[id]), []);
+  const sortedRates = [...rates].sort((a, b) => RATE_ORDER[a.id] - RATE_ORDER[b.id]);
+  const ratesById = new Map(sortedRates.map((rate) => [rate.id, rate]));
+  const currencyOptions = priceCurrencyOrder.map((id) => priceCurrencyMeta[id]);
   const ratesError = ratesQuery.isError ? "No se pudieron cargar las tasas actualizadas." : null;
 
   const firstOption = getComparisonOption(firstPrice, ratesById);

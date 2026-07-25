@@ -1,5 +1,5 @@
 import * as Clipboard from "expo-clipboard";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { CustomPressableProps, PressableScale } from "pressto";
@@ -17,7 +17,7 @@ export const CopyIconButton: React.FC<CopyIconButtonProps> = ({ text, copied: co
   const isControlled = copiedProp !== undefined;
   const isCopied = isControlled ? copiedProp : internalCopied;
 
-  const handlePress = useCallback(async () => {
+  const handlePress = async () => {
     if (!text) return;
 
     await Clipboard.setStringAsync(text);
@@ -26,7 +26,7 @@ export const CopyIconButton: React.FC<CopyIconButtonProps> = ({ text, copied: co
     if (!isControlled) {
       setInternalCopied(true);
     }
-  }, [text, onCopy, isControlled]);
+  };
 
   useEffect(() => {
     if (isControlled || !internalCopied) return;

@@ -1,14 +1,14 @@
 import * as Clipboard from "expo-clipboard";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 export function useCopyResult(resultCopyText: string) {
   const [copiedResultText, setCopiedResultText] = useState<string | null>(null);
   const resultCopied = copiedResultText === resultCopyText;
 
-  const handleCopyResult = useCallback(async () => {
+  const handleCopyResult = async () => {
     await Clipboard.setStringAsync(resultCopyText);
     setCopiedResultText(resultCopyText);
-  }, [resultCopyText]);
+  };
 
   useEffect(() => {
     if (!copiedResultText) {

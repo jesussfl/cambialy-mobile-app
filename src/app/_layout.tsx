@@ -7,7 +7,7 @@ import { Tabs } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { HeroUINativeProvider } from "heroui-native";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AppState } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StyleSheet, useUnistyles, withUnistyles } from "react-native-unistyles";
@@ -16,6 +16,7 @@ import { CustomTabBar } from "@/components/custom-tabbar/custom-tabbar";
 import { OnboardingGate } from "@/features/onboarding/components/onboarding-gate";
 import { refreshRatesWidget } from "@/modules/rates-widget";
 import { ThemePreferenceProvider } from "@/theme/theme-preference";
+import performance from "react-native-performance";
 
 const queryClient = new QueryClient();
 
@@ -46,9 +47,15 @@ export default function RootLayout() {
   }, []);
 
   // Hide splash screen ONLY when the root layout view actually paints to the screen
-  const onLayoutRootView = useCallback(async () => {
+  const onLayoutRootView = async () => {
     if (isReady) {
       await SplashScreen.hideAsync();
+    }
+  };
+
+  useEffect(() => {
+    if (isReady) {
+      performance.mark("screenInteractive");
     }
   }, [isReady]);
 

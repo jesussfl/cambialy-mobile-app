@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
 
 import { historyQueries } from "@/api/queries/history.queries";
 import { RATES_CACHE_TIME, RATES_STALE_TIME } from "@/features/exchange/constants";
@@ -25,8 +24,8 @@ export function useExchangeHistory({ selectedBaseRate, customRateValue, selected
     gcTime: RATES_CACHE_TIME,
   });
 
-  const historyRates = useMemo(() => rateHistoryQuery.data ?? [], [rateHistoryQuery.data]);
-  const historyPickerOptions = useMemo<ExchangeHistoryPickerOption[]>(() => {
+  const historyRates = rateHistoryQuery.data ?? [];
+  const historyPickerOptions: ExchangeHistoryPickerOption[] = (() => {
     if (selectedBaseRateId === CUSTOM_RATE_ID) {
       const customRateText = formatRate(customRateValue);
 
@@ -64,7 +63,7 @@ export function useExchangeHistory({ selectedBaseRate, customRateValue, selected
       });
 
     return [liveOption, ...historyOptions];
-  }, [customRateValue, historyRates, selectedBaseRate.updatedAt, selectedBaseRate.value, selectedBaseRateId]);
+  })();
 
   return {
     historyPickerOptions,
