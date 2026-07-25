@@ -1,108 +1,28 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
-import { useSettingsStore } from "@/features/settings/context/settings-context";
-import type { BaseRateId } from "../hooks/exchange-screen.types";
-import type { TargetCurrencyId } from "../types";
-import { getDisplayAmount, parseCurrencyAmount, sanitizeAmountInput } from "../utils";
+import { useExchangeStore, type ExchangeState } from "../store/exchange-store";
 
-export type ExchangeState = {
-  inputAmount: string;
-  inputAmountDisplay: string;
-  selectedBaseRateId: BaseRateId;
-  selectedTargetCurrencyId: TargetCurrencyId;
-  customRateInput: string;
-  customRateValue: number;
-  isReversed: boolean;
-};
-
-type ExchangeContextValue = ExchangeState & {
+type ExchangeActions = {
   setInputAmount: (amount: string, displayAmount?: string) => void;
-  setSelectedBaseRateId: (id: BaseRateId) => void;
-  setSelectedTargetCurrencyId: (id: TargetCurrencyId) => void;
+  setSelectedBaseRateId: (id: ExchangeState["selectedBaseRateId"]) => void;
+  setSelectedTargetCurrencyId: (id: ExchangeState["selectedTargetCurrencyId"]) => void;
   setCustomRate: (input: string) => void;
   toggleReverse: () => void;
   resetExchange: () => void;
 };
 
-const defaultState: ExchangeState = {
-  inputAmount: "1.00",
-  inputAmountDisplay: "1,00",
-  selectedBaseRateId: "bcv",
-  selectedTargetCurrencyId: "ves",
-  customRateInput: "",
-  customRateValue: 0,
-  isReversed: false,
-};
+export type ExchangeContextValue = ExchangeState & ExchangeActions;
 
-const ExchangeContext = createContext<ExchangeContextValue | null>(null);
+export function useExchangeContext(): ExchangeContextValue {
+  return useExchangeStore() as ExchangeContextValue;
+}
 
 export interface ExchangeProviderProps {
   children: ReactNode;
-  initialState?: Partial<ExchangeState>;
 }
 
-export function ExchangeProvider({ children, initialState: initialStateProp }: ExchangeProviderProps) {
-  const resolvedInitialState = useMemo(() => ({ ...defaultState, ...initialStateProp }), [initialStateProp]);
-
-  const [state, setState] = useState<ExchangeState>(resolvedInitialState);
-  const decimalSeparator = useSettingsStore((s) => s.decimalSeparator);
-
-  const setInputAmount = useCallback(
-    (amount: string, displayAmount?: string) => {
-      const sanitizedAmount = sanitizeAmountInput(amount);
-      const nextDisplayAmount = displayAmount ?? getDisplayAmount(sanitizedAmount, "automatic", decimalSeparator);
-      setState((prev) => ({ ...prev, inputAmount: sanitizedAmount, inputAmountDisplay: nextDisplayAmount }));
-    },
-    [decimalSeparator],
-  );
-
-  const setSelectedBaseRateId = useCallback((id: BaseRateId) => {
-    setState((prev) => ({ ...prev, selectedBaseRateId: id }));
-  }, []);
-
-  const setSelectedTargetCurrencyId = useCallback((id: TargetCurrencyId) => {
-    setState((prev) => ({ ...prev, selectedTargetCurrencyId: id }));
-  }, []);
-
-  const setCustomRate = useCallback((input: string) => {
-    const sanitized = sanitizeAmountInput(input);
-    const value = parseCurrencyAmount(sanitized);
-    setState((prev) => ({
-      ...prev,
-      customRateInput: sanitized,
-      customRateValue: Number.isFinite(value) && value > 0 ? value : 0,
-    }));
-  }, []);
-
-  const toggleReverse = useCallback(() => {
-    setState((prev) => ({ ...prev, isReversed: !prev.isReversed }));
-  }, []);
-
-  const resetExchange = useCallback(() => {
-    setState(resolvedInitialState);
-  }, [resolvedInitialState]);
-
-  const value = useMemo(
-    () => ({
-      ...state,
-      setInputAmount,
-      setSelectedBaseRateId,
-      setSelectedTargetCurrencyId,
-      setCustomRate,
-      toggleReverse,
-      resetExchange,
-    }),
-    [state, setInputAmount, setSelectedBaseRateId, setSelectedTargetCurrencyId, setCustomRate, toggleReverse, resetExchange],
-  );
-
-  return <ExchangeContext.Provider value={value}>{children}</ExchangeContext.Provider>;
+export function ExchangeProvider({ children }: ExchangeProviderProps) {
+  return children;
 }
 
-export function useExchangeContext(): ExchangeContextValue {
-  const context = useContext(ExchangeContext);
-  if (!context) {
-    throw new Error("useExchangeContext must be used within an ExchangeProvider");
-  }
-
-  return context;
-}
+export type { ExchangeState } from "../store/exchange-store";

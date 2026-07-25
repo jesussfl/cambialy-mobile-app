@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
@@ -8,6 +8,7 @@ import { AppText } from "@/components/ui/app-text";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { useExchangeContext } from "../context/exchange-context";
 import { useExchangeInput } from "../hooks/use-exchange-input";
+import { useExchangeStore } from "../store/exchange-store";
 import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
 import {
   appendOperatorToExpression,
@@ -48,6 +49,14 @@ export function SwapInputBlock() {
   const [activeField, setActiveField] = useState<"amount" | "customRate">("amount");
   const [hasTyped, setHasTyped] = useState({ amount: false, customRate: false });
   const [expression, setExpression] = useState("");
+
+  const resetKey = useExchangeStore((s) => s.resetKey);
+
+  useEffect(() => {
+    setActiveField("amount");
+    setHasTyped({ amount: false, customRate: false });
+    setExpression("");
+  }, [resetKey]);
 
   const { amountInputMode, decimalSeparator } = useSettingsStore();
 

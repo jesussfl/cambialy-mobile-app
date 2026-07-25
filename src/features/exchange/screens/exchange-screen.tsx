@@ -2,22 +2,14 @@ import { ConversionDetails } from "@/features/exchange/components/conversion-det
 import { SwapDivider } from "@/features/exchange/components/swap-divider";
 import { SwapInputBlock } from "@/features/exchange/components/swap-input-block";
 import { SwapOutputBlock } from "@/features/exchange/components/swap-output-block";
-import { ExchangeProvider, useExchangeContext } from "@/features/exchange/context/exchange-context";
+import { useExchangeContext } from "@/features/exchange/context/exchange-context";
 import { useExchangeConversion } from "@/features/exchange/hooks/use-exchange-conversion";
 import { useExchangeRatesList } from "@/features/exchange/hooks/use-exchange-rates-list";
 import { ScrollView, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
 export function ExchangeScreen() {
-  return (
-    <ExchangeProvider>
-      <ExchangeScreenContent />
-    </ExchangeProvider>
-  );
-}
-
-function ExchangeScreenContent() {
-  const { selectedBaseRateId, customRateValue, selectedTargetCurrencyId, inputAmount, isReversed, resetExchange } = useExchangeContext();
+  const { selectedBaseRateId, customRateValue, selectedTargetCurrencyId, inputAmount, isReversed } = useExchangeContext();
 
   const { rates, selectedBaseRate } = useExchangeRatesList(selectedBaseRateId, customRateValue);
 

@@ -176,8 +176,7 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
         </View>
       </View>
       <View style={styles.sideActions}>
-        <AppButton labelVariant="cardTitle" label="C" variant="primary" contentStyle={styles.keyContent} style={styles.resetButton} onPress={onClear} />
-        <AppButton labelVariant="cardTitle" label="=" variant="primary" contentStyle={styles.keyContent} style={styles.equalsButton} onPress={onEvaluate} />
+        {/* <AppButton labelVariant="cardTitle" label="=" variant="primary" contentStyle={styles.keyContent} style={styles.equalsButton} onPress={onEvaluate} /> */}
       </View>
     </View>
   );

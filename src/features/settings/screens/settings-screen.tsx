@@ -186,6 +186,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   content: {
     paddingHorizontal: theme.spacing.md,
     paddingTop: rt.insets.top,
+    paddingBottom: 120,
     gap: theme.spacing.xl,
   },
   title: {

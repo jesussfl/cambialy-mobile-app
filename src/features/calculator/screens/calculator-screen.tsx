@@ -362,8 +362,16 @@ function ComparisonSummary({ firstOption, secondOption, result }: ComparisonSumm
       </View>
 
       <View style={styles.summaryGrid}>
-        <SummaryMetric label="Precio A en Bs." value={`Bs. ${formatCompactAmount(firstOption.valueInVes, decimalSeparator)}`} isActive={result?.betterSide === "first"} />
-        <SummaryMetric label="Precio B en Bs." value={`Bs. ${formatCompactAmount(secondOption.valueInVes, decimalSeparator)}`} isActive={result?.betterSide === "second"} />
+        <SummaryMetric
+          label="Precio A en Bs."
+          value={`Bs. ${formatCompactAmount(firstOption.valueInVes, decimalSeparator)}`}
+          isActive={result?.betterSide === "first"}
+        />
+        <SummaryMetric
+          label="Precio B en Bs."
+          value={`Bs. ${formatCompactAmount(secondOption.valueInVes, decimalSeparator)}`}
+          isActive={result?.betterSide === "second"}
+        />
       </View>
 
       <View style={styles.differenceBox}>
@@ -417,7 +425,7 @@ const styles = StyleSheet.create((theme, rt) => ({
     flexGrow: 1,
     paddingHorizontal: theme.spacing.md,
     paddingTop: rt.insets.top,
-    paddingBottom: theme.spacing["3xl"],
+    paddingBottom: 120,
     gap: theme.spacing.lg,
   },
   header: {

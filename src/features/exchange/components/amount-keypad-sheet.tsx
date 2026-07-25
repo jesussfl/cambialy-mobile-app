@@ -6,7 +6,7 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 
-import { PressableScale } from "pressto";
+import { PressableOpacity, PressableScale } from "pressto";
 import { AmountKeypad } from "./amount-keypad";
 
 type AmountKeypadSheetProps = {
@@ -57,11 +57,17 @@ export function AmountKeypadSheet({
       <UniGestureHandlerRootView style={styles.gestureRoot}>
         <View style={styles.container}>
           <View style={styles.header}>
-            <PressableScale onPress={onClose} style={styles.closeButton}>
+            <PressableOpacity onPress={onClear} style={styles.headerButton}>
+              <AppText variant="cardTitle" style={styles.closeLabel}>
+                C
+              </AppText>
+            </PressableOpacity>
+
+            <PressableOpacity onPress={onClose} style={styles.headerButton}>
               <AppText variant="tab" style={styles.closeLabel}>
                 Cerrar
               </AppText>
-            </PressableScale>
+            </PressableOpacity>
           </View>
 
           {showFieldSwitch ? (
@@ -109,13 +115,14 @@ const styles = StyleSheet.create((theme, rt) => ({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
   },
   closeButton: {
     paddingVertical: theme.spacing.xs,
+    backgroundColor: "red",
   },
   closeLabel: {
-    color: theme.colors.primary,
+    color: "white",
   },
   fieldSwitchRow: {
     flexDirection: "row",
@@ -140,5 +147,14 @@ const styles = StyleSheet.create((theme, rt) => ({
   },
   fieldSwitchLabelActive: {
     color: theme.colors.primaryText,
+  },
+  headerButton: {
+    paddingVertical: theme.spacing.xs,
+    minWidth: 84,
+    height: 42,
+    backgroundColor: theme.gray[800],
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: theme.radius.pill,
   },
 }));

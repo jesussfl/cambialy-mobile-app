@@ -1,10 +1,12 @@
 import { Tabs } from "expo-router";
-import type { ComponentProps } from "react";
+import { type ComponentProps, useEffect } from "react";
 import { Pressable, View } from "react-native";
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { type IconName } from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
+import { useExchangeStore } from "@/features/exchange/store/exchange-store";
 import { IconButton } from "../ui/button";
 import { UniRemixIcon } from "../ui/icon";
 
@@ -35,10 +37,28 @@ const UniAppText = withUnistyles(AppText);
 
 export const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   const isExchangeRoute = state.index === 0;
+  const resetExchange = useExchangeStore((s) => s.resetExchange);
+
+  const pillTranslateX = useSharedValue(0);
+  const resetButtonOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    const show = isExchangeRoute;
+    pillTranslateX.value = withTiming(show ? 0 : 28, { duration: 250 });
+    resetButtonOpacity.value = withTiming(show ? 1 : 0, { duration: 250 });
+  }, [isExchangeRoute]);
+
+  const pillStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: pillTranslateX.value }],
+  }));
+
+  const resetButtonStyle = useAnimatedStyle(() => ({
+    opacity: resetButtonOpacity.value,
+  }));
 
   return (
     <View style={styles.tabBar}>
-      <View style={styles.tabBarContent}>
+      <Animated.View style={[styles.tabBarContent, pillStyle]}>
         {state.routes.map((route, index) => {
           const config = BOTTOM_NAV_CONFIG[route.name];
           const options = descriptors[route.key]?.options;
@@ -96,8 +116,10 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, 
             </Pressable>
           );
         })}
-      </View>
-      {isExchangeRoute && <IconButton icon="reset-left-line" onPress={() => {}} style={styles.resetButton} />}
+      </Animated.View>
+      <Animated.View style={[styles.resetButtonContainer, resetButtonStyle]}>
+        <IconButton icon="reset-left-line" onPress={resetExchange} style={styles.resetButton} />
+      </Animated.View>
     </View>
   );
 };
@@ -133,6 +155,7 @@ const styles = StyleSheet.create((theme, rt) => ({
   tabLabel: {
     lineHeight: theme.typography.lineHeight.xs,
   },
+  resetButtonContainer: {},
   resetButton: {
     width: 56,
     height: 56,
