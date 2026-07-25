@@ -10,6 +10,7 @@ import { PressableOpacity, PressableScale } from "pressto";
 import { AmountKeypad } from "./amount-keypad";
 
 type AmountKeypadSheetProps = {
+  name?: string;
   title: string;
   showFieldSwitch: boolean;
   activeField: "amount" | "customRate";
@@ -23,6 +24,7 @@ type AmountKeypadSheetProps = {
 const UniTrueSheet = withUnistyles(TrueSheet);
 const UniGestureHandlerRootView = withUnistyles(GestureHandlerRootView);
 export function AmountKeypadSheet({
+  name,
   showFieldSwitch,
   activeField,
   onFieldChange,
@@ -39,7 +41,7 @@ export function AmountKeypadSheet({
   return (
     <UniTrueSheet
       ref={sheetRef}
-      name="amount-keypad-sheet"
+      name={name ?? "amount-keypad-sheet"}
       detents={["auto"]}
       backgroundColor={"#101828"}
       dismissible={true}
