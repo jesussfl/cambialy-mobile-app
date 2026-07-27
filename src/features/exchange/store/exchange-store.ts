@@ -40,9 +40,9 @@ export const useExchangeStore = create<ExchangeState & ExchangeActions>()((set) 
   ...defaultState,
 
   setInputAmount: (amount, displayAmount) => {
-    const sanitizedAmount = sanitizeAmountInput(amount);
-    const decimalSeparator = useSettingsStore.getState().decimalSeparator;
-    const nextDisplayAmount = displayAmount ?? getDisplayAmount(sanitizedAmount, "automatic", decimalSeparator);
+    const { amountInputMode, decimalSeparator } = useSettingsStore.getState();
+    const sanitizedAmount = sanitizeAmountInput(amount, amountInputMode);
+    const nextDisplayAmount = displayAmount ?? getDisplayAmount(sanitizedAmount, amountInputMode, decimalSeparator);
     set({ inputAmount: sanitizedAmount, inputAmountDisplay: nextDisplayAmount });
   },
 
@@ -51,7 +51,8 @@ export const useExchangeStore = create<ExchangeState & ExchangeActions>()((set) 
   setSelectedTargetCurrencyId: (id) => set({ selectedTargetCurrencyId: id }),
 
   setCustomRate: (input) => {
-    const sanitized = sanitizeAmountInput(input);
+    const { amountInputMode } = useSettingsStore.getState();
+    const sanitized = sanitizeAmountInput(input, amountInputMode);
     const value = parseCurrencyAmount(sanitized);
     set({
       customRateInput: sanitized,
@@ -63,3 +64,13 @@ export const useExchangeStore = create<ExchangeState & ExchangeActions>()((set) 
 
   resetExchange: () => set((prev) => ({ ...defaultState, resetKey: prev.resetKey + 1 })),
 }));
+
+// Automatically update inputAmountDisplay whenever settings change
+useSettingsStore.subscribe((settings) => {
+  const { inputAmount } = useExchangeStore.getState();
+  if (inputAmount) {
+    const nextDisplay = getDisplayAmount(inputAmount, settings.amountInputMode, settings.decimalSeparator);
+    useExchangeStore.setState({ inputAmountDisplay: nextDisplay });
+  }
+});
+

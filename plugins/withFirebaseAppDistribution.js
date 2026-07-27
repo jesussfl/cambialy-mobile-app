@@ -89,7 +89,7 @@ function addReleaseSigningConfig(contents) {
             }
         }`;
 
-  return contents.replace(/(\n    \})\n    buildTypes \{/, `$1\n${block}\n    buildTypes {`);
+  return contents.replace(/\n    \}\n    buildTypes \{/, `\n${block}\n    }\n    buildTypes {`);
 }
 
 function useReleaseSigningConfig(contents) {
@@ -97,7 +97,10 @@ function useReleaseSigningConfig(contents) {
     return contents;
   }
 
-  return contents.replace(/signingConfig signingConfigs\.debug/, "signingConfig signingConfigs.release");
+  return contents.replace(
+    /(buildTypes\s*\{[\s\S]*?release\s*\{[\s\S]*?)signingConfig signingConfigs\.debug/,
+    "$1signingConfig signingConfigs.release"
+  );
 }
 
 function removeAutoUpload(contents) {

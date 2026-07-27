@@ -2,6 +2,7 @@ import { View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
 import { AppButton, IconButton } from "@/components/ui/button";
+import { useSettingsStore } from "@/features/settings/context/settings-context";
 
 type AmountKeypadProps = {
   onKeyPress: (value: string) => void;
@@ -12,12 +13,15 @@ type AmountKeypadProps = {
 };
 
 export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, onEvaluate }: AmountKeypadProps) {
+  const decimalSeparator = useSettingsStore((s) => s.decimalSeparator);
+  const decimalChar = decimalSeparator === "comma" ? "," : ".";
+
   return (
     <View style={styles.keypad}>
       <View style={styles.keypadGrid}>
         <View style={styles.keypadRow}>
           <AppButton
-            labelVariant="sectionTitle"
+            labelVariant="title"
             labelColor="#fff"
             label="1"
             variant="secondary"
@@ -27,7 +31,7 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             isPressableOpacity
           />
           <AppButton
-            labelVariant="sectionTitle"
+            labelVariant="title"
             labelColor="#fff"
             label="2"
             variant="secondary"
@@ -37,7 +41,7 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             isPressableOpacity
           />
           <AppButton
-            labelVariant="sectionTitle"
+            labelVariant="title"
             labelColor="#fff"
             label="3"
             variant="secondary"
@@ -47,7 +51,7 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             isPressableOpacity
           />
           <AppButton
-            labelVariant="sectionTitle"
+            labelVariant="title"
             labelColor="#fff"
             label="÷"
             variant="secondary"
@@ -59,7 +63,7 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
         </View>
         <View style={styles.keypadRow}>
           <AppButton
-            labelVariant="sectionTitle"
+            labelVariant="title"
             labelColor="#fff"
             label="4"
             variant="secondary"
@@ -69,7 +73,7 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             isPressableOpacity
           />
           <AppButton
-            labelVariant="sectionTitle"
+            labelVariant="title"
             labelColor="#fff"
             label="5"
             variant="secondary"
@@ -79,7 +83,7 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             isPressableOpacity
           />
           <AppButton
-            labelVariant="sectionTitle"
+            labelVariant="title"
             labelColor="#fff"
             label="6"
             variant="secondary"
@@ -89,7 +93,7 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             isPressableOpacity
           />
           <AppButton
-            labelVariant="sectionTitle"
+            labelVariant="title"
             labelColor="#fff"
             label="×"
             variant="secondary"
@@ -101,7 +105,7 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
         </View>
         <View style={styles.keypadRow}>
           <AppButton
-            labelVariant="sectionTitle"
+            labelVariant="title"
             labelColor="#fff"
             label="7"
             variant="secondary"
@@ -111,7 +115,7 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             isPressableOpacity
           />
           <AppButton
-            labelVariant="sectionTitle"
+            labelVariant="title"
             labelColor="#fff"
             label="8"
             variant="secondary"
@@ -121,7 +125,7 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             isPressableOpacity
           />
           <AppButton
-            labelVariant="sectionTitle"
+            labelVariant="title"
             labelColor="#fff"
             label="9"
             variant="secondary"
@@ -131,7 +135,7 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             isPressableOpacity
           />
           <AppButton
-            labelVariant="sectionTitle"
+            labelVariant="title"
             labelColor="#fff"
             label="-"
             variant="secondary"
@@ -143,17 +147,17 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
         </View>
         <View style={styles.keypadRow}>
           <AppButton
-            labelVariant="sectionTitle"
+            labelVariant="title"
             labelColor="#fff"
-            label=","
+            label={decimalChar}
             variant="secondary"
             contentStyle={styles.keyContent}
             style={styles.keyButton}
-            onPress={() => onKeyPress(",")}
+            onPress={() => onKeyPress(decimalChar)}
             isPressableOpacity
           />
           <AppButton
-            labelVariant="sectionTitle"
+            labelVariant="title"
             labelColor="#fff"
             label="0"
             variant="secondary"
@@ -164,7 +168,7 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
           />
           <IconButton icon="delete-back-2-line" variant="secondary" style={styles.iconButton} onPress={onDelete} />
           <AppButton
-            labelVariant="sectionTitle"
+            labelVariant="title"
             labelColor="#fff"
             label="+"
             variant="secondary"

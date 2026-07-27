@@ -1,3 +1,4 @@
+import { useSettingsStore } from "@/features/settings/context/settings-context";
 import { targetCurrencyInfo } from "../constants";
 import type { ConversionDetail, TargetCurrencyId } from "../types";
 import { formatCompactAmount, formatExchangeRate, fromVes, getCurrencyRate, parseCurrencyAmount, toVes } from "../utils";
@@ -24,6 +25,7 @@ export function useExchangeConversion({
   selectedTargetCurrencyId,
   customRateValue,
 }: ConversionParams) {
+  const decimalSeparator = useSettingsStore((s) => s.decimalSeparator);
   const targetCurrency = targetCurrencyInfo[selectedTargetCurrencyId];
   const bcvRate = rates.find((r) => r.id === "bcv")?.value ?? 0;
   const targetCurrencyRate = getCurrencyRate(targetCurrency.id, bcvRate);
@@ -40,10 +42,10 @@ export function useExchangeConversion({
   const convertedAmount = fromVes(inputAmountInVes, outputRate);
 
   // Formatted display values
-  const selectedEquivalentValue = formatExchangeRate(selectedBaseRate.value, targetCurrency, bcvRate);
+  const selectedEquivalentValue = formatExchangeRate(selectedBaseRate.value, targetCurrency, bcvRate, decimalSeparator);
   const selectedBaseRateHint = `1 ${selectedBaseRate.info.code} equivale ${selectedEquivalentValue}`;
   const customRateHint = customRateValue > 0 ? selectedBaseRateHint : "Ingresa la tasa personalizada";
-  const outputAmountText = formatCompactAmount(convertedAmount);
+  const outputAmountText = formatCompactAmount(convertedAmount, decimalSeparator);
   const outputCopyText = `${targetCurrency.symbol} ${outputAmountText} ${targetCurrency.code}`;
 
   // Comparison: show what each other rate would produce
@@ -56,6 +58,7 @@ export function useExchangeConversion({
     safeAmount,
     targetCurrencyRate,
     isReversed,
+    decimalSeparator,
   });
 
   return {
@@ -77,6 +80,7 @@ type DetailParams = {
   safeAmount: number;
   targetCurrencyRate: number;
   isReversed: boolean;
+  decimalSeparator: import("@/features/settings/context/settings-context").DecimalSeparator;
 };
 
 /** Maps each non-selected rate into a comparison row */
@@ -89,6 +93,7 @@ function buildConversionDetails({
   safeAmount,
   targetCurrencyRate,
   isReversed,
+  decimalSeparator,
 }: DetailParams): ConversionDetail[] {
   return rates
     .filter((rate) => rate.id !== selectedBaseRateId)
@@ -99,10 +104,10 @@ function buildConversionDetails({
         ? fromVes(inputAmountInVes, rate.value)
         : fromVes(toVes(safeAmount, rate.value), targetCurrencyRate);
 
-      const rateValue = formatExchangeRate(rate.value, targetCurrency, bcvRate);
+      const rateValue = formatExchangeRate(rate.value, targetCurrency, bcvRate, decimalSeparator);
 
       return {
-        amountText: `${rate.info.symbol} ${formatCompactAmount(convertedValue)}`,
+        amountText: `${rate.info.symbol} ${formatCompactAmount(convertedValue, decimalSeparator)}`,
         icon: rate.icon,
         id: rate.id,
         label: rate.info.code,
@@ -110,3 +115,4 @@ function buildConversionDetails({
       };
     });
 }
+
