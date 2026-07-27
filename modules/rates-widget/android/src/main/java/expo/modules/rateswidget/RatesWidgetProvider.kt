@@ -16,7 +16,8 @@ class RatesWidgetProvider : AppWidgetProvider() {
   }
 
   override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-    renderAll(context, isLoading = RatesWidgetRepository.getCachedRates(context) == null)
+    val rates = RatesWidgetRepository.getCachedRates(context)
+    renderAll(context, isLoading = rates == null)
     RatesWidgetWorker.enqueueImmediate(context)
     RatesWidgetWorker.enqueuePeriodic(context)
   }
@@ -26,11 +27,10 @@ class RatesWidgetProvider : AppWidgetProvider() {
 
     when (intent.action) {
       ACTION_REFRESH -> {
-        renderAll(context, isLoading = RatesWidgetRepository.getCachedRates(context) == null)
+        renderAll(context, isLoading = true)
         RatesWidgetWorker.enqueueImmediate(context)
       }
       ACTION_OPEN_APP -> {
-        RatesWidgetWorker.enqueueImmediate(context)
         context.packageManager.getLaunchIntentForPackage(context.packageName)?.let { launchIntent ->
           launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
           context.startActivity(launchIntent)
@@ -69,12 +69,23 @@ class RatesWidgetProvider : AppWidgetProvider() {
           setTextViewText(R.id.rates_widget_usd_value, RatesWidgetRepository.formatRate(rates.usdBcv))
           setTextViewText(R.id.rates_widget_eur_value, RatesWidgetRepository.formatRate(rates.eurBcv))
           setTextViewText(R.id.rates_widget_usdt_value, RatesWidgetRepository.formatRate(rates.usdtBinance))
-          setTextViewText(
-            R.id.rates_widget_status,
-            if (hasError) context.getString(R.string.rates_widget_stale) else context.getString(R.string.rates_widget_updated)
-          )
+
+          val statusText = when {
+            isLoading -> context.getString(R.string.rates_widget_loading)
+            hasError -> context.getString(R.string.rates_widget_stale)
+            else -> {
+              val formattedTime = RatesWidgetRepository.formatTime(rates.updatedAt)
+              if (formattedTime.isNotEmpty()) {
+                context.getString(R.string.rates_widget_updated, formattedTime)
+              } else {
+                context.getString(R.string.rates_widget_stale)
+              }
+            }
+          }
+          setTextViewText(R.id.rates_widget_status, statusText)
         }
 
+        setViewVisibility(R.id.rates_widget_refresh, if (isLoading) View.GONE else View.VISIBLE)
         setViewVisibility(R.id.rates_widget_progress, if (isLoading) View.VISIBLE else View.GONE)
       }
     }

@@ -3,12 +3,15 @@
   <string name="rates_widget_name">Tasas Cambialy</string>
   <string name="rates_widget_title">Tasas Cambialy</string>
   <string name="rates_widget_refresh">↻</string>
-  <string name="rates_widget_usd_label">USD BCV</string>
-  <string name="rates_widget_eur_label">EUR BCV</string>
-  <string name="rates_widget_usdt_label">USDT Binance</string>
+  <string name="rates_widget_usd_label">BCV</string>
+  <string name="rates_widget_eur_label">BCV</string>
+  <string name="rates_widget_usdt_label">Binance</string>
+  <string name="rates_widget_usd_badge">USD</string>
+  <string name="rates_widget_eur_badge">EUR</string>
+  <string name="rates_widget_usdt_badge">USDT</string>
   <string name="rates_widget_loading">Actualizando tasas...</string>
-  <string name="rates_widget_updated">Tasas actualizadas</string>
-  <string name="rates_widget_stale">Mostrando ultimo valor guardado</string>
+  <string name="rates_widget_updated">Actualizado %1$s</string>
+  <string name="rates_widget_stale">Mostrando último valor guardado</string>
   <string name="rates_widget_empty">Tasas no disponibles</string>
   <string name="rates_widget_unavailable">No disponible</string>
 </resources>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <color name="rates_widget_bg">#F8FAFC</color>
+  <color name="rates_widget_card_bg">#FFFFFF</color>
+  <color name="rates_widget_card_stroke">#E2E8F0</color>
+  <color name="rates_widget_text_primary">#0F172A</color>
+  <color name="rates_widget_text_secondary">#64748B</color>
+  <color name="rates_widget_primary">#0350FF</color>
+  
+  <color name="rates_widget_badge_usd_bg">#EFF6FF</color>
+  <color name="rates_widget_badge_usd_text">#1D4ED8</color>
+  
+  <color name="rates_widget_badge_eur_bg">#F0FDF4</color>
+  <color name="rates_widget_badge_eur_text">#15803D</color>
+  
+  <color name="rates_widget_badge_usdt_bg">#FEF3C7</color>
+  <color name="rates_widget_badge_usdt_text">#B45309</color>
+
+  <color name="rates_widget_refresh_bg">#EFF6FF</color>
+  <color name="rates_widget_refresh_icon">#0350FF</color>
+  <color name="rates_widget_refresh_text">#FFFFFF</color>
+</resources>

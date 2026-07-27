@@ -7,16 +7,28 @@
   android:background="@drawable/rates_widget_row_background"
   android:gravity="center_vertical"
   android:orientation="horizontal"
-  android:paddingHorizontal="10dp">
+  android:paddingHorizontal="12dp">
+
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/rates_widget_badge_eur"
+    android:paddingHorizontal="8dp"
+    android:paddingVertical="3dp"
+    android:text="@string/rates_widget_eur_badge"
+    android:textColor="@color/rates_widget_badge_eur_text"
+    android:textSize="11sp"
+    android:textStyle="bold" />
 
   <TextView
     android:layout_width="0dp"
     android:layout_height="wrap_content"
+    android:layout_marginStart="8dp"
     android:layout_weight="1"
     android:ellipsize="end"
     android:maxLines="1"
     android:text="@string/rates_widget_eur_label"
-    android:textColor="#07101F"
+    android:textColor="@color/rates_widget_text_secondary"
     android:textSize="12sp"
     android:textStyle="bold" />
 
@@ -26,7 +38,7 @@
     android:layout_height="wrap_content"
     android:maxLines="1"
     android:text="@string/rates_widget_unavailable"
-    android:textColor="#0350FF"
-    android:textSize="12sp"
+    android:textColor="@color/rates_widget_primary"
+    android:textSize="13sp"
     android:textStyle="bold" />
 </LinearLayout>

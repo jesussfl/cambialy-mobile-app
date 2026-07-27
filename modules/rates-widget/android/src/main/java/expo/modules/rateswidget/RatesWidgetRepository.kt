@@ -64,6 +64,12 @@ object RatesWidgetRepository {
 
   fun formatRate(value: Double): String = String.format(Locale.US, "Bs. %,.2f", value)
 
+  fun formatTime(timestamp: Long): String {
+    if (timestamp <= 0L) return ""
+    val sdf = java.text.SimpleDateFormat("hh:mm a", Locale.getDefault())
+    return sdf.format(java.util.Date(timestamp))
+  }
+
   private fun fetchJson(url: String): JSONObject {
     val connection = (URL(url).openConnection() as HttpURLConnection).apply {
       requestMethod = "GET"
