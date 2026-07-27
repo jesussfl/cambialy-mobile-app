@@ -1,6 +1,6 @@
 import { Popover } from "heroui-native";
 import { useState } from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import RemixIcon, { type IconName } from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
@@ -61,7 +61,7 @@ export function CurrencyPicker({ code, icon, onSelect, options, selectedOptionId
             const isSelected = option.id === selectedOptionId;
 
             return (
-              <Pressable
+              <UniPressableOpacity
                 accessibilityRole="button"
                 key={option.id}
                 onPress={() => handleSelectOption(option.id)}
@@ -93,7 +93,7 @@ export function CurrencyPicker({ code, icon, onSelect, options, selectedOptionId
                     })}
                   />
                 ) : null}
-              </Pressable>
+              </UniPressableOpacity>
             );
           })}
         </UniPopoverContent>
@@ -109,7 +109,7 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing.xxs,
-    paddingHorizontal: theme.spacing.xs,
+    paddingHorizontal: 4,
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
@@ -125,16 +125,18 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.secondarySurface,
   },
   currencyPopover: {
-    gap: theme.spacing.xs,
-    padding: theme.spacing.xs,
+    gap: theme.spacing.xxs,
     borderRadius: theme.radius.lg,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.borderSubtle,
     ...theme.shadows.card,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
   },
   currencyOption: {
-    minHeight: 52,
+    width: "100%",
+    minHeight: 48,
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing.sm,
