@@ -2,3 +2,5 @@ allowBuilds:
   '@shopify/react-native-skia': true
   msgpackr-extract: true
   unrs-resolver: true
+minimumReleaseAgeExclude:
+  - react-native-worklets@0.11.3

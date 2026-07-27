@@ -45,3 +45,4 @@ example
 # local Expo module native build artifacts
 modules/*/android/build/
 modules/*/android/.gradle/
+

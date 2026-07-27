@@ -62,9 +62,13 @@ export const PaginationItem: FC<PaginationItemProps> = ({
 
   return (
     <Pressable accessibilityRole="button" onPress={() => handleScrollToIndex(index)} style={styles.pressable}>
-      <Animated.View style={[styles.track, containerStyle]}>
-        <View style={styles.trackBase} />
-        <Animated.View style={[styles.progress, progressStyle]} />
+      <Animated.View style={containerStyle}>
+        <View style={styles.track}>
+          <View style={styles.trackBase} />
+          <Animated.View style={[{ transformOrigin: 'left center' }, progressStyle]}>
+            <View style={styles.progress} />
+          </Animated.View>
+        </View>
       </Animated.View>
     </Pressable>
   );

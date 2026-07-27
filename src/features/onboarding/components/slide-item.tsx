@@ -30,23 +30,25 @@ export const SlideItem: FC<SlideItemProps> = ({ item, index, width, scrollOffset
   }, [scrollOffsetX, index, width]);
 
   return (
-    <Animated.View style={[styles.slideFrame, { width }, rStyle]}>
-      <View style={[styles.card, { backgroundColor: item.bgColor }]}>
-        <View style={styles.copy}>
-          <View style={[styles.badge, { backgroundColor: item.accentColor }]}>
-            <UniRemixIcon name="exchange-dollar-line" size={18} color="#07101F" />
+    <Animated.View style={[{ flex: 1 }, { width }, rStyle]}>
+      <View style={styles.slideFrame}>
+        <View style={[styles.card, { backgroundColor: item.bgColor }]}>
+          <View style={styles.copy}>
+            <View style={[styles.badge, { backgroundColor: item.accentColor }]}>
+              <UniRemixIcon name="exchange-dollar-line" size={18} color="#07101F" />
+            </View>
+            <AppText variant="title" color="#FFFFFF" style={styles.title}>
+              {item.title}
+            </AppText>
+            <AppText variant="body" color="rgba(255,255,255,0.78)" style={styles.subtitle}>
+              {item.subtitle}
+            </AppText>
           </View>
-          <AppText variant="title" color="#FFFFFF" style={styles.title}>
-            {item.title}
-          </AppText>
-          <AppText variant="body" color="rgba(255,255,255,0.78)" style={styles.subtitle}>
-            {item.subtitle}
-          </AppText>
-        </View>
 
-        <View style={styles.visualWrap}>
-          <View style={[styles.visualGlow, { backgroundColor: item.accentColor }]} />
-          <SlideIllustration type={item.illustration} accentColor={item.accentColor} />
+          <View style={styles.visualWrap}>
+            <View style={[styles.visualGlow, { backgroundColor: item.accentColor }]} />
+            <SlideIllustration type={item.illustration} accentColor={item.accentColor} />
+          </View>
         </View>
       </View>
     </Animated.View>
