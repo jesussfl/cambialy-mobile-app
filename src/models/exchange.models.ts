@@ -19,7 +19,10 @@ export type ExchangeRateAPIResponse = {
   source?: string;
   target_currency?: string;
   rate_value?: number;
+  rate?: number;
   last_updated?: string;
+  timestamp?: string;
+  currency?: string;
   rates?: Partial<Record<"USD" | "EUR", number>>;
 };
 
@@ -28,5 +31,7 @@ export type RatesHistoryAPIResponse = {
   page?: number;
   size?: number;
   total_records?: number;
+  next_cursor?: string | null;
+  has_more?: boolean;
   history?: ExchangeRateAPIResponse[];
 };

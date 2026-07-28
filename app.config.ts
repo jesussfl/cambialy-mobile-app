@@ -168,6 +168,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       "expo-status-bar",
       "./plugins/withAndroidR8",
       "./plugins/withHermesMmap",
+      "./plugins/withXcodeEnv",
       "expo-image",
       "expo-web-browser",
     ],

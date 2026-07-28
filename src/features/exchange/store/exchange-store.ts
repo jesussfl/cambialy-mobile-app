@@ -12,6 +12,7 @@ export type ExchangeState = {
   selectedTargetCurrencyId: TargetCurrencyId;
   customRateInput: string;
   customRateValue: number;
+  selectedDate: string | null;
   isReversed: boolean;
   resetKey: number;
 };
@@ -21,6 +22,7 @@ type ExchangeActions = {
   setSelectedBaseRateId: (id: BaseRateId) => void;
   setSelectedTargetCurrencyId: (id: TargetCurrencyId) => void;
   setCustomRate: (input: string) => void;
+  setSelectedDate: (date: string | null) => void;
   toggleReverse: () => void;
   resetExchange: () => void;
 };
@@ -32,6 +34,7 @@ const defaultState: ExchangeState = {
   selectedTargetCurrencyId: "ves",
   customRateInput: "",
   customRateValue: 0,
+  selectedDate: null,
   isReversed: false,
   resetKey: 0,
 };
@@ -59,6 +62,8 @@ export const useExchangeStore = create<ExchangeState & ExchangeActions>()((set) 
       customRateValue: Number.isFinite(value) && value > 0 ? value : 0,
     });
   },
+
+  setSelectedDate: (date) => set({ selectedDate: date }),
 
   toggleReverse: () => set((prev) => ({ isReversed: !prev.isReversed })),
 

@@ -12,42 +12,54 @@ const ENDPOINTS = {
   legacyBinance: `${API_BASE_URL}/rates/binance`,
 };
 
+function buildUrl(endpoint: string, date?: string | null) {
+  if (!date) return endpoint;
+  const separator = endpoint.includes("?") ? "&" : "?";
+  return `${endpoint}${separator}date=${encodeURIComponent(date)}`;
+}
+
 export const exchangeQueries = {
-  getUSDRate: queryOptions({
-    queryKey: ["exchange", "usd"],
-    queryFn: async () => {
-      const response = await fetch(ENDPOINTS.usd);
-      if (!response.ok) {
-        throw new Error("No se pudo cargar la tasa BCV USD");
-      }
-      const payload = (await response.json()) as ExchangeRateAPIResponse;
-      return mapRateResponse("bcv", payload);
-    },
-  }),
+  getUSDRate: (date?: string | null) =>
+    queryOptions({
+      queryKey: ["exchange", "usd", date ?? "latest"],
+      queryFn: async () => {
+        const url = buildUrl(ENDPOINTS.usd, date);
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error("No se pudo cargar la tasa BCV USD");
+        }
+        const payload = (await response.json()) as ExchangeRateAPIResponse;
+        return mapRateResponse("bcv", payload);
+      },
+    }),
 
-  getEURRate: queryOptions({
-    queryKey: ["exchange", "eur"],
-    queryFn: async () => {
-      const response = await fetch(ENDPOINTS.eur);
-      if (!response.ok) {
-        throw new Error("No se pudo cargar la tasa BCV EUR");
-      }
-      const payload = (await response.json()) as ExchangeRateAPIResponse;
-      return mapRateResponse("eur", payload);
-    },
-  }),
+  getEURRate: (date?: string | null) =>
+    queryOptions({
+      queryKey: ["exchange", "eur", date ?? "latest"],
+      queryFn: async () => {
+        const url = buildUrl(ENDPOINTS.eur, date);
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error("No se pudo cargar la tasa BCV EUR");
+        }
+        const payload = (await response.json()) as ExchangeRateAPIResponse;
+        return mapRateResponse("eur", payload);
+      },
+    }),
 
-  getUSDTRate: queryOptions({
-    queryKey: ["exchange", "usdt"],
-    queryFn: async () => {
-      const response = await fetch(ENDPOINTS.usdt);
-      if (!response.ok) {
-        throw new Error("No se pudo cargar la tasa Binance USDT");
-      }
-      const payload = (await response.json()) as ExchangeRateAPIResponse;
-      return mapRateResponse("usdt", payload);
-    },
-  }),
+  getUSDTRate: (date?: string | null) =>
+    queryOptions({
+      queryKey: ["exchange", "usdt", date ?? "latest"],
+      queryFn: async () => {
+        const url = buildUrl(ENDPOINTS.usdt, date);
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error("No se pudo cargar la tasa Binance USDT");
+        }
+        const payload = (await response.json()) as ExchangeRateAPIResponse;
+        return mapRateResponse("usdt", payload);
+      },
+    }),
 
   getBCVRates: queryOptions({
     queryKey: ["exchange", "bcv"],

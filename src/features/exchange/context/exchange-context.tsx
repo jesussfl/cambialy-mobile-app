@@ -7,6 +7,7 @@ type ExchangeActions = {
   setSelectedBaseRateId: (id: ExchangeState["selectedBaseRateId"]) => void;
   setSelectedTargetCurrencyId: (id: ExchangeState["selectedTargetCurrencyId"]) => void;
   setCustomRate: (input: string) => void;
+  setSelectedDate: (date: string | null) => void;
   toggleReverse: () => void;
   resetExchange: () => void;
 };
@@ -41,6 +42,10 @@ export function useCustomRateValue() {
   return useExchangeStore((s) => s.customRateValue);
 }
 
+export function useSelectedDate() {
+  return useExchangeStore((s) => s.selectedDate);
+}
+
 export function useIsReversed() {
   return useExchangeStore((s) => s.isReversed);
 }
@@ -63,6 +68,10 @@ export function useSetSelectedTargetCurrencyId() {
 
 export function useSetCustomRate() {
   return useExchangeStore((s) => s.setCustomRate);
+}
+
+export function useSetSelectedDate() {
+  return useExchangeStore((s) => s.setSelectedDate);
 }
 
 export function useToggleReverse() {

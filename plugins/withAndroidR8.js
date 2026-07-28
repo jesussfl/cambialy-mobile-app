@@ -15,7 +15,7 @@ module.exports = function withAndroidR8(config) {
       if (!contents.includes("proguard-rules.pro")) {
         contents = contents.replace(
           /release\s*\{/,
-          `release {\n            minifyEnabled enableProguardInReleaseBuilds\n            shrinkResources true\n            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'`,
+          `release {\n            minifyEnabled enableProguardInReleaseBuilds\n            shrinkResources true\n            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'`,
         );
       }
 

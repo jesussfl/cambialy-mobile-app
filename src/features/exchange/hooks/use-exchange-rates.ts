@@ -6,21 +6,25 @@ import type { ExchangeRate } from "@/models/exchange.models";
 
 import type { BaseRate } from "./exchange-screen.types";
 
+import { useSelectedDate } from "@/features/exchange/context/exchange-context";
+
 export function useExchangeRates() {
+  const selectedDate = useSelectedDate();
+
   return useQueries({
     queries: [
       {
-        ...exchangeQueries.getUSDRate,
+        ...exchangeQueries.getUSDRate(selectedDate),
         staleTime: RATES_STALE_TIME,
         gcTime: RATES_CACHE_TIME,
       },
       {
-        ...exchangeQueries.getEURRate,
+        ...exchangeQueries.getEURRate(selectedDate),
         staleTime: RATES_STALE_TIME,
         gcTime: RATES_CACHE_TIME,
       },
       {
-        ...exchangeQueries.getUSDTRate,
+        ...exchangeQueries.getUSDTRate(selectedDate),
         staleTime: RATES_STALE_TIME,
         gcTime: RATES_CACHE_TIME,
       },
