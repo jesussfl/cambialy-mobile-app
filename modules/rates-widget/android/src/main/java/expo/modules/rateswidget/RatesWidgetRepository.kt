@@ -16,8 +16,13 @@ object RatesWidgetRepository {
   private const val KEY_UPDATED_AT = "updated_at"
   private const val KEY_SOURCE_UPDATED_AT = "source_updated_at"
 
-  private const val BCV_ENDPOINT = "https://ahorrave-api.onrender.com/api/v1/rates/bcv"
-  private const val BINANCE_ENDPOINT = "https://ahorrave-api.onrender.com/api/v1/rates/binance"
+  private fun getBaseUrl(context: Context): String {
+    return if (context.packageName.contains("staging")) {
+      "https://cambialy-backend.onrender.com/api/v1"
+    } else {
+      "https://ahorrave-api.onrender.com/api/v1"
+    }
+  }
 
   fun getCachedRates(context: Context): WidgetRates? {
     val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -35,8 +40,9 @@ object RatesWidgetRepository {
   }
 
   fun fetchAndCacheRates(context: Context): WidgetRates {
-    val bcvPayload = fetchJson(BCV_ENDPOINT)
-    val binancePayload = fetchJson(BINANCE_ENDPOINT)
+    val baseUrl = getBaseUrl(context)
+    val bcvPayload = fetchJson("$baseUrl/rates/bcv")
+    val binancePayload = fetchJson("$baseUrl/rates/binance")
     val bcvRates = bcvPayload.getJSONObject("rates")
     val binanceRates = binancePayload.getJSONObject("rates")
 

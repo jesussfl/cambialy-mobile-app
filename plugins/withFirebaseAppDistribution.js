@@ -89,7 +89,10 @@ function addReleaseSigningConfig(contents) {
             }
         }`;
 
-  return contents.replace(/\n    \}\n    buildTypes \{/, `\n${block}\n    }\n    buildTypes {`);
+  return contents.replace(
+    /(signingConfigs\s*\{[\s\S]*?debug\s*\{[\s\S]*?\n\s*\})/,
+    `$1\n${block}`
+  );
 }
 
 function useReleaseSigningConfig(contents) {

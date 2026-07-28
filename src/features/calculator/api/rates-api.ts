@@ -26,7 +26,7 @@ type AhorraVeHistoryResponse = {
   history?: AhorraVeRatesResponse[];
 };
 
-const API_BASE_URL = "https://ahorrave-api.onrender.com/api/v1";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "https://ahorrave-api.onrender.com/api/v1";
 
 const endpoints = {
   bcv: `${API_BASE_URL}/rates/bcv`,
