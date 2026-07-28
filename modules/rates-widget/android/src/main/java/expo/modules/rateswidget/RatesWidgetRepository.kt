@@ -18,7 +18,7 @@ object RatesWidgetRepository {
 
   private fun getBaseUrl(context: Context): String {
     return if (context.packageName.contains("staging")) {
-      "https://cambialy-backend.onrender.com/api/v1"
+      "https://cambialy-backend.onrender.com/api/v2"
     } else {
       "https://ahorrave-api.onrender.com/api/v1"
     }
@@ -41,20 +41,34 @@ object RatesWidgetRepository {
 
   fun fetchAndCacheRates(context: Context): WidgetRates {
     val baseUrl = getBaseUrl(context)
-    val bcvPayload = fetchJson("$baseUrl/rates/bcv")
-    val binancePayload = fetchJson("$baseUrl/rates/binance")
-    val bcvRates = bcvPayload.getJSONObject("rates")
-    val binanceRates = binancePayload.getJSONObject("rates")
+    val rates = if (baseUrl.endsWith("v2")) {
+      val usdPayload = fetchJson("$baseUrl/rates/usd")
+      val eurPayload = fetchJson("$baseUrl/rates/eur")
+      val usdtPayload = fetchJson("$baseUrl/rates/usdt")
 
-    val rates = WidgetRates(
-      usdBcv = bcvRates.getFiniteDouble("USD"),
-      eurBcv = bcvRates.getFiniteDouble("EUR"),
-      usdtBinance = binanceRates.getFiniteDouble("USD"),
-      updatedAt = System.currentTimeMillis(),
-      sourceUpdatedAt = bcvPayload.optString("last_updated").ifBlank {
-        binancePayload.optString("last_updated").ifBlank { null }
-      }
-    )
+      WidgetRates(
+        usdBcv = extractRate(usdPayload, "USD"),
+        eurBcv = extractRate(eurPayload, "EUR"),
+        usdtBinance = extractRate(usdtPayload, "USDT"),
+        updatedAt = System.currentTimeMillis(),
+        sourceUpdatedAt = usdPayload.optString("last_updated").ifBlank {
+          usdtPayload.optString("last_updated").ifBlank { null }
+        }
+      )
+    } else {
+      val bcvPayload = fetchJson("$baseUrl/rates/bcv")
+      val binancePayload = fetchJson("$baseUrl/rates/binance")
+
+      WidgetRates(
+        usdBcv = extractRate(bcvPayload, "USD"),
+        eurBcv = extractRate(bcvPayload, "EUR"),
+        usdtBinance = extractRate(binancePayload, "USD"),
+        updatedAt = System.currentTimeMillis(),
+        sourceUpdatedAt = bcvPayload.optString("last_updated").ifBlank {
+          binancePayload.optString("last_updated").ifBlank { null }
+        }
+      )
+    }
 
     context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
       .edit()
@@ -101,11 +115,16 @@ object RatesWidgetRepository {
     }
   }
 
-  private fun JSONObject.getFiniteDouble(name: String): Double {
-    val value = getDouble(name)
-    if (!value.isFinite()) {
-      throw IllegalStateException("Invalid rate for $name")
+  private fun extractRate(json: JSONObject, currencyName: String): Double {
+    if (json.has("rate_value")) {
+      val value = json.getDouble("rate_value")
+      if (value.isFinite()) return value
     }
-    return value
+    if (json.has("rates")) {
+      val ratesObj = json.getJSONObject("rates")
+      val value = ratesObj.getDouble(currencyName)
+      if (value.isFinite()) return value
+    }
+    throw IllegalStateException("Invalid rate for $currencyName")
   }
 }

@@ -10,21 +10,28 @@ export function useExchangeRates() {
   return useQueries({
     queries: [
       {
-        ...exchangeQueries.getBCVRates,
+        ...exchangeQueries.getUSDRate,
         staleTime: RATES_STALE_TIME,
         gcTime: RATES_CACHE_TIME,
       },
       {
-        ...exchangeQueries.getBinanceUSDT,
+        ...exchangeQueries.getEURRate,
+        staleTime: RATES_STALE_TIME,
+        gcTime: RATES_CACHE_TIME,
+      },
+      {
+        ...exchangeQueries.getUSDTRate,
         staleTime: RATES_STALE_TIME,
         gcTime: RATES_CACHE_TIME,
       },
     ],
     combine: (results) => {
-      const [bcvRatesQuery, binanceRateQuery] = results;
-      const bcvRates = bcvRatesQuery.data ?? [];
-      const binanceRates = binanceRateQuery.data ? [binanceRateQuery.data] : [];
-      const rates = [...bcvRates, ...binanceRates];
+      const [usdQuery, eurQuery, usdtQuery] = results;
+      const rates: ExchangeRate[] = [];
+      if (usdQuery.data) rates.push(usdQuery.data);
+      if (eurQuery.data) rates.push(eurQuery.data);
+      if (usdtQuery.data) rates.push(usdtQuery.data);
+
       const ratesWithFallback = mergeWithFallbackRates(rates);
       const sortedRates = [...ratesWithFallback].sort((leftRate, rightRate) => RATE_ORDER[leftRate.id] - RATE_ORDER[rightRate.id]);
       const baseRates: BaseRate[] = sortedRates.map((rate) => ({

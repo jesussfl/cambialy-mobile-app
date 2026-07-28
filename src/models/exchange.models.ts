@@ -17,11 +17,16 @@ export type ExchangeRateHistoryOption = ExchangeRate & {
 
 export type ExchangeRateAPIResponse = {
   source?: string;
+  target_currency?: string;
+  rate_value?: number;
   last_updated?: string;
   rates?: Partial<Record<"USD" | "EUR", number>>;
 };
 
 export type RatesHistoryAPIResponse = {
-  category?: "bcv" | "binance";
+  category?: string;
+  page?: number;
+  size?: number;
+  total_records?: number;
   history?: ExchangeRateAPIResponse[];
 };

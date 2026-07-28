@@ -17,21 +17,26 @@ export type ExchangeRateHistoryOption = ExchangeRate & {
 
 type AhorraVeRatesResponse = {
   source?: string;
+  target_currency?: string;
+  rate_value?: number;
   last_updated?: string;
   rates?: Partial<Record<"USD" | "EUR", number>>;
 };
 
 type AhorraVeHistoryResponse = {
-  category?: "bcv" | "binance";
+  category?: string;
+  page?: number;
+  size?: number;
+  total_records?: number;
   history?: AhorraVeRatesResponse[];
 };
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "https://ahorrave-api.onrender.com/api/v1";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "https://cambialy-backend.onrender.com/api/v2";
 
 const endpoints = {
-  bcv: `${API_BASE_URL}/rates/bcv`,
-  usdt: `${API_BASE_URL}/rates/binance`,
-  eur: `${API_BASE_URL}/rates/bcv`,
+  bcv: `${API_BASE_URL}/rates/usd`,
+  usdt: `${API_BASE_URL}/rates/usdt`,
+  eur: `${API_BASE_URL}/rates/eur`,
 } as const;
 
 const historyEndpoints = {
@@ -61,7 +66,9 @@ function getRateCurrency(id: ExchangeRateId) {
 
 function mapRate(id: ExchangeRateId, data: AhorraVeRatesResponse): ExchangeRateHistoryOption {
   const currency = getRateCurrency(id);
-  const value = data.rates?.[currency];
+  const value = typeof data.rate_value === "number" && Number.isFinite(data.rate_value)
+    ? data.rate_value
+    : data.rates?.[currency];
 
   if (typeof value !== "number" || !Number.isFinite(value)) {
     throw new Error(`La tasa ${id} no incluye ${currency} valido`);
@@ -71,8 +78,8 @@ function mapRate(id: ExchangeRateId, data: AhorraVeRatesResponse): ExchangeRateH
     id,
     label: rateMetadata[id].label,
     value,
-    bcvValue: data.rates?.USD,
-    eurValue: data.rates?.EUR,
+    bcvValue: data.rates?.USD ?? (id === "bcv" ? value : undefined),
+    eurValue: data.rates?.EUR ?? (id === "eur" ? value : undefined),
     updatedAt: data.last_updated,
     icon: rateMetadata[id].icon,
   };
@@ -89,13 +96,17 @@ async function fetchRatePayload(id: ExchangeRateId): Promise<AhorraVeRatesRespon
 }
 
 export async function fetchExchangeRates() {
-  const [binanceRates, bcvRates] = await Promise.all([fetchRatePayload("usdt"), fetchRatePayload("bcv")]);
+  const [binanceRates, bcvUsdRates, bcvEurRates] = await Promise.all([
+    fetchRatePayload("usdt"),
+    fetchRatePayload("bcv"),
+    fetchRatePayload("eur"),
+  ]);
 
-  return [mapRate("usdt", binanceRates), mapRate("bcv", bcvRates), mapRate("eur", bcvRates)];
+  return [mapRate("usdt", binanceRates), mapRate("bcv", bcvUsdRates), mapRate("eur", bcvEurRates)];
 }
 
 export async function fetchExchangeRateHistory(id: ExchangeRateId, limit = 20): Promise<ExchangeRateHistoryOption[]> {
-  const response = await fetch(`${historyEndpoints[id]}?limit=${limit}`);
+  const response = await fetch(`${historyEndpoints[id]}?page=1&size=${limit}&limit=${limit}`);
 
   if (!response.ok) {
     throw new Error(`No se pudo cargar el historial de la tasa ${id}`);

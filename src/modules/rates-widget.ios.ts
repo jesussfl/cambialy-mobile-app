@@ -1,4 +1,4 @@
-import { mapBCVRatesResponse, mapBinanceRateResponse } from "@/api/mapper";
+import { mapRateResponse } from "@/api/mapper";
 import type { ExchangeRateAPIResponse } from "@/models/exchange.models";
 import RatesWidget from "@/widgets/rates-widget";
 
@@ -10,11 +10,12 @@ export type WidgetRates = {
   sourceUpdatedAt?: string | null;
 };
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "https://ahorrave-api.onrender.com/api/v1";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "https://cambialy-backend.onrender.com/api/v2";
 
 const ENDPOINTS = {
-  bcv: `${API_BASE_URL}/rates/bcv`,
-  binance: `${API_BASE_URL}/rates/binance`,
+  usd: `${API_BASE_URL}/rates/usd`,
+  eur: `${API_BASE_URL}/rates/eur`,
+  usdt: `${API_BASE_URL}/rates/usdt`,
 };
 
 export async function refreshRatesWidget() {
@@ -56,16 +57,22 @@ export async function getCachedRatesWidget(): Promise<WidgetRates | null> {
 }
 
 async function fetchRatesForWidget(): Promise<WidgetRates> {
-  const [bcvPayload, binancePayload] = await Promise.all([fetchJson(ENDPOINTS.bcv), fetchJson(ENDPOINTS.binance)]);
-  const [usdBcv, eurBcv] = mapBCVRatesResponse(bcvPayload);
-  const usdtBinance = mapBinanceRateResponse(binancePayload);
+  const [usdPayload, eurPayload, usdtPayload] = await Promise.all([
+    fetchJson(ENDPOINTS.usd),
+    fetchJson(ENDPOINTS.eur),
+    fetchJson(ENDPOINTS.usdt),
+  ]);
+
+  const usdBcv = mapRateResponse("bcv", usdPayload);
+  const eurBcv = mapRateResponse("eur", eurPayload);
+  const usdtBinance = mapRateResponse("usdt", usdtPayload);
 
   return {
     usdBcv: usdBcv.value,
     eurBcv: eurBcv.value,
     usdtBinance: usdtBinance.value,
     updatedAt: Date.now(),
-    sourceUpdatedAt: bcvPayload.last_updated ?? binancePayload.last_updated ?? null,
+    sourceUpdatedAt: usdPayload.last_updated ?? usdtPayload.last_updated ?? null,
   };
 }
 

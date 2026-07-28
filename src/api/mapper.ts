@@ -33,9 +33,11 @@ export function mapRateHistoryResponse(id: ExchangeRateId, data: RatesHistoryAPI
   return (data.history ?? []).map((historyItem) => mapRateResponse(id, historyItem));
 }
 
-function mapRateResponse(id: ExchangeRateId, data: ExchangeRateAPIResponse): ExchangeRateHistoryOption {
+export function mapRateResponse(id: ExchangeRateId, data: ExchangeRateAPIResponse): ExchangeRateHistoryOption {
   const currency = rateCurrencyById[id];
-  const value = data.rates?.[currency];
+  const value = typeof data.rate_value === "number" && Number.isFinite(data.rate_value)
+    ? data.rate_value
+    : data.rates?.[currency];
 
   if (typeof value !== "number" || !Number.isFinite(value)) {
     throw new Error(`La tasa ${rateMetadata[id].label} no incluye ${currency} valido`);
@@ -45,8 +47,8 @@ function mapRateResponse(id: ExchangeRateId, data: ExchangeRateAPIResponse): Exc
     id,
     label: rateMetadata[id].label,
     value,
-    bcvValue: data.rates?.USD,
-    eurValue: data.rates?.EUR,
+    bcvValue: data.rates?.USD ?? (id === "bcv" ? value : undefined),
+    eurValue: data.rates?.EUR ?? (id === "eur" ? value : undefined),
     updatedAt: data.last_updated,
     icon: rateMetadata[id].icon,
   };
