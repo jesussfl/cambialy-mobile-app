@@ -9,29 +9,21 @@ import { RateHistorySheet } from "@/features/exchange/components/rate-history-sh
 import { SwapDivider } from "@/features/exchange/components/swap-divider";
 import { SwapInputBlock } from "@/features/exchange/components/swap-input-block";
 import { SwapOutputBlock } from "@/features/exchange/components/swap-output-block";
-import {
-  useSelectedBaseRateId,
-  useSelectedTargetCurrencyId,
-  useCustomRateValue,
-  useExchangeInputAmount,
-  useIsReversed,
-  useSelectedDate,
-  useSetSelectedDate,
-} from "@/features/exchange/context/exchange-context";
+import { useExchangeStore } from "@/features/exchange/store/exchange-store";
 import { useExchangeConversion } from "@/features/exchange/hooks/use-exchange-conversion";
 import { useExchangeRatesList } from "@/features/exchange/hooks/use-exchange-rates-list";
-import { formatHistoryDate } from "@/features/exchange/utils";
+import { formatHistoricalDate } from "@/features/exchange/utils";
 
 const UniRemixIcon = withUnistyles(RemixIcon);
 
 export function ExchangeScreen() {
-  const selectedBaseRateId = useSelectedBaseRateId();
-  const customRateValue = useCustomRateValue();
-  const selectedTargetCurrencyId = useSelectedTargetCurrencyId();
-  const inputAmount = useExchangeInputAmount();
-  const isReversed = useIsReversed();
-  const selectedDate = useSelectedDate();
-  const setSelectedDate = useSetSelectedDate();
+  const selectedBaseRateId = useExchangeStore((s) => s.selectedBaseRateId);
+  const customRateValue = useExchangeStore((s) => s.customRateValue);
+  const selectedTargetCurrencyId = useExchangeStore((s) => s.selectedTargetCurrencyId);
+  const inputAmount = useExchangeStore((s) => s.inputAmount);
+  const isReversed = useExchangeStore((s) => s.isReversed);
+  const selectedDate = useExchangeStore((s) => s.selectedDate);
+  const setSelectedDate = useExchangeStore((s) => s.setSelectedDate);
 
   const { rates, selectedBaseRate } = useExchangeRatesList(selectedBaseRateId, customRateValue);
 
@@ -75,7 +67,7 @@ export function ExchangeScreen() {
               uniProps={(theme: any) => ({ color: theme.colors.primary })}
             />
             <AppText variant="subtitle" style={styles.historyBannerDate}>
-              {`Tasa histórica: ${formatHistoryDate(selectedDate)}`}
+              {`Tasa histórica: ${formatHistoricalDate(selectedDate ?? "")}`}
             </AppText>
           </View>
           <Pressable style={styles.resetBannerButton} onPress={() => setSelectedDate(null)}>

@@ -6,10 +6,10 @@ import type { ExchangeRate } from "@/models/exchange.models";
 
 import type { BaseRate } from "./exchange-screen.types";
 
-import { useSelectedDate } from "@/features/exchange/context/exchange-context";
+import { useExchangeStore } from "@/features/exchange/store/exchange-store";
 
 export function useExchangeRates() {
-  const selectedDate = useSelectedDate();
+  const selectedDate = useExchangeStore((s) => s.selectedDate);
 
   return useQueries({
     queries: [

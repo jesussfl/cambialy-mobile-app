@@ -3,7 +3,7 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 import { useSettingsStore } from "@/features/settings/context/settings-context";
-import { formatQuickAmountLabel, parseCurrencyAmount } from "@/features/exchange/utils";
+import { formatQuickActionAmount, parseLocalizedAmountToNumber } from "@/features/exchange/utils";
 import { PressableScale } from "pressto";
 
 type QuickAmountPillsProps = {
@@ -14,13 +14,13 @@ type QuickAmountPillsProps = {
 const UniPressableScale = withUnistyles(PressableScale);
 
 export function QuickAmountPills({ amount, onSelect, values }: QuickAmountPillsProps) {
-  const parsedAmount = parseCurrencyAmount(amount);
+  const numAmount = parseLocalizedAmountToNumber(amount);
   const decimalSeparator = useSettingsStore((s) => s.decimalSeparator);
 
   return (
     <View style={styles.quickAmountList}>
       {values.map((quickAmount) => {
-        const isSelected = parsedAmount === Number(quickAmount);
+        const isSelected = numAmount === Number(quickAmount);
 
         return (
           <UniPressableScale
@@ -29,7 +29,7 @@ export function QuickAmountPills({ amount, onSelect, values }: QuickAmountPillsP
             style={[styles.quickAmountPill, isSelected ? styles.quickAmountPillSelected : null]}
           >
             <AppText variant="tab" style={isSelected ? styles.quickAmountTextSelected : styles.quickAmountText}>
-              {formatQuickAmountLabel(quickAmount, decimalSeparator)}
+              {formatQuickActionAmount(quickAmount, decimalSeparator)}
             </AppText>
           </UniPressableScale>
         );

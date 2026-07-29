@@ -1,4 +1,8 @@
-import { appendOperatorToExpression, evaluateExpression, formatExpressionForDisplay, tokenizeExpression } from "../calculator";
+import { appendOperatorToExpression, evaluateExpression, formatExpressionForDisplay, tokenizeExpression } from "../index";
+
+jest.mock("react-native-currency-input", () => ({
+  formatNumber: jest.fn(),
+}));
 
 describe("Calculator Utility (Cents-based)", () => {
   it("tokenizes cents-based numbers (e.g. 23 -> 0.23)", () => {

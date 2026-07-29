@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { useSettingsStore } from "@/features/settings/context/settings-context";
 import type { BaseRateId } from "../hooks/exchange-screen.types";
 import type { TargetCurrencyId } from "../types";
-import { getDisplayAmount, parseCurrencyAmount, sanitizeAmountInput } from "../utils";
+import { formatKeypadInputForDisplay, parseLocalizedAmountToNumber, sanitizeKeypadInput } from "../utils";
 
 export type ExchangeState = {
   inputAmount: string;
@@ -44,9 +44,10 @@ export const useExchangeStore = create<ExchangeState & ExchangeActions>()((set) 
 
   setInputAmount: (amount, displayAmount) => {
     const { amountInputMode, decimalSeparator } = useSettingsStore.getState();
-    const sanitizedAmount = sanitizeAmountInput(amount, amountInputMode);
-    const nextDisplayAmount = displayAmount ?? getDisplayAmount(sanitizedAmount, amountInputMode, decimalSeparator);
-    set({ inputAmount: sanitizedAmount, inputAmountDisplay: nextDisplayAmount });
+    const sanitizedAmount = sanitizeKeypadInput(amount, amountInputMode);
+    const inputAmountDisplay = formatKeypadInputForDisplay(sanitizedAmount, amountInputMode, decimalSeparator);
+    const convertedInputAmount = parseLocalizedAmountToNumber(inputAmountDisplay).toString();
+    set({ inputAmount: convertedInputAmount, inputAmountDisplay: displayAmount ?? inputAmountDisplay });
   },
 
   setSelectedBaseRateId: (id) => set({ selectedBaseRateId: id }),
@@ -55,8 +56,8 @@ export const useExchangeStore = create<ExchangeState & ExchangeActions>()((set) 
 
   setCustomRate: (input) => {
     const { amountInputMode } = useSettingsStore.getState();
-    const sanitized = sanitizeAmountInput(input, amountInputMode);
-    const value = parseCurrencyAmount(sanitized);
+    const sanitized = sanitizeKeypadInput(input, amountInputMode);
+    const value = parseLocalizedAmountToNumber(sanitized);
     set({
       customRateInput: sanitized,
       customRateValue: Number.isFinite(value) && value > 0 ? value : 0,
@@ -74,7 +75,7 @@ export const useExchangeStore = create<ExchangeState & ExchangeActions>()((set) 
 useSettingsStore.subscribe((settings) => {
   const { inputAmount } = useExchangeStore.getState();
   if (inputAmount) {
-    const nextDisplay = getDisplayAmount(inputAmount, settings.amountInputMode, settings.decimalSeparator);
+    const nextDisplay = formatKeypadInputForDisplay(inputAmount, settings.amountInputMode, settings.decimalSeparator);
     useExchangeStore.setState({ inputAmountDisplay: nextDisplay });
   }
 });

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { historyQueries } from "@/api/queries/history.queries";
 import { RATES_CACHE_TIME, RATES_STALE_TIME } from "@/features/exchange/constants";
 import type { ExchangeHistoryPickerOption } from "@/features/exchange/types";
-import { formatHistoryDate, formatRate } from "@/features/exchange/utils";
+import { formatHistoricalDate, formatVesRateString } from "@/features/exchange/utils";
 import type { ExchangeRateHistoryOption } from "@/models/exchange.models";
 
 import { CUSTOM_RATE_ID, LIVE_HISTORY_VALUE, type BaseRate, type BaseRateId } from "./exchange-screen.types";
@@ -27,7 +27,7 @@ export function useExchangeHistory({ selectedBaseRate, customRateValue, selected
   const historyRates = rateHistoryQuery.data ?? [];
   const historyPickerOptions: ExchangeHistoryPickerOption[] = (() => {
     if (selectedBaseRateId === CUSTOM_RATE_ID) {
-      const customRateText = formatRate(customRateValue);
+      const customRateText = formatVesRateString(customRateValue);
 
       return [
         {
@@ -39,8 +39,8 @@ export function useExchangeHistory({ selectedBaseRate, customRateValue, selected
       ];
     }
 
-    const liveRateText = formatRate(selectedBaseRate.value);
-    const liveDateText = formatHistoryDate(selectedBaseRate.updatedAt);
+    const liveRateText = formatVesRateString(selectedBaseRate.value);
+    const liveDateText = formatHistoricalDate(selectedBaseRate.updatedAt);
     const liveOption = {
       value: LIVE_HISTORY_VALUE,
       label: liveRateText,
@@ -51,8 +51,8 @@ export function useExchangeHistory({ selectedBaseRate, customRateValue, selected
     const historyOptions = historyRates
       .filter((historyRate) => historyRate.updatedAt !== selectedBaseRate.updatedAt)
       .map((historyRate, index) => {
-        const rateText = formatRate(historyRate.value);
-        const dateText = formatHistoryDate(historyRate.updatedAt);
+        const rateText = formatVesRateString(historyRate.value);
+        const dateText = formatHistoricalDate(historyRate.updatedAt);
 
         return {
           value: getHistoryRateKey(historyRate, index),

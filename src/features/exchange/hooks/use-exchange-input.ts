@@ -1,6 +1,6 @@
 import { QUICK_AMOUNTS, targetCurrencyInfo, VES_QUICK_AMOUNTS } from "../constants";
 import type { CurrencyOption, TargetCurrencyId } from "../types";
-import { useExchangeContext } from "../context/exchange-context";
+import { useExchangeStore } from "../store/exchange-store";
 import type { BaseRate, BaseRateId } from "./exchange-screen.types";
 
 type UseExchangeInputParams = {
@@ -13,18 +13,16 @@ type UseExchangeInputParams = {
  * and user interaction handlers for the exchange form.
  */
 export function useExchangeInput({ selectedBaseRate, baseRateOptions }: UseExchangeInputParams) {
-  const {
-    inputAmount,
-    inputAmountDisplay,
-    customRateInput,
-    isReversed,
-    setInputAmount,
-    setSelectedBaseRateId,
-    setSelectedTargetCurrencyId,
-    setCustomRate,
-    toggleReverse,
-    selectedTargetCurrencyId,
-  } = useExchangeContext();
+  const inputAmount = useExchangeStore((s) => s.inputAmount);
+  const inputAmountDisplay = useExchangeStore((s) => s.inputAmountDisplay);
+  const customRateInput = useExchangeStore((s) => s.customRateInput);
+  const isReversed = useExchangeStore((s) => s.isReversed);
+  const setInputAmount = useExchangeStore((s) => s.setInputAmount);
+  const setSelectedBaseRateId = useExchangeStore((s) => s.setSelectedBaseRateId);
+  const setSelectedTargetCurrencyId = useExchangeStore((s) => s.setSelectedTargetCurrencyId);
+  const setCustomRate = useExchangeStore((s) => s.setCustomRate);
+  const toggleReverse = useExchangeStore((s) => s.toggleReverse);
+  const selectedTargetCurrencyId = useExchangeStore((s) => s.selectedTargetCurrencyId);
 
   // --- Currency metadata (flips when reversed) ---
 

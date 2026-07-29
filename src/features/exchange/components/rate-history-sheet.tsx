@@ -8,15 +8,15 @@ import { StyleSheet, useUnistyles, withUnistyles } from "react-native-unistyles"
 
 import { historyQueries } from "@/api/queries/history.queries";
 import { AppText } from "@/components/ui/app-text";
-import { useSelectedDate, useSetSelectedDate } from "@/features/exchange/context/exchange-context";
-import { formatHistoryDate, formatRate } from "@/features/exchange/utils";
+import { useExchangeStore } from "@/features/exchange/store/exchange-store";
+import { formatHistoricalDate, formatVesRateString } from "@/features/exchange/utils";
 import type { ExchangeRateHistoryOption, ExchangeRateId } from "@/models/exchange.models";
 
 const UniRemixIcon = withUnistyles(RemixIcon);
 
 export function RateHistorySheet() {
-  const selectedDate = useSelectedDate();
-  const setSelectedDate = useSetSelectedDate();
+  const selectedDate = useExchangeStore((s) => s.selectedDate);
+  const setSelectedDate = useExchangeStore((s) => s.setSelectedDate);
   const [selectedCategory, setSelectedCategory] = useState<ExchangeRateId>("bcv");
   const { theme } = useUnistyles();
   const { data, isLoading, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
@@ -47,7 +47,7 @@ export function RateHistorySheet() {
       <Pressable style={[styles.historyRow, isSelected && styles.activeRow]} onPress={() => handleSelectDate(item.updatedAt)}>
         <View style={styles.rowInfo}>
           <AppText variant="body" style={styles.rowDate}>
-            {formatHistoryDate(item.updatedAt)}
+            {formatHistoricalDate(item.updatedAt)}
           </AppText>
           <AppText variant="subtitle" style={styles.rowLabel}>
             {item.label}
@@ -56,7 +56,7 @@ export function RateHistorySheet() {
 
         <View style={styles.rowValueContainer}>
           <AppText variant="body" style={styles.rowValue}>
-            {formatRate(item.value)}
+            {formatVesRateString(item.value)}
           </AppText>
           {isSelected ? <UniRemixIcon name="checkbox-circle-fill" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /> : null}
         </View>

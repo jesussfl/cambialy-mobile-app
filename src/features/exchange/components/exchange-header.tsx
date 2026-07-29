@@ -5,7 +5,7 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 
-import { useExchangeContext } from "../context/exchange-context";
+import { useExchangeStore } from "../store/exchange-store";
 import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
 
 const UniRemixIcon = withUnistyles(RemixIcon);
@@ -14,7 +14,8 @@ const UniSelectOverlay = withUnistyles(Select.Overlay);
 const UniSelectContent = withUnistyles(Select.Content);
 
 export function ExchangeHeader() {
-  const { selectedBaseRateId, customRateValue } = useExchangeContext();
+  const selectedBaseRateId = useExchangeStore((s) => s.selectedBaseRateId);
+  const customRateValue = useExchangeStore((s) => s.customRateValue);
   const { historyPickerOptions, selectedBaseRate } = useExchangeRatesList(selectedBaseRateId, customRateValue);
 
   const selectedOption = historyPickerOptions[0];

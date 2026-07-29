@@ -8,12 +8,11 @@ import { AppText } from "@/components/ui/app-text";
 import { useSettingsStore } from "@/features/settings/context/settings-context";
 import type { BaseRateId } from "../hooks/exchange-screen.types";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
-import { useSelectedBaseRateId, useCustomRateValue } from "../context/exchange-context";
+
 import { useExchangeInput } from "../hooks/use-exchange-input";
 import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
 import { useExchangeStore } from "../store/exchange-store";
-import { formatAmountNumber } from "../utils";
-import { appendOperatorToExpression, evaluateExpression, formatExpressionForDisplay, type MathOperator } from "../utils/calculator";
+import { formatDotDecimalString, appendOperatorToExpression, evaluateExpression, formatExpressionForDisplay, type MathOperator } from "../utils";
 import { AmountKeypadSheet } from "./amount-keypad-sheet";
 import { CurrencyPicker } from "./currency-picker";
 import { QuickAmountPills } from "./quick-amount-pills";
@@ -21,8 +20,8 @@ import { QuickAmountPills } from "./quick-amount-pills";
 const UniAppText = withUnistyles(AppText);
 
 export function SwapInputBlock() {
-  const selectedBaseRateId = useSelectedBaseRateId();
-  const customRateValue = useCustomRateValue();
+  const selectedBaseRateId = useExchangeStore((s) => s.selectedBaseRateId);
+  const customRateValue = useExchangeStore((s) => s.customRateValue);
   const resetKey = useExchangeStore((s) => s.resetKey);
 
   return <SwapInputBlockInner key={resetKey} selectedBaseRateId={selectedBaseRateId} customRateValue={customRateValue} />;
@@ -137,7 +136,7 @@ function SwapInputBlockInner({ selectedBaseRateId, customRateValue }: { selected
 
   const placeholder = decimalSeparator === "comma" ? "0,00" : "0.00";
   const displayValue =
-    activeField === "amount" ? inputAmountDisplay || placeholder : safeCustomRate ? formatAmountNumber(safeCustomRate, decimalSeparator) : placeholder;
+    activeField === "amount" ? inputAmountDisplay || placeholder : safeCustomRate ? formatDotDecimalString(safeCustomRate, decimalSeparator) : placeholder;
 
   return (
     <View style={styles.amountBlock}>
