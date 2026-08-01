@@ -6,7 +6,7 @@ import { StyleSheet } from "react-native-unistyles";
 import { AppText } from "@/components/ui/app-text";
 import { UniRemixIcon } from "@/components/ui/icon";
 import { fallbackRates, RATES_CACHE_TIME, RATES_STALE_TIME, RATE_ORDER } from "@/features/exchange/constants";
-import { sanitizeAmountInput } from "@/features/exchange/utils";
+import { sanitizeKeypadInput } from "@/features/exchange/utils";
 
 import { fetchExchangeRates } from "../api/rates-api";
 import { ComparisonSummary } from "../components/comparison-summary";
@@ -37,13 +37,13 @@ export function CalculatorScreen() {
   const result = getComparisonResult(firstOption, secondOption);
 
   const handleAmountChange = (side: PriceSide, value: string) => {
-    const sanitizedValue = sanitizeAmountInput(value);
+    const sanitizedValue = sanitizeKeypadInput(value);
     const setter = side === "first" ? setFirstPrice : setSecondPrice;
     setter((prev) => ({ ...prev, amount: sanitizedValue }));
   };
 
   const handleCustomRateChange = (side: PriceSide, value: string) => {
-    const sanitizedValue = sanitizeAmountInput(value);
+    const sanitizedValue = sanitizeKeypadInput(value);
     const setter = side === "first" ? setFirstPrice : setSecondPrice;
     setter((prev) => ({ ...prev, customRate: sanitizedValue }));
   };

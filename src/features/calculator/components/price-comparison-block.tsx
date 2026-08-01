@@ -6,8 +6,8 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { AppText } from "@/components/ui/app-text";
 import { AmountKeypadSheet } from "@/features/exchange/components/amount-keypad-sheet";
 import { CurrencyPicker } from "@/features/exchange/components/currency-picker";
-import { formatAmountNumber, formatCompactAmount } from "@/features/exchange/utils";
-import { appendOperatorToExpression, evaluateExpression, formatExpressionForDisplay, type MathOperator } from "@/features/exchange/utils/calculator";
+import { formatDotDecimalString, formatCompactAmount } from "@/features/exchange/utils";
+import { appendOperatorToExpression, evaluateExpression, formatExpressionForDisplay, type MathOperator } from "@/features/exchange/utils";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { PressableOpacity } from "pressto";
 
@@ -36,8 +36,8 @@ export function PriceComparisonBlock({
   const safeAmount = amount ?? "";
   const safeCustomRate = customRate ?? "";
   const placeholder = decimalSeparator === "comma" ? "0,00" : "0.00";
-  const displayValue = safeAmount ? formatAmountNumber(safeAmount, decimalSeparator) : placeholder;
-  const displayCustomRate = safeCustomRate ? formatAmountNumber(safeCustomRate, decimalSeparator) : placeholder;
+  const displayValue = safeAmount ? formatDotDecimalString(safeAmount, decimalSeparator) : placeholder;
+  const displayCustomRate = safeCustomRate ? formatDotDecimalString(safeCustomRate, decimalSeparator) : placeholder;
   const sheetName = `calculator-keypad-${label.replace(/\s+/g, "-").toLowerCase()}`;
 
   const updateFieldValue = (nextValue: string) => {

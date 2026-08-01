@@ -4,7 +4,7 @@ import { StyleSheet } from "react-native-unistyles";
 import { AppText } from "@/components/ui/app-text";
 import { Card } from "@/components/ui/card";
 import { UniRemixIcon } from "@/components/ui/icon";
-import { formatCompactAmount, formatNumber } from "@/features/exchange/utils";
+import { formatCompactAmount, formatDecimalNumber } from "@/features/exchange/utils";
 
 import { useSettingsStore } from "@/features/settings/context/settings-context";
 import type { ComparisonSummaryProps, SummaryMetricProps } from "../types";
@@ -58,7 +58,7 @@ export function ComparisonSummary({ firstOption, secondOption, result }: Compari
           {result
             ? result.isEquivalent
               ? "Ambos precios tienen el mismo costo en bolivares."
-              : `Ahorras ${formatNumber(result.savingPercent, 2, decimalSeparator)}% frente a la opcion mas cara.`
+              : `Ahorras ${formatDecimalNumber(result.savingPercent, 2, decimalSeparator)}% frente a la opcion mas cara.`
             : hasValues
               ? "Falta completar uno de los precios para comparar."
               : "Compara precios usando VES, BCV, Divisa (USDT), EUR o una tasa personalizada."}

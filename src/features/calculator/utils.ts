@@ -1,13 +1,13 @@
-import { parseCurrencyAmount } from "@/features/exchange/utils";
+import { parseSegmentToNumber } from "@/features/exchange/utils";
 
 import type { ExchangeRateId } from "./api/rates-api";
 import { priceCurrencyMeta } from "./constants";
 import type { ComparisonOption, ComparisonResult, PriceInputState } from "./types";
 
 export function getComparisonOption(price: PriceInputState, ratesById: Map<ExchangeRateId, { value: number }>): ComparisonOption {
-  const amount = parseCurrencyAmount(price.amount);
+  const amount = parseSegmentToNumber(price.amount);
   const safeAmount = Number.isFinite(amount) && amount > 0 ? amount : 0;
-  const customRate = parseCurrencyAmount(price.customRate);
+  const customRate = parseSegmentToNumber(price.customRate);
   const safeCustomRate = Number.isFinite(customRate) && customRate > 0 ? customRate : 0;
   const rate = price.currencyId === "ves" ? 1 : price.currencyId === "custom" ? safeCustomRate : (ratesById.get(price.currencyId)?.value ?? 0);
 
