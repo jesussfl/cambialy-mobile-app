@@ -24,6 +24,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       appleTeamId: "R28JX6275H",
     },
     android: {
+      blockedPermissions: [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
       adaptiveIcon: {
         backgroundColor: "#E6F4FE",
         foregroundImage: "./assets/images/cambialy-foreground-2.png",
