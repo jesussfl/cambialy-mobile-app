@@ -10,7 +10,16 @@ export const parseLocalizedAmountToNumber = (value: string): number => {
   const trimmedValue = value.trim();
   const lastCommaIndex = trimmedValue.lastIndexOf(",");
   const lastDotIndex = trimmedValue.lastIndexOf(".");
-  const decimalSeparatorIndex = lastCommaIndex > -1 ? lastCommaIndex : lastDotIndex;
+
+  let decimalSeparatorIndex = -1;
+  if (lastCommaIndex > -1 && lastDotIndex > -1) {
+    decimalSeparatorIndex = Math.max(lastCommaIndex, lastDotIndex);
+  } else if (lastCommaIndex > -1) {
+    decimalSeparatorIndex = lastCommaIndex;
+  } else if (lastDotIndex > -1) {
+    decimalSeparatorIndex = lastDotIndex;
+  }
+
   const wholePart = decimalSeparatorIndex > -1 ? trimmedValue.slice(0, decimalSeparatorIndex) : trimmedValue;
   const decimalPart = decimalSeparatorIndex > -1 ? trimmedValue.slice(decimalSeparatorIndex + 1) : "";
   const normalizedValue = `${wholePart.replace(/\D/g, "")}${decimalSeparatorIndex > -1 ? `.${decimalPart.replace(/\D/g, "")}` : ""}`;

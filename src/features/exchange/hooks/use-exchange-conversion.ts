@@ -45,8 +45,9 @@ export function useExchangeConversion({
   const selectedEquivalentValue = formatConversionRateLabel(selectedBaseRate.value, targetCurrency, bcvRate, decimalSeparator);
   const selectedBaseRateHint = `1 ${selectedBaseRate.info.code} equivale ${selectedEquivalentValue}`;
   const customRateHint = customRateValue > 0 ? selectedBaseRateHint : "Ingresa la tasa personalizada";
+  const outputCurrency = isReversed ? selectedBaseRate.info : targetCurrency;
   const outputAmountText = formatCompactAmount(convertedAmount, decimalSeparator);
-  const outputCopyText = `${targetCurrency.symbol} ${outputAmountText} ${targetCurrency.code}`;
+  const outputCopyText = `${outputCurrency.symbol} ${outputAmountText} ${outputCurrency.code}`;
 
   // Comparison: show what each other rate would produce
   const conversionDetails = buildConversionDetails({
@@ -105,9 +106,10 @@ function buildConversionDetails({
         : convertVesToCurrency(convertCurrencyToVes(safeAmount, rate.value), targetCurrencyRate);
 
       const rateValue = formatConversionRateLabel(rate.value, targetCurrency, bcvRate, decimalSeparator);
+      const displaySymbol = isReversed ? rate.info.symbol : targetCurrency.symbol;
 
       return {
-        amountText: `${rate.info.symbol} ${formatCompactAmount(convertedValue, decimalSeparator)}`,
+        amountText: `${displaySymbol} ${formatCompactAmount(convertedValue, decimalSeparator)}`,
         icon: rate.icon,
         id: rate.id,
         label: rate.info.code,
