@@ -15,9 +15,12 @@ type ConversionDetailRowProps = {
   detail: ConversionDetail;
   isCopied: boolean;
   onCopy: () => void;
+  isHighlight?: boolean;
 };
 
-export function ConversionDetailRow({ detail, isCopied, onCopy }: ConversionDetailRowProps) {
+export function ConversionDetailRow({ detail, isCopied, onCopy, isHighlight }: ConversionDetailRowProps) {
+  const highlighted = isHighlight ?? detail.isHighlight;
+
   const handlePress = async () => {
     if (!detail.amountText) return;
     await Clipboard.setStringAsync(detail.amountText);
@@ -25,8 +28,8 @@ export function ConversionDetailRow({ detail, isCopied, onCopy }: ConversionDeta
   };
 
   return (
-    <TouchZone style={styles.conversionDetailRow} onPress={handlePress}>
-      <View style={styles.conversionDetailIcon}>
+    <TouchZone style={[styles.conversionDetailRow, highlighted && styles.conversionDetailRowHighlighted]} onPress={handlePress}>
+      <View style={[styles.conversionDetailIcon, highlighted && styles.conversionDetailIconHighlighted]}>
         <UniRemixIcon
           name={detail.icon}
           size={20}
@@ -38,10 +41,10 @@ export function ConversionDetailRow({ detail, isCopied, onCopy }: ConversionDeta
 
       <View style={styles.conversionDetailContent}>
         <View style={styles.conversionDetailHeader}>
-          <AppText variant="label" style={styles.conversionDetailTitle} numberOfLines={1}>
+          <AppText variant="label" style={[styles.conversionDetailTitle, highlighted && styles.conversionDetailTitleHighlighted]} numberOfLines={1}>
             {detail.label}
           </AppText>
-          <AppText variant="label" style={styles.conversionDetailRate} numberOfLines={1}>
+          <AppText variant="label" style={[styles.conversionDetailRate, highlighted && styles.conversionDetailRateHighlighted]} numberOfLines={1}>
             {detail.rateText}
           </AppText>
         </View>
@@ -70,6 +73,10 @@ const styles = StyleSheet.create((theme) => ({
     borderWidth: 1,
     borderColor: theme.colors.borderSubtle,
   },
+  conversionDetailRowHighlighted: {
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.surfaceSoft,
+  },
   conversionDetailIcon: {
     width: 44,
     height: 44,
@@ -78,17 +85,18 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: "center",
     backgroundColor: theme.colors.inputSurface,
   },
+  conversionDetailIconHighlighted: {
+    backgroundColor: theme.colors.surfaceMuted,
+  },
   conversionDetailContent: {
     flex: 1,
     minWidth: 0,
     justifyContent: "center",
-    
   },
   conversionDetailHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-  
   },
   conversionDetailTitle: {
     fontSize: theme.typography.fontSize.xs,
@@ -96,10 +104,18 @@ const styles = StyleSheet.create((theme) => ({
     fontWeight: theme.typography.fontWeight.medium,
     flexShrink: 1,
   },
+  conversionDetailTitleHighlighted: {
+    color: theme.colors.primary,
+    fontWeight: theme.typography.fontWeight.semibold,
+  },
   conversionDetailRate: {
     fontSize: theme.typography.fontSize.xs,
     fontWeight: theme.typography.fontWeight.medium,
     color: theme.colors.textMuted,
+  },
+  conversionDetailRateHighlighted: {
+    color: theme.colors.primary,
+    fontWeight: theme.typography.fontWeight.semibold,
   },
   conversionDetailFooter: {
     flexDirection: "row",

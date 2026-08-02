@@ -3,6 +3,7 @@ import { FlashList } from "@shopify/flash-list";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ActivityIndicator, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import RemixIcon from "react-native-remix-icon";
 import { StyleSheet, useUnistyles, withUnistyles } from "react-native-unistyles";
 
@@ -14,6 +15,8 @@ import { formatHistoricalDate, formatVesRateString } from "@/features/exchange/u
 import type { ExchangeRateHistoryOption, ExchangeRateId } from "@/models/exchange.models";
 
 const UniRemixIcon = withUnistyles(RemixIcon);
+const UniTrueSheet = withUnistyles(TrueSheet);
+const UniGestureHandlerRootView = withUnistyles(GestureHandlerRootView);
 
 export function RateHistorySheet() {
   const selectedDate = useExchangeStore((s) => s.selectedDate);
@@ -66,96 +69,118 @@ export function RateHistorySheet() {
   };
 
   return (
-    <TrueSheet name="rate-history-sheet" detents={[0.65, 0.95]} cornerRadius={24} grabber scrollable backgroundColor={theme.colors.background}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerTitleRow}>
-            <UniRemixIcon name="history-line" size={22} uniProps={(theme: any) => ({ color: theme.colors.primary })} />
-            <AppText variant="cardTitle" style={{ fontWeight: "bold" }}>
-              Historial de Tasas
-            </AppText>
-          </View>
-          <AppText variant="subtitle" style={styles.subtitle}>
-            Selecciona una fecha histórica para calcular el cambio
-          </AppText>
-        </View>
+    <UniTrueSheet
+      name="rate-history-sheet"
+      detents={[0.65, 0.95]}
+      cornerRadius={24}
+      grabber
+      scrollable
+      backgroundColor={theme.colors.background}
+      header={
+        <UniGestureHandlerRootView style={styles.gestureRoot}>
+          <View style={styles.headerContainer}>
+            <View style={styles.header}>
+              <View style={styles.headerTitleRow}>
+                <UniRemixIcon name="history-line" size={22} uniProps={(theme: any) => ({ color: theme.colors.primary })} />
+                <AppText variant="cardTitle" style={{ fontWeight: "bold" }}>
+                  Historial de Tasas
+                </AppText>
+              </View>
+              <AppText variant="subtitle" style={styles.subtitle}>
+                Selecciona una fecha histórica para calcular el cambio
+              </AppText>
+            </View>
 
-        <View style={styles.tabsRow}>
-          <TouchZone style={[styles.tab, selectedCategory === "bcv" && styles.activeTab]} onPress={() => setSelectedCategory("bcv")}>
-            <AppText variant="label" style={[styles.tabText, selectedCategory === "bcv" && styles.activeTabText]}>
-              BCV (USD / EUR)
-            </AppText>
-          </TouchZone>
-          <TouchZone style={[styles.tab, selectedCategory === "usdt" && styles.activeTab]} onPress={() => setSelectedCategory("usdt")}>
-            <AppText variant="label" style={[styles.tabText, selectedCategory === "usdt" && styles.activeTabText]}>
-              Binance USDT
-            </AppText>
-          </TouchZone>
-        </View>
+            <View style={styles.tabsRow}>
+              <TouchZone style={[styles.tab, selectedCategory === "bcv" && styles.activeTab]} onPress={() => setSelectedCategory("bcv")}>
+                <AppText variant="label" style={[styles.tabText, selectedCategory === "bcv" && styles.activeTabText]}>
+                  BCV (USD / EUR)
+                </AppText>
+              </TouchZone>
+              <TouchZone style={[styles.tab, selectedCategory === "usdt" && styles.activeTab]} onPress={() => setSelectedCategory("usdt")}>
+                <AppText variant="label" style={[styles.tabText, selectedCategory === "usdt" && styles.activeTabText]}>
+                  Binance USDT
+                </AppText>
+              </TouchZone>
+            </View>
 
-        {selectedDate ? (
-          <TouchZone style={styles.resetButton} onPress={handleResetToToday}>
-            <UniRemixIcon name="refresh-line" size={18} uniProps={(theme: any) => ({ color: theme.colors.primary })} />
-            <AppText variant="label" style={styles.resetButtonText}>
-              Restablecer a Tasa Actual (Hoy)
-            </AppText>
-          </TouchZone>
-        ) : null}
-
-        {isLoading ? (
-          <View style={styles.centerState}>
-            <ActivityIndicator size="small" />
-            <AppText variant="body" style={{ color: "#94a3b8", marginTop: 8 }}>
-              Cargando historial...
-            </AppText>
+            {selectedDate ? (
+              <TouchZone style={styles.resetButton} onPress={handleResetToToday}>
+                <UniRemixIcon name="refresh-line" size={18} uniProps={(theme: any) => ({ color: theme.colors.primary })} />
+                <AppText variant="label" style={styles.resetButtonText}>
+                  Restablecer a Tasa Actual (Hoy)
+                </AppText>
+              </TouchZone>
+            ) : null}
           </View>
-        ) : isError ? (
-          <View style={styles.centerState}>
-            <AppText variant="body" style={{ color: "#ef4444" }}>
-              Error al cargar el historial.
-            </AppText>
-          </View>
-        ) : historyItems.length === 0 ? (
-          <View style={styles.centerState}>
-            <AppText variant="body" style={{ color: "#94a3b8" }}>
-              No hay datos de historial disponibles.
-            </AppText>
-          </View>
-        ) : (
-          <View style={styles.listWrapper}>
-            <FlashList
-              data={historyItems}
-              renderItem={renderHistoryItem}
-              onEndReached={() => {
-                console.log(`[RateHistorySheet] onEndReached. hasNextPage: ${hasNextPage}, isFetchingNextPage: ${isFetchingNextPage}`);
-                if (hasNextPage && !isFetchingNextPage) {
-                  console.log("[RateHistorySheet] Calling fetchNextPage()...");
-                  fetchNextPage();
+        </UniGestureHandlerRootView>
+      }
+    >
+      <UniGestureHandlerRootView style={styles.gestureRoot}>
+        <View style={styles.contentContainer}>
+          {isLoading ? (
+            <View style={styles.centerState}>
+              <ActivityIndicator size="small" />
+              <AppText variant="body" style={{ color: "#94a3b8", marginTop: 8 }}>
+                Cargando historial...
+              </AppText>
+            </View>
+          ) : isError ? (
+            <View style={styles.centerState}>
+              <AppText variant="body" style={{ color: "#ef4444" }}>
+                Error al cargar el historial.
+              </AppText>
+            </View>
+          ) : historyItems.length === 0 ? (
+            <View style={styles.centerState}>
+              <AppText variant="body" style={{ color: "#94a3b8" }}>
+                No hay datos de historial disponibles.
+              </AppText>
+            </View>
+          ) : (
+            <View style={styles.listWrapper}>
+              <FlashList
+                data={historyItems}
+                renderItem={renderHistoryItem}
+                onEndReached={() => {
+                  console.log(`[RateHistorySheet] onEndReached. hasNextPage: ${hasNextPage}, isFetchingNextPage: ${isFetchingNextPage}`);
+                  if (hasNextPage && !isFetchingNextPage) {
+                    console.log("[RateHistorySheet] Calling fetchNextPage()...");
+                    fetchNextPage();
+                  }
+                }}
+                onEndReachedThreshold={0.5}
+                ListFooterComponent={
+                  isFetchingNextPage ? (
+                    <View style={styles.footerLoader}>
+                      <ActivityIndicator size="small" />
+                    </View>
+                  ) : null
                 }
-              }}
-              onEndReachedThreshold={0.5}
-              ListFooterComponent={
-                isFetchingNextPage ? (
-                  <View style={styles.footerLoader}>
-                    <ActivityIndicator size="small" />
-                  </View>
-                ) : null
-              }
-              contentContainerStyle={styles.listContent}
-              showsVerticalScrollIndicator={false}
-            />
-          </View>
-        )}
-      </View>
-    </TrueSheet>
+                contentContainerStyle={styles.listContent}
+                showsVerticalScrollIndicator={false}
+              />
+            </View>
+          )}
+        </View>
+      </UniGestureHandlerRootView>
+    </UniTrueSheet>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
-  container: {
-    padding: theme.spacing.md,
-    flex: 1,
+  gestureRoot: {
+    flexGrow: 1,
+  },
+  headerContainer: {
+    paddingHorizontal: theme.spacing.md,
+    paddingTop: theme.spacing["2xl"],
+    paddingBottom: theme.spacing.xs,
     gap: theme.spacing.md,
+  },
+  contentContainer: {
+    paddingHorizontal: theme.spacing.md,
+    flex: 1,
   },
   header: {
     gap: theme.spacing.xxs,

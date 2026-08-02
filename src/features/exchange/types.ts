@@ -20,6 +20,7 @@ export type ConversionDetail = {
   id: string;
   label: string;
   rateText: string;
+  isHighlight?: boolean;
 };
 
 export type ExchangeHistoryPickerOption = {

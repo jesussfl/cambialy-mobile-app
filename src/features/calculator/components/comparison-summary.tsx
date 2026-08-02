@@ -1,142 +1,114 @@
+import { useEffect, useState } from "react";
 import { View } from "react-native";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { StyleSheet } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
-import { Card } from "@/components/ui/card";
-import { UniRemixIcon } from "@/components/ui/icon";
+import { ConversionDetailRow } from "@/features/exchange/components/conversion-detail-row";
+import type { ConversionDetail } from "@/features/exchange/types";
 import { formatCompactAmount, formatDecimalNumber } from "@/features/exchange/utils";
-
 import { useSettingsStore } from "@/features/settings/context/settings-context";
-import type { ComparisonSummaryProps, SummaryMetricProps } from "../types";
+
+import type { ComparisonSummaryProps } from "../types";
 
 export function ComparisonSummary({ firstOption, secondOption, result }: ComparisonSummaryProps) {
   const { decimalSeparator } = useSettingsStore();
+  const [copiedDetailId, setCopiedDetailId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!copiedDetailId) return;
+
+    const timeoutId = setTimeout(() => {
+      setCopiedDetailId(null);
+    }, 1600);
+
+    return () => clearTimeout(timeoutId);
+  }, [copiedDetailId]);
+
   const hasValues = firstOption.valueInVes > 0 || secondOption.valueInVes > 0;
-  const winnerLabel = result?.isEquivalent ? "Precios equivalentes" : result?.betterSide === "first" ? "Precio A conviene mas" : "Precio B conviene mas";
+
+  if (!hasValues) {
+    return null;
+  }
+
+  const details: ConversionDetail[] = [
+    {
+      id: "first-price",
+      label: `Precio A (${firstOption.currency.name})`,
+      rateText:
+        result?.betterSide === "first"
+          ? "Conviene más"
+          : firstOption.currency.symbol !== "Bs." && firstOption.rate > 0
+            ? `@ Bs. ${formatCompactAmount(firstOption.rate, decimalSeparator)}`
+            : "",
+      amountText: `Bs. ${formatCompactAmount(firstOption.valueInVes, decimalSeparator)}`,
+      icon: firstOption.currency.icon || "price-tag-3-line",
+      isHighlight: result?.betterSide === "first",
+    },
+    {
+      id: "second-price",
+      label: `Precio B (${secondOption.currency.name})`,
+      rateText:
+        result?.betterSide === "second"
+          ? "Conviene más"
+          : secondOption.currency.symbol !== "Bs." && secondOption.rate > 0
+            ? `@ Bs. ${formatCompactAmount(secondOption.rate, decimalSeparator)}`
+            : "",
+      amountText: `Bs. ${formatCompactAmount(secondOption.valueInVes, decimalSeparator)}`,
+      icon: secondOption.currency.icon || "price-tag-3-line",
+      isHighlight: result?.betterSide === "second",
+    },
+  ];
+
+  if (result) {
+    const winnerLabel = result.isEquivalent
+      ? "Precios equivalentes"
+      : result.betterSide === "first"
+        ? "Precio A conviene más"
+        : "Precio B conviene más";
+    const savingText = result.isEquivalent
+      ? "Mismo costo"
+      : `Ahorras ${formatDecimalNumber(result.savingPercent, 2, decimalSeparator)}%`;
+
+    details.push({
+      id: "result-difference",
+      label: winnerLabel,
+      rateText: savingText,
+      amountText: `Diferencia: Bs. ${formatCompactAmount(result.differenceVes, decimalSeparator)}`,
+      icon: result.isEquivalent ? "equal-line" : "scales-3-line",
+      isHighlight: false,
+    });
+  }
 
   return (
-    <Card elevated style={styles.summaryCard}>
-      <View style={styles.summaryHeader}>
-        <View style={styles.summaryTitleGroup}>
-          <AppText variant="tab" style={styles.summaryEyebrow}>
-            Resultado
+    <Animated.View entering={FadeIn.duration(300).springify().damping(20)} exiting={FadeOut.duration(200)}>
+      <View style={styles.container}>
+        <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)}>
+          <AppText variant="subtitle" style={styles.headerTitle} numberOfLines={1}>
+            Resultado de comparación
           </AppText>
-          <AppText variant="cardTitle" style={styles.summaryTitle}>
-            {result ? winnerLabel : "Ingresa ambos precios"}
-          </AppText>
-        </View>
-        <View style={styles.summaryBadge}>
-          <UniRemixIcon
-            name={result?.isEquivalent ? "equal-line" : "price-tag-3-line"}
-            size={18}
-            uniProps={(theme: any) => ({
-              color: theme.colors.accentText,
-            })}
+        </Animated.View>
+
+        {details.map((detail) => (
+          <ConversionDetailRow
+            key={detail.id}
+            detail={detail}
+            isCopied={copiedDetailId === detail.id}
+            onCopy={() => setCopiedDetailId(detail.id)}
           />
-        </View>
+        ))}
       </View>
-
-      <View style={styles.summaryGrid}>
-        <SummaryMetric
-          label="Precio A en Bs."
-          value={`Bs. ${formatCompactAmount(firstOption.valueInVes, decimalSeparator)}`}
-          isActive={result?.betterSide === "first"}
-        />
-        <SummaryMetric
-          label="Precio B en Bs."
-          value={`Bs. ${formatCompactAmount(secondOption.valueInVes, decimalSeparator)}`}
-          isActive={result?.betterSide === "second"}
-        />
-      </View>
-
-      <View style={styles.differenceBox}>
-        <AppText variant="label">Diferencia</AppText>
-        <AppText variant="title" style={styles.differenceValue} numberOfLines={1}>
-          {result ? `Bs. ${formatCompactAmount(result.differenceVes, decimalSeparator)}` : "Bs. 0"}
-        </AppText>
-        <AppText variant="body">
-          {result
-            ? result.isEquivalent
-              ? "Ambos precios tienen el mismo costo en bolivares."
-              : `Ahorras ${formatDecimalNumber(result.savingPercent, 2, decimalSeparator)}% frente a la opcion mas cara.`
-            : hasValues
-              ? "Falta completar uno de los precios para comparar."
-              : "Compara precios usando VES, BCV, Divisa (USDT), EUR o una tasa personalizada."}
-        </AppText>
-      </View>
-    </Card>
-  );
-}
-
-function SummaryMetric({ isActive, label, value }: SummaryMetricProps) {
-  return (
-    <View style={[styles.summaryMetric, isActive ? styles.summaryMetricActive : null]}>
-      <AppText variant="tab" style={styles.summaryMetricLabel}>
-        {label}
-      </AppText>
-      <AppText variant="value" style={styles.summaryMetricValue} numberOfLines={1}>
-        {value}
-      </AppText>
-    </View>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
-  summaryCard: {
-    gap: theme.spacing.md,
-    padding: theme.spacing.md,
-  },
-  summaryHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: theme.spacing.md,
-  },
-  summaryTitleGroup: {
-    flex: 1,
-    minWidth: 0,
-  },
-  summaryEyebrow: {
-    color: theme.colors.textMuted,
-  },
-  summaryTitle: {
-    flexShrink: 1,
-  },
-  summaryBadge: {
-    width: 40,
-    height: 40,
-    borderRadius: theme.radius.pill,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: theme.colors.accent,
-  },
-  summaryGrid: {
-    gap: theme.spacing.sm,
-  },
-  summaryMetric: {
-    gap: theme.spacing.xxs,
-    padding: theme.spacing.md,
-    borderRadius: theme.radius.sm,
-    backgroundColor: theme.colors.surfaceSoft,
-    borderWidth: 1,
-    borderColor: theme.colors.borderSubtle,
-  },
-  summaryMetricActive: {
-    borderColor: theme.colors.accent,
-  },
-  summaryMetricLabel: {
-    color: theme.colors.textMuted,
-  },
-  summaryMetricValue: {
-    fontSize: theme.typography.fontSize.md,
-  },
-  differenceBox: {
+  container: {
     gap: theme.spacing.xs,
-    padding: theme.spacing.md,
-    borderRadius: theme.radius.sm,
-    backgroundColor: theme.colors.backgroundAccent,
+    paddingVertical: theme.spacing.xs,
   },
-  differenceValue: {
-    color: theme.colors.textPrimary,
+  headerTitle: {
+    marginBottom: theme.spacing.xxs,
+    paddingHorizontal: theme.spacing.xxs,
   },
 }));

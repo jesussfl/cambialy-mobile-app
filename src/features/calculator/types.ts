@@ -46,9 +46,3 @@ export type ComparisonSummaryProps = {
   secondOption: ComparisonOption;
   result: ComparisonResult | null;
 };
-
-export type SummaryMetricProps = {
-  isActive: boolean;
-  label: string;
-  value: string;
-};
