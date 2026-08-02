@@ -4,17 +4,25 @@ import Animated, { FadeIn, FadeOut, LinearTransition } from "react-native-reanim
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
+import { TouchZone } from "@/components/ui/button";
 import { AmountKeypadSheet } from "@/features/exchange/components/amount-keypad-sheet";
 import { CurrencyPicker } from "@/features/exchange/components/currency-picker";
-import { formatDotDecimalString, formatCompactAmount } from "@/features/exchange/utils";
-import { appendOperatorToExpression, evaluateExpression, formatExpressionForDisplay, type MathOperator } from "@/features/exchange/utils";
-import { TrueSheet } from "@lodev09/react-native-true-sheet";
-import { TouchZone } from "@/components/ui/button";
-
+import {
+  appendOperatorToExpression,
+  evaluateExpression,
+  formatCompactAmount,
+  formatDotDecimalString,
+  formatExpressionForDisplay,
+  type MathOperator,
+} from "@/features/exchange/utils";
 import { useSettingsStore } from "@/features/settings/context/settings-context";
-import type { PriceComparisonBlockProps } from "../types";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
 
-export function PriceComparisonBlock({
+import type { InputComparisonBlockProps } from "../types";
+
+const UniAppText = withUnistyles(AppText);
+
+export function InputComparisonBlock({
   amount,
   currency,
   customRate,
@@ -25,7 +33,7 @@ export function PriceComparisonBlock({
   options,
   selectedCurrencyId,
   valueInVes,
-}: PriceComparisonBlockProps) {
+}: InputComparisonBlockProps) {
   const { decimalSeparator, amountInputMode } = useSettingsStore();
   const isCustomRate = selectedCurrencyId === "custom";
   const [activeField, setActiveField] = useState<"amount" | "customRate">("amount");
@@ -109,9 +117,9 @@ export function PriceComparisonBlock({
 
   return (
     <Animated.View layout={LinearTransition.springify().damping(20)}>
-      <View style={styles.priceBlock}>
-        <View style={styles.priceTopRow}>
-          <View style={styles.priceValueGroup}>
+      <View style={styles.blockContainer}>
+        <View style={styles.topRow}>
+          <View style={styles.valueGroup}>
             <View style={styles.amountRow}>
               {expression ? (
                 <AppText variant="label" style={styles.expressionPreview}>
@@ -121,19 +129,25 @@ export function PriceComparisonBlock({
               <TouchZone hitSlop={12} style={styles.amountInputPanel} onPress={() => TrueSheet.present(sheetName)}>
                 <View style={styles.amountDisplayContainer}>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.amountPreviewScroll}>
-                    <AppText variant="body" style={styles.amountPreview}>
+                    <UniAppText variant="body" style={styles.amountPreview}>
                       {`${currency.symbol} ${displayValue}`}
-                    </AppText>
+                    </UniAppText>
                   </ScrollView>
                 </View>
               </TouchZone>
             </View>
           </View>
 
-          <CurrencyPicker code={currency.code} icon={currency.icon} onSelect={onCurrencySelect} options={options} selectedOptionId={selectedCurrencyId} />
+          <CurrencyPicker
+            code={currency.code}
+            icon={currency.icon}
+            onSelect={onCurrencySelect}
+            options={options}
+            selectedOptionId={selectedCurrencyId}
+          />
         </View>
 
-        <View style={styles.priceFooter}>
+        <View style={styles.footerRow}>
           <AppText variant="tab" style={styles.vesValue} numberOfLines={1}>
             Bs. {formatCompactAmount(valueInVes, decimalSeparator)}
           </AppText>
@@ -186,17 +200,17 @@ export function PriceComparisonBlock({
 }
 
 const styles = StyleSheet.create((theme) => ({
-  priceBlock: {
+  blockContainer: {
     justifyContent: "center",
     gap: theme.spacing.md,
   },
-  priceTopRow: {
+  topRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: theme.spacing.sm,
   },
-  priceValueGroup: {
+  valueGroup: {
     flex: 1,
     minWidth: 0,
     gap: theme.spacing.xs,
@@ -232,7 +246,7 @@ const styles = StyleSheet.create((theme) => ({
   amountPreviewScroll: {
     alignItems: "center",
   },
-  priceFooter: {
+  footerRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",

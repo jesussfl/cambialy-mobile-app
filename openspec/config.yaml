@@ -1,32 +1,49 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+# Project context provided to AI agents when planning and building features
+context: |
+  Project: Cambialy (Currency Exchange & Financial Calculator App)
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+  Tech Stack & Versions:
+  - Core: React Native 0.86, Expo SDK 57, Expo Router (file-based routing), TypeScript 6.0
+  - React 19 Engine: Babel React Compiler plugin active (`babel-plugin-react-compiler`)
+  - State & Data: Zustand 5.0 (slice selectors), TanStack React Query 5 (async server state), `@react-native-async-storage/async-storage`
+  - Styling & Layout: React Native Unistyles (`import { StyleSheet, withUnistyles } from 'react-native-unistyles'`).
+    * CRITICAL STYLING RULE: ALWAYS use Unistyles for styling. NEVER use Uniwind or Tailwind `className` anywhere in the codebase.
+    * HeroUI Native components (`heroui-native`) may be used when necessary for native-feeling controls, styled via Unistyles.
+  - Motion & Interaction: React Native Reanimated 4.5, React Native Gesture Handler (RNGH), `@lodev09/react-native-true-sheet`, `@shopify/flash-list`
+  - Forms & Validation: React Hook Form 7, Zod 4
 
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+  Architectural Principles & Conventions:
+  - Feature-Driven Directory Layout: Code MUST be located in `src/features/<feature_name>/` with subfolders: `components/`, `screens/`, `hooks/`, `api/`, `types.ts`, `utils.ts`, `constants.ts`. Shared components live in `src/components/ui/`.
+  - Named Exports Only: Use named exports (`export function ComponentName...`) for all components, screens, and hooks. Avoid default exports except where required by Expo Router page routes.
+  - Presentation vs. Logic Separation: Custom hooks manage state and business logic; presentation components remain focused purely on layout and rendering.
+  - React 19 / Compiler Rules: DO NOT introduce manual `useMemo`, `useCallback`, or `React.memo` unless fixing a verified third-party hook reference identity bug. Rely on the React Compiler's automatic memoization.
+  - State Management Rules: Components subscribing to Zustand stores MUST use granular slice selectors (e.g. `useStore(state => state.property)`) to prevent unnecessary re-renders.
+
+# Per-artifact rules enforced during proposal, specs, design, and task creation
+rules:
+  proposal:
+    - Include explicit "User Impact" and "Technical Scope" sections
+    - MANDATORY: Include a "Non-Goals" section defining clear boundaries
+  specs:
+    - Requirements MUST be stated as testable "SHALL" or "MUST" capability statements
+    - Focus on observable user/system outcomes rather than internal code implementation details
+  design:
+    - Must detail component hierarchy and state flow (using ASCII or Mermaid diagrams where beneficial)
+    - Must detail Unistyles theme tokens and responsive/dynamic layout integration
+  tasks:
+    - Break work into atomic, single-file or tightly-focused task units
+    - Every task MUST include concrete verification steps (e.g. static typecheck/lint commands)
+
+# Per-operation guidance for applying and archiving changes
+operations:
+  apply:
+    guidance:
+      - Run type checks and lints after edits before declaring a task complete
+      - NEVER patch symptoms, swallow exceptions silently, or introduce dummy fallback data
+      - Summarize precise file changes and verification results upon completion of each task
+  archive:
+    guidance:
+      - Verify clean build state before archiving
+      - Provide a concise summary of implemented capabilities in the archive output

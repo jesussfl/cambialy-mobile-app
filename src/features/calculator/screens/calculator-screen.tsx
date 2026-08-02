@@ -11,7 +11,7 @@ import { sanitizeKeypadInput } from "@/features/exchange/utils";
 
 import { fetchExchangeRates } from "../api/rates-api";
 import { ComparisonSummary } from "../components/comparison-summary";
-import { PriceComparisonBlock } from "../components/price-comparison-block";
+import { InputComparisonBlock } from "../components/input-comparison-block";
 import { priceCurrencyMeta, priceCurrencyOrder } from "../constants";
 import type { PriceCurrencyId, PriceInputState, PriceSide } from "../types";
 import { getComparisonOption, getComparisonResult } from "../utils";
@@ -57,59 +57,58 @@ export function CalculatorScreen() {
   return (
     <View style={styles.screenContent}>
       <TopNavbar title="Compara precios" />
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.comparePanel}>
+          <InputComparisonBlock
+            amount={firstPrice.amount}
+            currency={priceCurrencyMeta[firstPrice.currencyId]}
+            customRate={firstPrice.customRate}
+            label="Precio A"
+            onAmountChange={(value) => handleAmountChange("first", value)}
+            onCustomRateChange={(value) => handleCustomRateChange("first", value)}
+            onCurrencySelect={(currencyId) => handleCurrencySelect("first", currencyId)}
+            options={currencyOptions}
+            rate={firstOption.rate}
+            selectedCurrencyId={firstPrice.currencyId}
+            valueInVes={firstOption.valueInVes}
+          />
 
-      <View style={styles.comparePanel}>
-        <PriceComparisonBlock
-          amount={firstPrice.amount}
-          currency={priceCurrencyMeta[firstPrice.currencyId]}
-          customRate={firstPrice.customRate}
-          label="Precio A"
-          onAmountChange={(value) => handleAmountChange("first", value)}
-          onCustomRateChange={(value) => handleCustomRateChange("first", value)}
-          onCurrencySelect={(currencyId) => handleCurrencySelect("first", currencyId)}
-          options={currencyOptions}
-          rate={firstOption.rate}
-          selectedCurrencyId={firstPrice.currencyId}
-          valueInVes={firstOption.valueInVes}
-        />
-
-        <View style={styles.dividerRow}>
-          <View style={styles.dividerLine} />
-          <View style={styles.compareIcon}>
-            <UniRemixIcon
-              name="arrow-left-right-line"
-              size={22}
-              uniProps={(theme: any) => ({
-                color: theme.colors.primaryText,
-              })}
-            />
+          <View style={styles.dividerRow}>
+            <View style={styles.dividerLine} />
+            <View style={styles.compareIcon}>
+              <UniRemixIcon
+                name="arrow-left-right-line"
+                size={22}
+                uniProps={(theme: any) => ({
+                  color: theme.colors.primaryText,
+                })}
+              />
+            </View>
+            <View style={styles.dividerLine} />
           </View>
-          <View style={styles.dividerLine} />
+
+          <InputComparisonBlock
+            amount={secondPrice.amount}
+            currency={priceCurrencyMeta[secondPrice.currencyId]}
+            customRate={secondPrice.customRate}
+            label="Precio B"
+            onAmountChange={(value) => handleAmountChange("second", value)}
+            onCustomRateChange={(value) => handleCustomRateChange("second", value)}
+            onCurrencySelect={(currencyId) => handleCurrencySelect("second", currencyId)}
+            options={currencyOptions}
+            rate={secondOption.rate}
+            selectedCurrencyId={secondPrice.currencyId}
+            valueInVes={secondOption.valueInVes}
+          />
         </View>
 
-        <PriceComparisonBlock
-          amount={secondPrice.amount}
-          currency={priceCurrencyMeta[secondPrice.currencyId]}
-          customRate={secondPrice.customRate}
-          label="Precio B"
-          onAmountChange={(value) => handleAmountChange("second", value)}
-          onCustomRateChange={(value) => handleCustomRateChange("second", value)}
-          onCurrencySelect={(currencyId) => handleCurrencySelect("second", currencyId)}
-          options={currencyOptions}
-          rate={secondOption.rate}
-          selectedCurrencyId={secondPrice.currencyId}
-          valueInVes={secondOption.valueInVes}
-        />
-      </View>
+        <ComparisonSummary firstOption={firstOption} secondOption={secondOption} result={result} />
 
-      <ComparisonSummary firstOption={firstOption} secondOption={secondOption} result={result} />
-
-      {ratesError ? (
-        <AppText variant="tab" style={styles.errorText} numberOfLines={1}>
-          {ratesError}
-        </AppText>
-      ) : null}
+        {ratesError ? (
+          <AppText variant="tab" style={styles.errorText} numberOfLines={1}>
+            {ratesError}
+          </AppText>
+        ) : null}
       </ScrollView>
     </View>
   );

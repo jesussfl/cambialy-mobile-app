@@ -26,7 +26,7 @@ export type ComparisonResult = {
   cheaperValue: number;
 };
 
-export type PriceComparisonBlockProps = {
+export type InputComparisonBlockProps = {
   amount: string;
   currency: CurrencyOption;
   customRate: string;
@@ -39,6 +39,7 @@ export type PriceComparisonBlockProps = {
   selectedCurrencyId: PriceCurrencyId;
   valueInVes: number;
 };
+
 
 export type ComparisonSummaryProps = {
   firstOption: ComparisonOption;
