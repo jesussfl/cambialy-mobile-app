@@ -16,7 +16,7 @@ import { priceCurrencyMeta, priceCurrencyOrder } from "../constants";
 import type { PriceCurrencyId, PriceInputState, PriceSide } from "../types";
 import { getComparisonOption, getComparisonResult } from "../utils";
 
-export function CalculatorScreen() {
+export function PriceComparisonScreen() {
   const [firstPrice, setFirstPrice] = useState<PriceInputState>({ amount: "1", customRate: "", currencyId: "usdt" });
   const [secondPrice, setSecondPrice] = useState<PriceInputState>({ amount: "", customRate: "", currencyId: "ves" });
 

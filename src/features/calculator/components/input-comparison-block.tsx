@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
-import Animated, { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
@@ -31,6 +30,7 @@ export function InputComparisonBlock({
   onCustomRateChange,
   onCurrencySelect,
   options,
+  rate,
   selectedCurrencyId,
   valueInVes,
 }: InputComparisonBlockProps) {
@@ -115,114 +115,113 @@ export function InputComparisonBlock({
     }
   };
 
+  const handleOpenAmountSheet = async () => {
+    setActiveField("amount");
+    setExpression("");
+    await TrueSheet.dismissAll();
+    await TrueSheet.present(sheetName);
+  };
+
+  const handleOpenCustomRateSheet = async () => {
+    setActiveField("customRate");
+    setExpression("");
+    await TrueSheet.dismissAll();
+    await TrueSheet.present(sheetName);
+  };
+
   return (
-    <Animated.View layout={LinearTransition.springify().damping(20)}>
-      <View style={styles.blockContainer}>
-        <View style={styles.topRow}>
-          <View style={styles.valueGroup}>
-            <View style={styles.amountRow}>
-              {expression ? (
-                <AppText variant="label" style={styles.expressionPreview}>
-                  {formatExpressionForDisplay(expression, amountInputMode, decimalSeparator)}
-                </AppText>
-              ) : null}
-              <TouchZone hitSlop={12} style={styles.amountInputPanel} onPress={() => TrueSheet.present(sheetName)}>
-                <View style={styles.amountDisplayContainer}>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.amountPreviewScroll}>
-                    <UniAppText variant="body" style={styles.amountPreview}>
-                      {`${currency.symbol} ${displayValue}`}
-                    </UniAppText>
-                  </ScrollView>
-                </View>
-              </TouchZone>
-            </View>
-          </View>
-
-          <CurrencyPicker
-            code={currency.code}
-            icon={currency.icon}
-            onSelect={onCurrencySelect}
-            options={options}
-            selectedOptionId={selectedCurrencyId}
-          />
-        </View>
-
-        <View style={styles.footerRow}>
-          <AppText variant="tab" style={styles.vesValue} numberOfLines={1}>
-            Bs. {formatCompactAmount(valueInVes, decimalSeparator)}
-          </AppText>
-        </View>
-
-        {isCustomRate ? (
-          <Animated.View entering={FadeIn.duration(250)} exiting={FadeOut.duration(150)}>
-            <View style={styles.customRateRow}>
-              <AppText variant="tab" style={styles.customRateLabel} numberOfLines={1}>
-                Tasa
-              </AppText>
-              <AppText variant="tab" style={styles.customRatePrefix}>
-                Bs.
-              </AppText>
-              <TouchZone
-                hitSlop={8}
-                style={styles.customRatePressable}
-                onPress={() => {
-                  setActiveField("customRate");
-                  setExpression("");
-                  TrueSheet.present(sheetName);
-                }}
-              >
-                <AppText variant="body" style={styles.customRateDisplay}>
-                  {displayCustomRate}
-                </AppText>
-              </TouchZone>
-            </View>
-          </Animated.View>
-        ) : null}
-
-        <AmountKeypadSheet
-          name={sheetName}
-          title={activeField === "customRate" ? "Editar tasa" : "Ingresar monto"}
-          showFieldSwitch={isCustomRate}
-          activeField={activeField}
-          onFieldChange={(field) => {
-            setExpression("");
-            setActiveField(field);
-          }}
-          onKeyPress={handleValueInput}
-          onDelete={handleValueDelete}
-          onClear={handleValueClear}
-          onOperatorPress={handleOperatorPress}
-          onEvaluate={handleEvaluate}
+    <View style={styles.blockContainer}>
+      <View style={styles.headerRow}>
+        <CurrencyPicker
+          code={currency.code}
+          icon={currency.icon}
+          onSelect={onCurrencySelect}
+          options={options}
+          selectedOptionId={selectedCurrencyId}
         />
+        {rate > 0 ? (
+          <AppText variant="tab" style={styles.vesValue} numberOfLines={1}>
+            Bs. {formatCompactAmount(rate, decimalSeparator)}
+          </AppText>
+        ) : null}
       </View>
-    </Animated.View>
+
+      <View style={styles.amountSection}>
+        {expression ? (
+          <AppText variant="label" style={styles.expressionPreview}>
+            {formatExpressionForDisplay(expression, amountInputMode, decimalSeparator)}
+          </AppText>
+        ) : null}
+        <TouchZone hitSlop={12} style={styles.amountInputPanel} onPress={handleOpenAmountSheet}>
+          <View style={styles.amountDisplayContainer}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.amountPreviewScroll}>
+              <UniAppText variant="body" style={styles.amountPreview}>
+                {`${currency.symbol} ${displayValue}`}
+              </UniAppText>
+            </ScrollView>
+          </View>
+        </TouchZone>
+      </View>
+
+      {isCustomRate ? (
+        <View style={styles.customRateRow}>
+          <AppText variant="tab" style={styles.customRateLabel} numberOfLines={1}>
+            Tasa
+          </AppText>
+          <AppText variant="tab" style={styles.customRatePrefix}>
+            Bs.
+          </AppText>
+          <TouchZone hitSlop={8} style={styles.customRatePressable} onPress={handleOpenCustomRateSheet}>
+            <AppText variant="body" style={styles.customRateDisplay}>
+              {displayCustomRate}
+            </AppText>
+          </TouchZone>
+        </View>
+      ) : null}
+
+      <AmountKeypadSheet
+        name={sheetName}
+        title={activeField === "customRate" ? "Editar tasa" : "Ingresar monto"}
+        showFieldSwitch={isCustomRate}
+        activeField={activeField}
+        onFieldChange={(field) => {
+          setExpression("");
+          setActiveField(field);
+        }}
+        onKeyPress={handleValueInput}
+        onDelete={handleValueDelete}
+        onClear={handleValueClear}
+        onOperatorPress={handleOperatorPress}
+        onEvaluate={handleEvaluate}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
   blockContainer: {
     justifyContent: "center",
-    gap: theme.spacing.md,
+    gap: theme.spacing.xs,
   },
-  topRow: {
+  headerRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: theme.spacing.sm,
   },
-  valueGroup: {
-    flex: 1,
-    minWidth: 0,
-    gap: theme.spacing.xs,
+  vesValue: {
+    color: theme.colors.textPrimary,
+    fontFamily: theme.typography.fontFamily.semibold,
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.semibold,
+    textAlign: "right",
   },
-  amountRow: {
-    minHeight: 58,
-    flexDirection: "column",
-    justifyContent: "center",
+  amountSection: {
+    gap: 2,
   },
   amountInputPanel: {
-    flex: 1,
-    minWidth: 0,
+    minHeight: 44,
+    justifyContent: "center",
     paddingVertical: theme.spacing.xs,
   },
   amountDisplayContainer: {
@@ -233,9 +232,6 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.textMuted,
     fontSize: 14,
     lineHeight: 18,
-    position: "absolute",
-    top: -12,
-    left: 0,
   },
   amountPreview: {
     color: theme.colors.textPrimary,
@@ -245,17 +241,6 @@ const styles = StyleSheet.create((theme) => ({
   },
   amountPreviewScroll: {
     alignItems: "center",
-  },
-  footerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: theme.spacing.md,
-  },
-  vesValue: {
-    maxWidth: "42%",
-    color: theme.colors.textPrimary,
-    textAlign: "right",
   },
   customRateRow: {
     minHeight: 46,

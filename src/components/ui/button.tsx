@@ -12,7 +12,8 @@ const UniPressable = withUnistyles(Pressable);
 const AnimatedUniPressable = Animated.createAnimatedComponent(UniPressable);
 const UniAppText = withUnistyles(AppText);
 
-export type TouchZoneProps = PressableProps & {
+export type TouchZoneProps = Omit<PressableProps, "style"> & {
+  style?: StyleProp<ViewStyle>;
   activeOpacity?: number;
   children?: React.ReactNode;
 };
@@ -56,7 +57,7 @@ export const TouchZone: React.FC<TouchZoneProps> = ({
 
 export type ButtonVariant = "primary" | "secondary" | "ghost";
 
-export type ButtonProps = PressableProps & {
+export type ButtonProps = TouchZoneProps & {
   label: string;
   variant?: ButtonVariant;
   icon?: IconName;
@@ -101,7 +102,7 @@ export const AppButton: React.FC<ButtonProps> = ({
   );
 };
 
-export type IconButtonProps = PressableProps & {
+export type IconButtonProps = TouchZoneProps & {
   icon: IconName;
   iconColor?: string;
   variant?: ButtonVariant;

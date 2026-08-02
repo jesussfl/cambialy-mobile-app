@@ -3,11 +3,10 @@ import { useEffect, useState } from "react";
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming } from "react-native-reanimated";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
-import { PressableProps } from "react-native-gesture-handler";
-import { TouchZone } from "./button";
+import { TouchZone, TouchZoneProps } from "./button";
 import { UniRemixIcon } from "./icon";
 
-type CopyIconButtonProps = Omit<PressableProps, "onPress"> & {
+type CopyIconButtonProps = Omit<TouchZoneProps, "onPress"> & {
   text: string;
   copied?: boolean;
   onCopy?: () => void;

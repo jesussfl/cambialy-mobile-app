@@ -1,5 +1,6 @@
-import { CalculatorScreen } from "@/features/calculator/screens/calculator-screen";
+import { PriceComparisonScreen } from "@/features/calculator/screens/price-comparison-screen";
 
 export default function CompareRoute() {
-  return <CalculatorScreen />;
+  return <PriceComparisonScreen />;
 }
+
