@@ -2,12 +2,13 @@ import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { FlashList } from "@shopify/flash-list";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import RemixIcon from "react-native-remix-icon";
 import { StyleSheet, useUnistyles, withUnistyles } from "react-native-unistyles";
 
 import { historyQueries } from "@/api/queries/history.queries";
 import { AppText } from "@/components/ui/app-text";
+import { TouchZone } from "@/components/ui/button";
 import { useExchangeStore } from "@/features/exchange/store/exchange-store";
 import { formatHistoricalDate, formatVesRateString } from "@/features/exchange/utils";
 import type { ExchangeRateHistoryOption, ExchangeRateId } from "@/models/exchange.models";
@@ -44,7 +45,7 @@ export function RateHistorySheet() {
   const renderHistoryItem = ({ item }: { item: ExchangeRateHistoryOption }) => {
     const isSelected = selectedDate === item.updatedAt;
     return (
-      <Pressable style={[styles.historyRow, isSelected && styles.activeRow]} onPress={() => handleSelectDate(item.updatedAt)}>
+      <TouchZone style={[styles.historyRow, isSelected && styles.activeRow]} onPress={() => handleSelectDate(item.updatedAt)}>
         <View style={styles.rowInfo}>
           <AppText variant="body" style={styles.rowDate}>
             {formatHistoricalDate(item.updatedAt)}
@@ -60,7 +61,7 @@ export function RateHistorySheet() {
           </AppText>
           {isSelected ? <UniRemixIcon name="checkbox-circle-fill" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /> : null}
         </View>
-      </Pressable>
+      </TouchZone>
     );
   };
 
@@ -80,25 +81,25 @@ export function RateHistorySheet() {
         </View>
 
         <View style={styles.tabsRow}>
-          <Pressable style={[styles.tab, selectedCategory === "bcv" && styles.activeTab]} onPress={() => setSelectedCategory("bcv")}>
+          <TouchZone style={[styles.tab, selectedCategory === "bcv" && styles.activeTab]} onPress={() => setSelectedCategory("bcv")}>
             <AppText variant="label" style={[styles.tabText, selectedCategory === "bcv" && styles.activeTabText]}>
               BCV (USD / EUR)
             </AppText>
-          </Pressable>
-          <Pressable style={[styles.tab, selectedCategory === "usdt" && styles.activeTab]} onPress={() => setSelectedCategory("usdt")}>
+          </TouchZone>
+          <TouchZone style={[styles.tab, selectedCategory === "usdt" && styles.activeTab]} onPress={() => setSelectedCategory("usdt")}>
             <AppText variant="label" style={[styles.tabText, selectedCategory === "usdt" && styles.activeTabText]}>
               Binance USDT
             </AppText>
-          </Pressable>
+          </TouchZone>
         </View>
 
         {selectedDate ? (
-          <Pressable style={styles.resetButton} onPress={handleResetToToday}>
+          <TouchZone style={styles.resetButton} onPress={handleResetToToday}>
             <UniRemixIcon name="refresh-line" size={18} uniProps={(theme: any) => ({ color: theme.colors.primary })} />
             <AppText variant="label" style={styles.resetButtonText}>
               Restablecer a Tasa Actual (Hoy)
             </AppText>
-          </Pressable>
+          </TouchZone>
         ) : null}
 
         {isLoading ? (

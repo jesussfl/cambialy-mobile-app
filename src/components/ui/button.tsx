@@ -1,25 +1,70 @@
+import React from "react";
 import { View, type StyleProp, type ViewStyle } from "react-native";
 import { IconName } from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
+import { Pressable, PressableProps } from "react-native-gesture-handler";
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
 
-import { CustomPressableProps, PressableOpacity, PressableScale } from "pressto";
 import { AppText, AppTextVariant } from "./app-text";
 import { UniRemixIcon } from "./icon";
-type ButtonVariant = "primary" | "secondary";
 
-type ButtonProps = CustomPressableProps & {
+const UniPressable = withUnistyles(Pressable);
+const AnimatedUniPressable = Animated.createAnimatedComponent(UniPressable);
+const UniAppText = withUnistyles(AppText);
+
+export type TouchZoneProps = PressableProps & {
+  activeOpacity?: number;
+  children?: React.ReactNode;
+};
+
+export const TouchZone: React.FC<TouchZoneProps> = ({
+  children,
+  style,
+  activeOpacity = 0.5,
+  onPressIn,
+  onPressOut,
+  disabled,
+  ...rest
+}) => {
+  const opacity = useSharedValue(1);
+
+  const handlePressIn = (e: any) => {
+    opacity.value = withTiming(activeOpacity, { duration: 100 });
+    onPressIn?.(e);
+  };
+  const handlePressOut = (e: any) => {
+    opacity.value = withTiming(1, { duration: 150 });
+    onPressOut?.(e);
+  };
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: disabled ? 0.6 : opacity.value,
+  }));
+
+  return (
+    <AnimatedUniPressable
+      style={[style, animatedStyle]}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      disabled={disabled}
+      {...rest}
+    >
+      {children}
+    </AnimatedUniPressable>
+  );
+};
+
+export type ButtonVariant = "primary" | "secondary" | "ghost";
+
+export type ButtonProps = PressableProps & {
   label: string;
   variant?: ButtonVariant;
   icon?: IconName;
   contentStyle?: StyleProp<ViewStyle>;
   labelVariant?: AppTextVariant;
   labelColor?: string;
-  isPressableOpacity?: boolean;
 };
 
-const UniAppText = withUnistyles(AppText);
-const UniPressableScale = withUnistyles(PressableScale);
-const UniPressableOpacity = withUnistyles(PressableOpacity);
 export const AppButton: React.FC<ButtonProps> = ({
   label,
   variant = "primary",
@@ -29,65 +74,42 @@ export const AppButton: React.FC<ButtonProps> = ({
   contentStyle,
   labelVariant,
   labelColor,
-  isPressableOpacity,
   ...rest
 }) => {
-  return isPressableOpacity ? (
-    <UniPressableOpacity style={style} {...rest}>
+  return (
+    <TouchZone style={[styles.base, styles[variant], style]} disabled={disabled} {...rest}>
       <View style={[styles.content, contentStyle]}>
         {icon ? (
           <UniRemixIcon
             name={icon}
             size={22}
             uniProps={(theme: any) => ({
-              color: variant === "primary" ? theme.colors.primaryText : theme.colors.primary,
+              color: labelColor || (variant === "primary" ? theme.colors.primaryText : theme.colors.primary),
             })}
           />
         ) : null}
         <UniAppText
           variant={labelVariant || "button"}
           uniProps={(theme) => ({
-            color: labelColor || (variant === "primary" ? theme.colors.primaryText : undefined),
+            color: labelColor || (variant === "primary" ? theme.colors.primaryText : theme.colors.primary),
           })}
         >
           {label}
         </UniAppText>
       </View>
-    </UniPressableOpacity>
-  ) : (
-    <UniPressableScale style={style} {...rest}>
-      <View style={[styles.content, contentStyle]}>
-        {icon ? (
-          <UniRemixIcon
-            name={icon}
-            size={22}
-            uniProps={(theme: any) => ({
-              color: variant === "primary" ? theme.colors.primaryText : theme.colors.primary,
-            })}
-          />
-        ) : null}
-        <UniAppText
-          variant={labelVariant || "button"}
-          uniProps={(theme) => ({
-            color: labelColor || (variant === "primary" ? theme.colors.primaryText : undefined),
-          })}
-        >
-          {label}
-        </UniAppText>
-      </View>
-    </UniPressableScale>
+    </TouchZone>
   );
 };
 
-type IconButtonProps = CustomPressableProps & {
+export type IconButtonProps = PressableProps & {
   icon: IconName;
   iconColor?: string;
-  variant?: "primary" | "secondary";
+  variant?: ButtonVariant;
 };
 
-export const IconButton: React.FC<IconButtonProps> = ({ icon, variant = "primary", style, iconColor, ...rest }) => {
+export const IconButton: React.FC<IconButtonProps> = ({ icon, variant = "primary", style, iconColor, disabled, ...rest }) => {
   return (
-    <UniPressableScale style={[styles.iconButtonBase, styles[variant], style]} {...rest}>
+    <TouchZone style={[styles.iconButtonBase, styles[variant], style]} disabled={disabled} {...rest}>
       <UniRemixIcon
         name={icon || "question-line"}
         size={22}
@@ -95,7 +117,7 @@ export const IconButton: React.FC<IconButtonProps> = ({ icon, variant = "primary
           color: iconColor || (variant === "primary" ? theme.colors.primaryText : theme.colors.primary),
         })}
       />
-    </UniPressableScale>
+    </TouchZone>
   );
 };
 
@@ -122,14 +144,8 @@ const styles = StyleSheet.create((theme) => ({
     borderWidth: 1,
     borderColor: theme.colors.borderSubtle,
   },
-  primaryPressed: {
-    backgroundColor: theme.colors.primaryPressed,
-  },
-  secondaryPressed: {
-    backgroundColor: theme.colors.secondarySurface,
-  },
-  disabled: {
-    opacity: 0.6,
+  ghost: {
+    backgroundColor: "transparent",
   },
   content: {
     flexDirection: "row",

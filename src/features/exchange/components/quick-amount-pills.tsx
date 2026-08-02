@@ -4,14 +4,13 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { AppText } from "@/components/ui/app-text";
 import { useSettingsStore } from "@/features/settings/context/settings-context";
 import { formatQuickActionAmount, parseLocalizedAmountToNumber } from "@/features/exchange/utils";
-import { PressableScale } from "pressto";
+import { TouchZone } from "@/components/ui/button";
 
 type QuickAmountPillsProps = {
   amount: string;
   onSelect: (value: string) => void;
   values: string[];
 };
-const UniPressableScale = withUnistyles(PressableScale);
 
 export function QuickAmountPills({ amount, onSelect, values }: QuickAmountPillsProps) {
   const numAmount = parseLocalizedAmountToNumber(amount);
@@ -23,7 +22,7 @@ export function QuickAmountPills({ amount, onSelect, values }: QuickAmountPillsP
         const isSelected = numAmount === Number(quickAmount);
 
         return (
-          <UniPressableScale
+          <TouchZone
             key={quickAmount}
             onPress={() => onSelect(quickAmount)}
             style={[styles.quickAmountPill, isSelected ? styles.quickAmountPillSelected : null]}
@@ -31,7 +30,7 @@ export function QuickAmountPills({ amount, onSelect, values }: QuickAmountPillsP
             <AppText variant="tab" style={isSelected ? styles.quickAmountTextSelected : styles.quickAmountText}>
               {formatQuickActionAmount(quickAmount, decimalSeparator)}
             </AppText>
-          </UniPressableScale>
+          </TouchZone>
         );
       })}
     </View>

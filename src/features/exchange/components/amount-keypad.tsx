@@ -28,7 +28,6 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             contentStyle={styles.keyContent}
             style={styles.keyButton}
             onPress={() => onKeyPress("1")}
-            isPressableOpacity
           />
           <AppButton
             labelVariant="title"
@@ -38,7 +37,6 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             contentStyle={styles.keyContent}
             style={styles.keyButton}
             onPress={() => onKeyPress("2")}
-            isPressableOpacity
           />
           <AppButton
             labelVariant="title"
@@ -48,7 +46,6 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             contentStyle={styles.keyContent}
             style={styles.keyButton}
             onPress={() => onKeyPress("3")}
-            isPressableOpacity
           />
           <AppButton
             labelVariant="title"
@@ -58,7 +55,6 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             contentStyle={styles.keyContent}
             style={styles.operatorButton}
             onPress={() => onOperatorPress("÷")}
-            isPressableOpacity
           />
         </View>
         <View style={styles.keypadRow}>
@@ -70,7 +66,6 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             contentStyle={styles.keyContent}
             style={styles.keyButton}
             onPress={() => onKeyPress("4")}
-            isPressableOpacity
           />
           <AppButton
             labelVariant="title"
@@ -80,7 +75,6 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             contentStyle={styles.keyContent}
             style={styles.keyButton}
             onPress={() => onKeyPress("5")}
-            isPressableOpacity
           />
           <AppButton
             labelVariant="title"
@@ -90,7 +84,6 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             contentStyle={styles.keyContent}
             style={styles.keyButton}
             onPress={() => onKeyPress("6")}
-            isPressableOpacity
           />
           <AppButton
             labelVariant="title"
@@ -100,7 +93,6 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             contentStyle={styles.keyContent}
             style={styles.operatorButton}
             onPress={() => onOperatorPress("×")}
-            isPressableOpacity
           />
         </View>
         <View style={styles.keypadRow}>
@@ -112,7 +104,6 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             contentStyle={styles.keyContent}
             style={styles.keyButton}
             onPress={() => onKeyPress("7")}
-            isPressableOpacity
           />
           <AppButton
             labelVariant="title"
@@ -122,7 +113,6 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             contentStyle={styles.keyContent}
             style={styles.keyButton}
             onPress={() => onKeyPress("8")}
-            isPressableOpacity
           />
           <AppButton
             labelVariant="title"
@@ -132,7 +122,6 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             contentStyle={styles.keyContent}
             style={styles.keyButton}
             onPress={() => onKeyPress("9")}
-            isPressableOpacity
           />
           <AppButton
             labelVariant="title"
@@ -142,7 +131,6 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             contentStyle={styles.keyContent}
             style={styles.operatorButton}
             onPress={() => onOperatorPress("-")}
-            isPressableOpacity
           />
         </View>
         <View style={styles.keypadRow}>
@@ -154,7 +142,6 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             contentStyle={styles.keyContent}
             style={styles.keyButton}
             onPress={() => onKeyPress(decimalChar)}
-            isPressableOpacity
           />
           <AppButton
             labelVariant="title"
@@ -164,7 +151,6 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             contentStyle={styles.keyContent}
             style={styles.keyButton}
             onPress={() => onKeyPress("0")}
-            isPressableOpacity
           />
           <IconButton icon="delete-back-2-line" variant="secondary" style={styles.iconButton} onPress={onDelete} />
           <AppButton
@@ -175,7 +161,6 @@ export function AmountKeypad({ onKeyPress, onDelete, onClear, onOperatorPress, o
             contentStyle={styles.keyContent}
             style={styles.operatorButton}
             onPress={() => onOperatorPress("+")}
-            isPressableOpacity
           />
         </View>
       </View>

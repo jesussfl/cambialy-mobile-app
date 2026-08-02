@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
-import { FlatList, Pressable, useWindowDimensions, View } from "react-native";
+import { FlatList, useWindowDimensions, View } from "react-native";
 import Animated, { useAnimatedScrollHandler, useSharedValue } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
@@ -67,9 +67,7 @@ export function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
           <UniAppText variant="cardTitle" uniProps={(theme) => ({ color: theme.colors.textPrimary })}>
             Cambialy
           </UniAppText>
-          <Pressable accessibilityRole="button" onPress={onFinish} style={styles.skipButton}>
-            <AppText variant="button">Omitir</AppText>
-          </Pressable>
+          <AppButton variant="ghost" onPress={onFinish} style={styles.skipButton} label="Omitir" labelVariant="button" labelColor={undefined} />
         </View>
 
         <AnimatedFlatList

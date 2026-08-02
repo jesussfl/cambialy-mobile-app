@@ -5,12 +5,11 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 import { CopyIconButton } from "@/components/ui/copy-icon-button";
-import { PressableOpacity } from "pressto";
+import { TouchZone } from "@/components/ui/button";
 
 import type { ConversionDetail } from "../types";
 
 const UniRemixIcon = withUnistyles(RemixIcon);
-const UniPressableOpacity = withUnistyles(PressableOpacity);
 
 type ConversionDetailRowProps = {
   detail: ConversionDetail;
@@ -26,7 +25,7 @@ export function ConversionDetailRow({ detail, isCopied, onCopy }: ConversionDeta
   };
 
   return (
-    <UniPressableOpacity style={styles.conversionDetailRow} onPress={handlePress}>
+    <TouchZone style={styles.conversionDetailRow} onPress={handlePress}>
       <View style={styles.conversionDetailIcon}>
         <UniRemixIcon
           name={detail.icon}
@@ -55,7 +54,7 @@ export function ConversionDetailRow({ detail, isCopied, onCopy }: ConversionDeta
           <CopyIconButton text={detail.amountText} style={{ width: 32, height: 32 }} copied={isCopied} onCopy={onCopy} size={16} />
         </View>
       </View>
-    </UniPressableOpacity>
+    </TouchZone>
   );
 }
 

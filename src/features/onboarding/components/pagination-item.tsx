@@ -1,5 +1,6 @@
 import { useEffect, type FC } from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
+import { TouchZone } from "@/components/ui/button";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -61,7 +62,7 @@ export const PaginationItem: FC<PaginationItemProps> = ({
   }));
 
   return (
-    <Pressable accessibilityRole="button" onPress={() => handleScrollToIndex(index)} style={styles.pressable}>
+    <TouchZone accessibilityRole="button" onPress={() => handleScrollToIndex(index)} style={styles.pressable}>
       <Animated.View style={containerStyle}>
         <View style={styles.track}>
           <View style={styles.trackBase} />
@@ -70,7 +71,7 @@ export const PaginationItem: FC<PaginationItemProps> = ({
           </Animated.View>
         </View>
       </Animated.View>
-    </Pressable>
+    </TouchZone>
   );
 };
 

@@ -4,6 +4,7 @@ import { ScrollView, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
+import { TopNavbar } from "@/components/ui/top-navbar";
 import { UniRemixIcon } from "@/components/ui/icon";
 import { fallbackRates, RATES_CACHE_TIME, RATES_STALE_TIME, RATE_ORDER } from "@/features/exchange/constants";
 import { sanitizeKeypadInput } from "@/features/exchange/utils";
@@ -54,12 +55,9 @@ export function CalculatorScreen() {
   };
 
   return (
-    <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <AppText variant="cardTitle" style={styles.headerTitle}>
-          Compara precios
-        </AppText>
-      </View>
+    <View style={styles.screenContent}>
+      <TopNavbar title="Compara precios" />
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
 
       <View style={styles.comparePanel}>
         <PriceComparisonBlock
@@ -112,11 +110,17 @@ export function CalculatorScreen() {
           {ratesError}
         </AppText>
       ) : null}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create((theme, rt) => ({
+  screenContent: {
+    paddingTop: rt.insets.top,
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
   scrollView: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -124,7 +128,6 @@ const styles = StyleSheet.create((theme, rt) => ({
   content: {
     flexGrow: 1,
     paddingHorizontal: theme.spacing.md,
-    paddingTop: rt.insets.top,
     paddingBottom: 120,
     gap: theme.spacing.lg,
   },

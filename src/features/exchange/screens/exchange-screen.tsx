@@ -1,9 +1,11 @@
-import { Pressable, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import RemixIcon from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 
 import { AppText } from "@/components/ui/app-text";
+import { TouchZone } from "@/components/ui/button";
+import { TopNavbar } from "@/components/ui/top-navbar";
 import { ConversionDetails } from "@/features/exchange/components/conversion-details";
 import { RateHistorySheet } from "@/features/exchange/components/rate-history-sheet";
 import { SwapDivider } from "@/features/exchange/components/swap-divider";
@@ -38,25 +40,25 @@ export function ExchangeScreen() {
 
   return (
     <View style={styles.screenContent}>
-      <View style={styles.header}>
-        <AppText variant="cardTitle" style={{ fontWeight: "bold" }}>
-          Cambialy
-        </AppText>
-        <Pressable
-          hitSlop={8}
-          style={[styles.historyIconButton, !!selectedDate && styles.activeHistoryIconButton]}
-          onPress={() => TrueSheet.present("rate-history-sheet")}
-        >
-          <UniRemixIcon
-            name="history-line"
-            size={22}
-            uniProps={(theme: any) => ({
-              color: selectedDate ? theme.colors.primary : theme.colors.textPrimary,
-            })}
-          />
-          {selectedDate ? <View style={styles.historyBadgeDot} /> : null}
-        </Pressable>
-      </View>
+      <TopNavbar
+        title="Cambialy"
+        rightContent={
+          <TouchZone
+            hitSlop={8}
+            style={[styles.historyIconButton, !!selectedDate && styles.activeHistoryIconButton]}
+            onPress={() => TrueSheet.present("rate-history-sheet")}
+          >
+            <UniRemixIcon
+              name="history-line"
+              size={22}
+              uniProps={(theme: any) => ({
+                color: selectedDate ? theme.colors.primary : theme.colors.textPrimary,
+              })}
+            />
+            {selectedDate ? <View style={styles.historyBadgeDot} /> : null}
+          </TouchZone>
+        }
+      />
 
       {selectedDate ? (
         <View style={styles.historyBanner}>
@@ -70,11 +72,11 @@ export function ExchangeScreen() {
               {`Tasa histórica: ${formatHistoricalDate(selectedDate ?? "")}`}
             </AppText>
           </View>
-          <Pressable style={styles.resetBannerButton} onPress={() => setSelectedDate(null)}>
+          <TouchZone style={styles.resetBannerButton} onPress={() => setSelectedDate(null)}>
             <AppText variant="label" style={styles.resetBannerText}>
               Usar tasa hoy
             </AppText>
-          </Pressable>
+          </TouchZone>
         </View>
       ) : null}
 

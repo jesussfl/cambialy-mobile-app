@@ -4,7 +4,7 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { AppText } from "@/components/ui/app-text";
 
 import { useToast } from "heroui-native";
-import { PressableOpacity } from "pressto";
+import { TouchZone } from "@/components/ui/button";
 import { useExchangeStore } from "../store/exchange-store";
 import { useCopyResult } from "../hooks/use-copy-result";
 import { useExchangeConversion } from "../hooks/use-exchange-conversion";
@@ -13,7 +13,6 @@ import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
 import { CurrencyPicker } from "./currency-picker";
 
 const AMOUNT_FONT_SIZE = 34;
-const UniPressableOpacity = withUnistyles(PressableOpacity);
 
 export function SwapOutputBlock() {
   const selectedBaseRateId = useExchangeStore((s) => s.selectedBaseRateId);
@@ -52,11 +51,11 @@ export function SwapOutputBlock() {
     <View style={styles.amountBlock}>
       <View style={styles.amountTopRow}>
         <View style={styles.amountRow}>
-          <UniPressableOpacity onPress={copyResult} hitSlop={12} rippleColor={"transparent"}>
+          <TouchZone onPress={copyResult} hitSlop={12}>
             <AppText variant="title" style={[styles.amountValue, styles.amountValueTextRow]} numberOfLines={1}>
               {outputCurrency.symbol} {safeAmount}
             </AppText>
-          </UniPressableOpacity>
+          </TouchZone>
         </View>
         <CurrencyPicker
           code={outputCurrency.code}

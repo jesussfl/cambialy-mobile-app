@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
+import { TouchZone } from "@/components/ui/button";
 import { ScrollView } from "react-native-gesture-handler";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
@@ -147,7 +148,7 @@ function SwapInputBlockInner({ selectedBaseRateId, customRateValue }: { selected
               {formatExpressionForDisplay(expression, amountInputMode, decimalSeparator)}
             </AppText>
           ) : null}
-          <Pressable hitSlop={12} style={styles.amountInputPanel} onPress={() => TrueSheet.present("amount-keypad-sheet")}>
+          <TouchZone hitSlop={12} style={styles.amountInputPanel} onPress={() => TrueSheet.present("amount-keypad-sheet")}>
             <View style={styles.amountDisplayContainer}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.amountPreviewScroll}>
                 <UniAppText variant="body" style={styles.amountPreview}>
@@ -155,7 +156,7 @@ function SwapInputBlockInner({ selectedBaseRateId, customRateValue }: { selected
                 </UniAppText>
               </ScrollView>
             </View>
-          </Pressable>
+          </TouchZone>
 
           <AmountKeypadSheet
             title={activeField === "customRate" ? "Editar tasa" : "Ingresar monto"}

@@ -3,15 +3,16 @@ import { useEffect, useState } from "react";
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming } from "react-native-reanimated";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
-import { CustomPressableProps, PressableScale } from "pressto";
+import { PressableProps } from "react-native-gesture-handler";
+import { TouchZone } from "./button";
 import { UniRemixIcon } from "./icon";
-type CopyIconButtonProps = Omit<CustomPressableProps, "onPress"> & {
+
+type CopyIconButtonProps = Omit<PressableProps, "onPress"> & {
   text: string;
   copied?: boolean;
   onCopy?: () => void;
   size?: number;
 };
-const UniPressableScale = withUnistyles(PressableScale);
 
 export const CopyIconButton: React.FC<CopyIconButtonProps> = ({ text, copied: copiedProp, onCopy, size = 18, style, ...rest }) => {
   const [internalCopied, setInternalCopied] = useState(false);
@@ -51,7 +52,7 @@ export const CopyIconButton: React.FC<CopyIconButtonProps> = ({ text, copied: co
   }));
 
   return (
-    <UniPressableScale hitSlop={10} onPress={handlePress} style={[styles.copyButton({ isCopied }), style]} {...rest}>
+    <TouchZone hitSlop={10} onPress={handlePress} style={[styles.copyButton({ isCopied }), style]} {...rest}>
       <Animated.View style={iconStyle}>
         <UniRemixIcon
           name={isCopied ? "check-line" : "file-copy-line"}
@@ -61,7 +62,7 @@ export const CopyIconButton: React.FC<CopyIconButtonProps> = ({ text, copied: co
           })}
         />
       </Animated.View>
-    </UniPressableScale>
+    </TouchZone>
   );
 };
 

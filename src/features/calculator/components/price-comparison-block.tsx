@@ -9,12 +9,11 @@ import { CurrencyPicker } from "@/features/exchange/components/currency-picker";
 import { formatDotDecimalString, formatCompactAmount } from "@/features/exchange/utils";
 import { appendOperatorToExpression, evaluateExpression, formatExpressionForDisplay, type MathOperator } from "@/features/exchange/utils";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
-import { PressableOpacity } from "pressto";
+import { TouchZone } from "@/components/ui/button";
 
 import { useSettingsStore } from "@/features/settings/context/settings-context";
 import type { PriceComparisonBlockProps } from "../types";
 
-const UniPressableOpacity = withUnistyles(PressableOpacity);
 export function PriceComparisonBlock({
   amount,
   currency,
@@ -119,7 +118,7 @@ export function PriceComparisonBlock({
                   {formatExpressionForDisplay(expression, amountInputMode, decimalSeparator)}
                 </AppText>
               ) : null}
-              <UniPressableOpacity hitSlop={12} style={styles.amountInputPanel} onPress={() => TrueSheet.present(sheetName)}>
+              <TouchZone hitSlop={12} style={styles.amountInputPanel} onPress={() => TrueSheet.present(sheetName)}>
                 <View style={styles.amountDisplayContainer}>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.amountPreviewScroll}>
                     <AppText variant="body" style={styles.amountPreview}>
@@ -127,7 +126,7 @@ export function PriceComparisonBlock({
                     </AppText>
                   </ScrollView>
                 </View>
-              </UniPressableOpacity>
+              </TouchZone>
             </View>
           </View>
 
@@ -149,7 +148,7 @@ export function PriceComparisonBlock({
               <AppText variant="tab" style={styles.customRatePrefix}>
                 Bs.
               </AppText>
-              <UniPressableOpacity
+              <TouchZone
                 hitSlop={8}
                 style={styles.customRatePressable}
                 onPress={() => {
@@ -161,7 +160,7 @@ export function PriceComparisonBlock({
                 <AppText variant="body" style={styles.customRateDisplay}>
                   {displayCustomRate}
                 </AppText>
-              </UniPressableOpacity>
+              </TouchZone>
             </View>
           </Animated.View>
         ) : null}

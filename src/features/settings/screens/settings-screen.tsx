@@ -1,8 +1,10 @@
-import { Pressable, ScrollView, Switch, View } from "react-native";
+import { ScrollView, Switch, View } from "react-native";
+import { TouchZone } from "@/components/ui/button";
 import Animated, { FadeOut, ZoomIn } from "react-native-reanimated";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
+import { TopNavbar } from "@/components/ui/top-navbar";
 import { Card } from "@/components/ui/card";
 import { UniRemixIcon } from "@/components/ui/icon";
 import { useSettingsStore } from "@/features/settings/context/settings-context";
@@ -15,10 +17,9 @@ export function SettingsScreen() {
   const { amountInputMode, setAmountInputMode, decimalSeparator, setDecimalSeparator } = useSettingsStore();
 
   return (
-    <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-      <AppText variant="title" style={styles.title}>
-        Ajustes
-      </AppText>
+    <View style={styles.screenContent}>
+      <TopNavbar title="Ajustes" />
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
       <View style={styles.section}>
         <AppText variant="sectionTitle" style={styles.sectionHeader}>
@@ -66,7 +67,7 @@ export function SettingsScreen() {
           Entrada de montos
         </AppText>
         <Card style={styles.card}>
-          <Pressable
+          <TouchZone
             accessibilityRole="radio"
             accessibilityState={{ checked: amountInputMode === "automatic" }}
             style={styles.modeRow}
@@ -81,11 +82,11 @@ export function SettingsScreen() {
               </AppText>
             </View>
             {amountInputMode === "automatic" ? <Animated.View entering={ZoomIn.duration(200)} exiting={FadeOut.duration(150)}><UniRemixIcon name="check-line" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /></Animated.View> : null}
-          </Pressable>
+          </TouchZone>
 
           <View style={styles.modeSeparator} />
 
-          <Pressable
+          <TouchZone
             accessibilityRole="radio"
             accessibilityState={{ checked: amountInputMode === "manual" }}
             style={styles.modeRow}
@@ -100,7 +101,7 @@ export function SettingsScreen() {
               </AppText>
             </View>
             {amountInputMode === "manual" ? <Animated.View entering={ZoomIn.duration(200)} exiting={FadeOut.duration(150)}><UniRemixIcon name="check-line" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /></Animated.View> : null}
-          </Pressable>
+          </TouchZone>
         </Card>
       </View>
 
@@ -109,7 +110,7 @@ export function SettingsScreen() {
           Formato numérico
         </AppText>
         <Card style={styles.card}>
-          <Pressable
+          <TouchZone
             accessibilityRole="radio"
             accessibilityState={{ checked: decimalSeparator === "comma" }}
             style={styles.modeRow}
@@ -124,11 +125,11 @@ export function SettingsScreen() {
               </AppText>
             </View>
             {decimalSeparator === "comma" ? <Animated.View entering={ZoomIn.duration(200)} exiting={FadeOut.duration(150)}><UniRemixIcon name="check-line" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /></Animated.View> : null}
-          </Pressable>
+          </TouchZone>
 
           <View style={styles.modeSeparator} />
 
-          <Pressable
+          <TouchZone
             accessibilityRole="radio"
             accessibilityState={{ checked: decimalSeparator === "dot" }}
             style={styles.modeRow}
@@ -143,7 +144,7 @@ export function SettingsScreen() {
               </AppText>
             </View>
             {decimalSeparator === "dot" ? <Animated.View entering={ZoomIn.duration(200)} exiting={FadeOut.duration(150)}><UniRemixIcon name="check-line" size={20} uniProps={(theme: any) => ({ color: theme.colors.primary })} /></Animated.View> : null}
-          </Pressable>
+          </TouchZone>
         </Card>
       </View>
 
@@ -175,18 +176,23 @@ export function SettingsScreen() {
           Versión 1.0.0
         </AppText>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create((theme, rt) => ({
+  screenContent: {
+    paddingTop: rt.insets.top,
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
   scrollView: {
     flex: 1,
     backgroundColor: theme.colors.background,
   },
   content: {
     paddingHorizontal: theme.spacing.md,
-    paddingTop: rt.insets.top,
     paddingBottom: 120,
     gap: theme.spacing.xl,
   },

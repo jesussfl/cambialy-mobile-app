@@ -1,13 +1,13 @@
 import { Tabs } from "expo-router";
 import { type ComponentProps, useEffect } from "react";
-import { Platform, Pressable, View } from "react-native";
+import { Platform, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { type IconName } from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 import { useExchangeStore } from "@/features/exchange/store/exchange-store";
-import { IconButton } from "../ui/button";
+import { IconButton, TouchZone } from "../ui/button";
 import { UniRemixIcon } from "../ui/icon";
 
 type ExpoTabsProps = ComponentProps<typeof Tabs>;
@@ -89,7 +89,7 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, 
             };
 
             return (
-              <Pressable
+              <TouchZone
                 key={route.key}
                 accessibilityLabel={options.tabBarAccessibilityLabel}
                 accessibilityRole="button"
@@ -114,7 +114,7 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, 
                 >
                   {config.label}
                 </UniAppText>
-              </Pressable>
+              </TouchZone>
             );
           })}
         </View>

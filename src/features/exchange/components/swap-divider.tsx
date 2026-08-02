@@ -4,10 +4,10 @@ import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-na
 import { StyleSheet } from "react-native-unistyles";
 
 import { IconButton } from "@/components/ui/button";
-import { useExchangeStore } from "../store/exchange-store";
 import { useExchangeConversion } from "../hooks/use-exchange-conversion";
 import { useExchangeInput } from "../hooks/use-exchange-input";
 import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
+import { useExchangeStore } from "../store/exchange-store";
 
 export function SwapDivider() {
   const selectedBaseRateId = useExchangeStore((s) => s.selectedBaseRateId);
@@ -45,7 +45,7 @@ export function SwapDivider() {
     <View style={styles.swapDividerRow}>
       <View style={styles.dividerLine} />
       <Animated.View style={arrowStyle}>
-        <IconButton icon="arrow-up-down-line" onPress={() => handleSwapDirection(convertedAmount)} />
+        <IconButton variant="primary" icon="arrow-up-down-line" onPress={() => handleSwapDirection(convertedAmount)} />
       </Animated.View>
       <View style={styles.dividerLine} />
     </View>
