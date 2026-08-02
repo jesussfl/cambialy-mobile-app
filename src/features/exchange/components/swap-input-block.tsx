@@ -1,24 +1,29 @@
-import { useState } from "react";
-import { View } from "react-native";
 import { TouchZone } from "@/components/ui/button";
-import { ScrollView } from "react-native-gesture-handler";
+import { Popover } from "heroui-native";
+import { useRef, useState } from "react";
+import { ScrollView, View } from "react-native";
+import RemixIcon from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 
 import { useSettingsStore } from "@/features/settings/context/settings-context";
-import type { BaseRateId } from "../hooks/exchange-screen.types";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import type { BaseRateId } from "../hooks/exchange-screen.types";
 
 import { useExchangeInput } from "../hooks/use-exchange-input";
 import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
 import { useExchangeStore } from "../store/exchange-store";
-import { formatDotDecimalString, appendOperatorToExpression, evaluateExpression, formatExpressionForDisplay, type MathOperator } from "../utils";
+import { appendOperatorToExpression, evaluateExpression, formatDotDecimalString, formatExpressionForDisplay, type MathOperator } from "../utils";
 import { AmountKeypadSheet } from "./amount-keypad-sheet";
 import { CurrencyPicker } from "./currency-picker";
 import { QuickAmountPills } from "./quick-amount-pills";
 
+import { usePasteAmount } from "../hooks/use-paste-amount";
+
 const UniAppText = withUnistyles(AppText);
+const UniRemixIcon = withUnistyles(RemixIcon);
+const UniPopoverContent = withUnistyles(Popover.Content);
 
 export function SwapInputBlock() {
   const selectedBaseRateId = useExchangeStore((s) => s.selectedBaseRateId);
@@ -30,6 +35,7 @@ export function SwapInputBlock() {
 
 function SwapInputBlockInner({ selectedBaseRateId, customRateValue }: { selectedBaseRateId: BaseRateId; customRateValue: number }) {
   const { rates, selectedBaseRate } = useExchangeRatesList(selectedBaseRateId, customRateValue);
+  const { handlePaste } = usePasteAmount();
 
   const baseRateOptions = rates.map((rate) => rate.info);
 
@@ -52,6 +58,31 @@ function SwapInputBlockInner({ selectedBaseRateId, customRateValue }: { selected
   const [activeField, setActiveField] = useState<"amount" | "customRate">("amount");
   const [hasTyped, setHasTyped] = useState({ amount: false, customRate: false });
   const [expression, setExpression] = useState("");
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const isLongPressRef = useRef(false);
+
+  const handleOpenChange = (open: boolean) => {
+    if (open) {
+      if (isLongPressRef.current) {
+        setIsPopoverOpen(true);
+      }
+    } else {
+      setIsPopoverOpen(false);
+      isLongPressRef.current = false;
+    }
+  };
+
+  const handlePress = () => {
+    if (isLongPressRef.current) {
+      return;
+    }
+    TrueSheet.present("amount-keypad-sheet");
+  };
+
+  const handleLongPress = () => {
+    isLongPressRef.current = true;
+    setIsPopoverOpen(true);
+  };
 
   const amountInputMode = useSettingsStore((s) => s.amountInputMode);
   const decimalSeparator = useSettingsStore((s) => s.decimalSeparator);
@@ -148,15 +179,50 @@ function SwapInputBlockInner({ selectedBaseRateId, customRateValue }: { selected
               {formatExpressionForDisplay(expression, amountInputMode, decimalSeparator)}
             </AppText>
           ) : null}
-          <TouchZone hitSlop={12} style={styles.amountInputPanel} onPress={() => TrueSheet.present("amount-keypad-sheet")}>
-            <View style={styles.amountDisplayContainer}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.amountPreviewScroll}>
-                <UniAppText variant="body" style={styles.amountPreview}>
-                  {`${inputCurrency.symbol} ${displayValue}`}
-                </UniAppText>
-              </ScrollView>
-            </View>
-          </TouchZone>
+          <Popover isOpen={isPopoverOpen} onOpenChange={handleOpenChange}>
+            <Popover.Trigger asChild>
+              <TouchZone
+                accessibilityRole="button"
+                hitSlop={12}
+                style={styles.amountInputPanel}
+                onPress={handlePress}
+                onLongPress={handleLongPress}
+                delayLongPress={250}
+              >
+                <View style={styles.amountDisplayContainer}>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.amountPreviewScroll}>
+                    <UniAppText pointerEvents="none" variant="body" style={styles.amountPreview}>
+                      {`${inputCurrency.symbol} ${displayValue}`}
+                    </UniAppText>
+                  </ScrollView>
+                </View>
+              </TouchZone>
+            </Popover.Trigger>
+            <Popover.Portal>
+              <Popover.Overlay />
+              <UniPopoverContent presentation="popover" placement="bottom" align="start" width={140} style={styles.pastePopover}>
+                <TouchZone
+                  accessibilityRole="button"
+                  onPress={async () => {
+                    handleOpenChange(false);
+                    await handlePaste();
+                  }}
+                  style={styles.pasteOption}
+                >
+                  <UniRemixIcon
+                    name="clipboard-line"
+                    size={18}
+                    uniProps={(theme: any) => ({
+                      color: theme.colors.textPrimary,
+                    })}
+                  />
+                  <AppText variant="button" style={styles.pasteOptionText}>
+                    Pegar
+                  </AppText>
+                </TouchZone>
+              </UniPopoverContent>
+            </Popover.Portal>
+          </Popover>
 
           <AmountKeypadSheet
             title={activeField === "customRate" ? "Editar tasa" : "Ingresar monto"}
@@ -169,6 +235,7 @@ function SwapInputBlockInner({ selectedBaseRateId, customRateValue }: { selected
             onKeyPress={handleValueInput}
             onDelete={handleValueDelete}
             onClear={handleValueClear}
+            onPaste={handlePaste}
             onOperatorPress={handleOperatorPress}
             onEvaluate={handleEvaluate}
           />
@@ -227,5 +294,24 @@ const styles = StyleSheet.create((theme) => ({
   },
   amountPreviewScroll: {
     alignItems: "center",
+  },
+  pastePopover: {
+    backgroundColor: theme.colors.surfaceMuted,
+    borderRadius: theme.radius.md,
+    padding: theme.spacing.xs,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
+    ...theme.shadows.floating,
+  },
+  pasteOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.radius.sm,
+  },
+  pasteOptionText: {
+    color: theme.colors.textPrimary,
   },
 }));

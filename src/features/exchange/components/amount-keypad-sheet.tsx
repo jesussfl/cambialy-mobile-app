@@ -9,6 +9,8 @@ import { AppText } from "@/components/ui/app-text";
 import { TouchZone } from "@/components/ui/button";
 import { AmountKeypad } from "./amount-keypad";
 
+import RemixIcon from "react-native-remix-icon";
+
 type AmountKeypadSheetProps = {
   name?: string;
   title: string;
@@ -18,11 +20,14 @@ type AmountKeypadSheetProps = {
   onKeyPress: (value: string) => void;
   onDelete: () => void;
   onClear: () => void;
+  onPaste?: () => void;
   onOperatorPress: (op: "+" | "-" | "×" | "÷") => void;
   onEvaluate: () => void;
 };
 const UniTrueSheet = withUnistyles(TrueSheet);
 const UniGestureHandlerRootView = withUnistyles(GestureHandlerRootView);
+const UniRemixIcon = withUnistyles(RemixIcon);
+
 export function AmountKeypadSheet({
   name,
   showFieldSwitch,
@@ -31,6 +36,7 @@ export function AmountKeypadSheet({
   onKeyPress,
   onDelete,
   onClear,
+  onPaste,
   onOperatorPress,
   onEvaluate,
 }: AmountKeypadSheetProps) {
@@ -64,6 +70,15 @@ export function AmountKeypadSheet({
                 C
               </AppText>
             </TouchZone>
+
+            {onPaste ? (
+              <TouchZone onPress={onPaste} style={styles.pasteHeaderButton}>
+                <UniRemixIcon name="clipboard-line" size={18} uniProps={(theme: any) => ({ color: "white" })} />
+                <AppText variant="tab" style={styles.closeLabel}>
+                  Pegar
+                </AppText>
+              </TouchZone>
+            ) : null}
 
             <TouchZone onPress={onClose} style={styles.closeButton}>
               <AppText variant="tab" style={styles.closeLabel}>
@@ -161,6 +176,19 @@ const styles = StyleSheet.create((theme, rt) => ({
     minWidth: 84,
     height: 42,
     backgroundColor: theme.gray["700"],
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: theme.radius.pill,
+  },
+  pasteHeaderButton: {
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.md,
+    height: 42,
+    flexDirection: "row",
+    gap: theme.spacing.xs,
+    backgroundColor: theme.gray["800"],
+    borderWidth: 1,
+    borderColor: theme.gray["700"],
     justifyContent: "center",
     alignItems: "center",
     borderRadius: theme.radius.pill,

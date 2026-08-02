@@ -18,42 +18,39 @@ export type TouchZoneProps = Omit<PressableProps, "style"> & {
   children?: React.ReactNode;
 };
 
-export const TouchZone: React.FC<TouchZoneProps> = ({
-  children,
-  style,
-  activeOpacity = 0.5,
-  onPressIn,
-  onPressOut,
-  disabled,
-  ...rest
-}) => {
-  const opacity = useSharedValue(1);
+export const TouchZone = React.forwardRef<any, TouchZoneProps>(
+  ({ children, style, activeOpacity = 0.5, onPressIn, onPressOut, disabled, ...rest }, ref) => {
+    const opacity = useSharedValue(1);
 
-  const handlePressIn = (e: any) => {
-    opacity.value = withTiming(activeOpacity, { duration: 100 });
-    onPressIn?.(e);
-  };
-  const handlePressOut = (e: any) => {
-    opacity.value = withTiming(1, { duration: 150 });
-    onPressOut?.(e);
-  };
+    const handlePressIn = (e: any) => {
+      opacity.value = withTiming(activeOpacity, { duration: 100 });
+      onPressIn?.(e);
+    };
+    const handlePressOut = (e: any) => {
+      opacity.value = withTiming(1, { duration: 150 });
+      onPressOut?.(e);
+    };
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: disabled ? 0.6 : opacity.value,
-  }));
+    const animatedStyle = useAnimatedStyle(() => ({
+      opacity: disabled ? 0.6 : opacity.value,
+    }));
 
-  return (
-    <AnimatedUniPressable
-      style={[style, animatedStyle]}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      disabled={disabled}
-      {...rest}
-    >
-      {children}
-    </AnimatedUniPressable>
-  );
-};
+    return (
+      <AnimatedUniPressable
+        ref={ref}
+        style={[style, animatedStyle]}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled}
+        {...rest}
+      >
+        {children}
+      </AnimatedUniPressable>
+    );
+  }
+);
+
+TouchZone.displayName = "TouchZone";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost";
 
