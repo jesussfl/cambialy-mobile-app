@@ -89,15 +89,17 @@ function addReleaseSigningConfig(contents) {
             }
         }`;
 
-  return contents.replace(/(\n    \})\n    buildTypes \{/, `$1\n${block}\n    buildTypes {`);
+  return contents.replace(/(signingConfigs\s*\{[\s\S]*?debug\s*\{[\s\S]*?\n        \})(?=\n    \})/, `$1\n${block}`);
 }
 
 function useReleaseSigningConfig(contents) {
-  if (contents.includes("signingConfig signingConfigs.release")) {
+  if (/release\s*\{[^}]*signingConfig\s+signingConfigs\.release/.test(contents)) {
     return contents;
   }
-
-  return contents.replace(/signingConfig signingConfigs\.debug/, "signingConfig signingConfigs.release");
+  return contents.replace(
+    /(release\s*\{[^}]*?)signingConfig\s+signingConfigs\.debug/,
+    "$1signingConfig signingConfigs.release"
+  );
 }
 
 function removeAutoUpload(contents) {
