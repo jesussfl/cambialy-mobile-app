@@ -1,8 +1,9 @@
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import { NavigationBar } from "expo-navigation-bar";
 import { useRef } from "react";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { StyleSheet, withUnistyles } from "react-native-unistyles";
+import { StyleSheet, UnistylesRuntime, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 
@@ -28,6 +29,22 @@ const UniTrueSheet = withUnistyles(TrueSheet);
 const UniGestureHandlerRootView = withUnistyles(GestureHandlerRootView);
 const UniRemixIcon = withUnistyles(RemixIcon);
 
+const SHEET_BACKGROUND_COLOR = "#101828";
+
+/**
+ * `style` is the colour of the navigation bar *buttons*. The sheet draws behind the
+ * navigation bar and is always dark, so the buttons must be light while it is open.
+ *
+ * On dismiss we can't use `auto` — that follows the system colour scheme, while the app
+ * drives its own theme through Unistyles — so resolve the buttons from the app theme.
+ */
+function syncNavigationBarToSheet(isSheetVisible: boolean) {
+  if (Platform.OS !== "android") return;
+
+  const isAppDark = UnistylesRuntime.themeName === "dark";
+  NavigationBar.setStyle(isSheetVisible || isAppDark ? "light" : "dark");
+}
+
 export function AmountKeypadSheet({
   name,
   showFieldSwitch,
@@ -49,7 +66,9 @@ export function AmountKeypadSheet({
       ref={sheetRef}
       name={name ?? "amount-keypad-sheet"}
       detents={["auto"]}
-      backgroundColor={"#101828"}
+      backgroundColor={SHEET_BACKGROUND_COLOR}
+      onWillPresent={() => syncNavigationBarToSheet(true)}
+      onWillDismiss={() => syncNavigationBarToSheet(false)}
       dismissible={true}
       draggable={true}
       dimmed={false}
@@ -120,13 +139,10 @@ const styles = StyleSheet.create((theme, rt) => ({
     flexGrow: 1,
     backgroundColor: theme.gray[900],
   },
-  footer: {
-    paddingBottom: rt.insets.bottom,
-    backgroundColor: theme.gray[200],
-  },
   container: {
     paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.sm,
+    paddingVertical: theme.spacing.sm,
+
     gap: theme.spacing.md,
   },
   header: {

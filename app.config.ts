@@ -13,7 +13,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: appName,
     slug: "cambialy",
-    version: "1.0.1",
+    version: "1.1.1",
     orientation: "portrait",
     icon: "./assets/images/cambialy.png",
     scheme,
@@ -24,10 +24,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       appleTeamId: "R28JX6275H",
     },
     android: {
-      blockedPermissions: [
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE"
-      ],
+      blockedPermissions: ["android.permission.READ_EXTERNAL_STORAGE", "android.permission.WRITE_EXTERNAL_STORAGE"],
       adaptiveIcon: {
         backgroundColor: "#E6F4FE",
         foregroundImage: "./assets/images/cambialy-foreground-2.png",
@@ -36,7 +33,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       },
       predictiveBackGestureEnabled: false,
       package: bundleIdentifier,
-      versionCode: 2,
+      versionCode: 7,
       googleServicesFile: "./google-services.json",
     },
     web: {
@@ -171,6 +168,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ],
       "expo-status-bar",
       "./plugins/withAndroidR8",
+      [
+        // Disables the opaque scrim Android paints behind the 3-button navigation bar in
+        // edge-to-edge mode, so app content (e.g. the dark keypad sheet) shows through it.
+        "expo-navigation-bar",
+        { enforceContrast: false },
+      ],
       "./plugins/withHermesMmap",
       "./plugins/withXcodeEnv",
       "expo-image",
