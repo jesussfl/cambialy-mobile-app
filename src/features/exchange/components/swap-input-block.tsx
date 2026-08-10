@@ -6,15 +6,16 @@ import RemixIcon from "react-native-remix-icon";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
+import type { AppTheme } from "@/theme/themes";
 
-import { useSettingsStore } from "@/features/settings/context/settings-context";
-import { TrueSheet } from "@lodev09/react-native-true-sheet";
-import type { BaseRateId } from "../hooks/exchange-screen.types";
+import { AMOUNT_PRECISION, RATE_PRECISION } from "@/features/amount-input/model/constants";
+import type { AmountDraft } from "@/features/amount-input/model/types";
+import { useAmountSheet } from "@/features/amount-input/hooks/use-amount-sheet";
+import { useKeypadFields } from "@/features/amount-input/hooks/use-keypad-fields";
 
 import { useExchangeInput } from "../hooks/use-exchange-input";
 import { useExchangeRatesList } from "../hooks/use-exchange-rates-list";
 import { useExchangeStore } from "../store/exchange-store";
-import { appendOperatorToExpression, evaluateExpression, formatDotDecimalString, formatExpressionForDisplay, type MathOperator } from "../utils";
 import { AmountKeypadSheet } from "./amount-keypad-sheet";
 import { CurrencyPicker } from "./currency-picker";
 import { QuickAmountPills } from "./quick-amount-pills";
@@ -25,15 +26,20 @@ const UniAppText = withUnistyles(AppText);
 const UniRemixIcon = withUnistyles(RemixIcon);
 const UniPopoverContent = withUnistyles(Popover.Content);
 
+const SHEET_NAME = "amount-keypad-sheet";
+
+/** Amounts settle at two decimals; a user-supplied rate keeps four. */
+const KEYPAD_FIELDS = {
+  amount: { precision: AMOUNT_PRECISION },
+  customRate: { precision: RATE_PRECISION },
+} as const;
+
+type KeypadFieldId = keyof typeof KEYPAD_FIELDS;
+
 export function SwapInputBlock() {
   const selectedBaseRateId = useExchangeStore((s) => s.selectedBaseRateId);
   const customRateValue = useExchangeStore((s) => s.customRateValue);
-  const resetKey = useExchangeStore((s) => s.resetKey);
 
-  return <SwapInputBlockInner key={resetKey} selectedBaseRateId={selectedBaseRateId} customRateValue={customRateValue} />;
-}
-
-function SwapInputBlockInner({ selectedBaseRateId, customRateValue }: { selectedBaseRateId: BaseRateId; customRateValue: number }) {
   const { rates, selectedBaseRate } = useExchangeRatesList(selectedBaseRateId, customRateValue);
   const { handlePaste } = usePasteAmount();
 
@@ -41,25 +47,36 @@ function SwapInputBlockInner({ selectedBaseRateId, customRateValue }: { selected
 
   const {
     inputAmount,
-    inputAmountDisplay,
+    amountDraft,
+    customRateDraft,
+    setAmountDraft,
+    setCustomRateDraft,
     inputCurrency,
-    handleInputAmountChange,
     handleQuickAmountSelect,
-    handleCustomRateChange,
     handleInputCurrencySelect,
     inputOptions,
     quickAmounts,
-    customRateInput,
     inputSelectedOptionId,
   } = useExchangeInput({ selectedBaseRate, baseRateOptions });
 
-  const safeAmount = inputAmount ?? "";
-  const safeCustomRate = customRateInput ?? "";
-  const [activeField, setActiveField] = useState<"amount" | "customRate">("amount");
-  const [hasTyped, setHasTyped] = useState({ amount: false, customRate: false });
-  const [expression, setExpression] = useState("");
+  const setDraft = (field: KeypadFieldId, next: AmountDraft) => {
+    if (field === "amount") {
+      setAmountDraft(next);
+      return;
+    }
+    setCustomRateDraft(next);
+  };
+
+  const { activeField, setActiveField, display, expressionPreview, placeholder, handlers } = useKeypadFields<KeypadFieldId>({
+    fields: KEYPAD_FIELDS,
+    drafts: { amount: amountDraft, customRate: customRateDraft },
+    setDraft,
+    initialField: "amount",
+  });
+
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const isLongPressRef = useRef(false);
+  const sheet = useAmountSheet(SHEET_NAME);
 
   const handleOpenChange = (open: boolean) => {
     if (open) {
@@ -76,7 +93,7 @@ function SwapInputBlockInner({ selectedBaseRateId, customRateValue }: { selected
     if (isLongPressRef.current) {
       return;
     }
-    TrueSheet.present("amount-keypad-sheet");
+    void sheet.open();
   };
 
   const handleLongPress = () => {
@@ -84,99 +101,15 @@ function SwapInputBlockInner({ selectedBaseRateId, customRateValue }: { selected
     setIsPopoverOpen(true);
   };
 
-  const amountInputMode = useSettingsStore((s) => s.amountInputMode);
-  const decimalSeparator = useSettingsStore((s) => s.decimalSeparator);
-
-  const updateFieldValue = (nextValue: string) => {
-    if (activeField === "amount") {
-      handleInputAmountChange(nextValue);
-    } else {
-      handleCustomRateChange(nextValue);
-    }
-  };
-
-  const handleValueInput = (value: string) => {
-    const field = activeField;
-    const isFirst = !hasTyped[field];
-
-    if (isFirst) {
-      setHasTyped((prev) => ({ ...prev, [field]: true }));
-    }
-
-    const currentBase = isFirst ? "" : expression ? expression : field === "amount" ? safeAmount : safeCustomRate;
-
-    const nextExpr = `${currentBase}${value}`;
-    setExpression(nextExpr);
-
-    const { formattedResult } = evaluateExpression(nextExpr, amountInputMode, decimalSeparator);
-    if (formattedResult) {
-      updateFieldValue(formattedResult);
-    }
-  };
-
-  const handleOperatorPress = (op: MathOperator) => {
-    const field = activeField;
-    const currentBase = expression ? expression : field === "amount" ? safeAmount : safeCustomRate;
-
-    if (!currentBase) return;
-
-    setHasTyped((prev) => ({ ...prev, [field]: true }));
-    const nextExpr = appendOperatorToExpression(currentBase, op);
-    setExpression(nextExpr);
-  };
-
-  const handleEvaluate = () => {
-    if (!expression) return;
-    const { formattedResult } = evaluateExpression(expression, amountInputMode, decimalSeparator);
-    if (formattedResult) {
-      updateFieldValue(formattedResult);
-    }
-    setExpression("");
-  };
-
-  const handleValueDelete = () => {
-    if (expression.length > 0) {
-      const nextExpr = expression.slice(0, -1);
-      setExpression(nextExpr);
-
-      if (nextExpr.length === 0) {
-        updateFieldValue("");
-      } else {
-        const { formattedResult } = evaluateExpression(nextExpr, amountInputMode, decimalSeparator);
-        if (formattedResult) {
-          updateFieldValue(formattedResult);
-        }
-      }
-      return;
-    }
-
-    const currentValue = activeField === "amount" ? safeAmount : safeCustomRate;
-    const nextValue = currentValue.slice(0, -1);
-    updateFieldValue(nextValue);
-  };
-
-  const handleValueClear = () => {
-    setExpression("");
-    if (activeField === "amount") {
-      setHasTyped((prev) => ({ ...prev, amount: false }));
-      handleInputAmountChange("");
-    } else {
-      setHasTyped((prev) => ({ ...prev, customRate: false }));
-      handleCustomRateChange("");
-    }
-  };
-
-  const placeholder = decimalSeparator === "comma" ? "0,00" : "0.00";
-  const displayValue =
-    activeField === "amount" ? inputAmountDisplay || placeholder : safeCustomRate ? formatDotDecimalString(safeCustomRate, decimalSeparator) : placeholder;
+  const displayValue = display[activeField] || placeholder;
 
   return (
     <View style={styles.amountBlock}>
       <View style={styles.amountTopRow}>
         <View style={styles.amountRow}>
-          {expression ? (
+          {expressionPreview ? (
             <AppText variant="label" style={styles.expressionPreview}>
-              {formatExpressionForDisplay(expression, amountInputMode, decimalSeparator)}
+              {expressionPreview}
             </AppText>
           ) : null}
           <Popover isOpen={isPopoverOpen} onOpenChange={handleOpenChange}>
@@ -212,7 +145,7 @@ function SwapInputBlockInner({ selectedBaseRateId, customRateValue }: { selected
                   <UniRemixIcon
                     name="clipboard-line"
                     size={18}
-                    uniProps={(theme: any) => ({
+                    uniProps={(theme: AppTheme) => ({
                       color: theme.colors.textPrimary,
                     })}
                   />
@@ -225,19 +158,17 @@ function SwapInputBlockInner({ selectedBaseRateId, customRateValue }: { selected
           </Popover>
 
           <AmountKeypadSheet
+            name={SHEET_NAME}
             title={activeField === "customRate" ? "Editar tasa" : "Ingresar monto"}
             showFieldSwitch={inputSelectedOptionId === "custom"}
             activeField={activeField}
-            onFieldChange={(field) => {
-              setExpression("");
-              setActiveField(field);
-            }}
-            onKeyPress={handleValueInput}
-            onDelete={handleValueDelete}
-            onClear={handleValueClear}
+            onFieldChange={setActiveField}
+            onKeyPress={handlers.onKeyPress}
+            onDelete={handlers.onDelete}
+            onClear={handlers.onClear}
             onPaste={handlePaste}
-            onOperatorPress={handleOperatorPress}
-            onEvaluate={handleEvaluate}
+            onOperatorPress={handlers.onOperatorPress}
+            onEvaluate={handlers.onEvaluate}
           />
         </View>
         <CurrencyPicker
@@ -249,7 +180,7 @@ function SwapInputBlockInner({ selectedBaseRateId, customRateValue }: { selected
         />
       </View>
 
-      {quickAmounts.length ? <QuickAmountPills amount={safeAmount} onSelect={handleQuickAmountSelect} values={quickAmounts} /> : null}
+      {quickAmounts.length ? <QuickAmountPills amount={inputAmount} onSelect={handleQuickAmountSelect} values={quickAmounts} /> : null}
     </View>
   );
 }

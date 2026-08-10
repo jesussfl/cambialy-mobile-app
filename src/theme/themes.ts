@@ -70,3 +70,6 @@ export const themes = {
 
 export type AppThemes = typeof themes;
 export type ThemeName = keyof AppThemes;
+
+/** The resolved theme handed to `StyleSheet.create` and to `withUnistyles` `uniProps` callbacks. */
+export type AppTheme = AppThemes[ThemeName];

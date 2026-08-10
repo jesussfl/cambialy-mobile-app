@@ -1,132 +1,50 @@
-import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 import { TouchZone } from "@/components/ui/button";
+import { AMOUNT_PRECISION, RATE_PRECISION } from "@/features/amount-input/model/constants";
+import { useAmountSheet } from "@/features/amount-input/hooks/use-amount-sheet";
+import { useKeypadFields } from "@/features/amount-input/hooks/use-keypad-fields";
 import { AmountKeypadSheet } from "@/features/exchange/components/amount-keypad-sheet";
 import { CurrencyPicker } from "@/features/exchange/components/currency-picker";
-import {
-  appendOperatorToExpression,
-  evaluateExpression,
-  formatCompactAmount,
-  formatDotDecimalString,
-  formatExpressionForDisplay,
-  type MathOperator,
-} from "@/features/exchange/utils";
+import { formatCompactAmount } from "@/features/exchange/utils";
 import { useSettingsStore } from "@/features/settings/context/settings-context";
-import { TrueSheet } from "@lodev09/react-native-true-sheet";
 
-import type { InputComparisonBlockProps } from "../types";
+import type { InputComparisonBlockProps, PriceKeypadFieldId } from "../types";
 
 const UniAppText = withUnistyles(AppText);
 
+/** Amounts settle at two decimals; a user-supplied rate keeps four. */
+const KEYPAD_FIELDS = {
+  amount: { precision: AMOUNT_PRECISION },
+  customRate: { precision: RATE_PRECISION },
+} as const;
+
 export function InputComparisonBlock({
-  amount,
-  currency,
-  customRate,
   label,
-  onAmountChange,
-  onCustomRateChange,
-  onCurrencySelect,
+  currency,
   options,
-  rate,
   selectedCurrencyId,
-  valueInVes,
+  onCurrencySelect,
+  drafts,
+  onDraftChange,
+  rate,
 }: InputComparisonBlockProps) {
-  const { decimalSeparator, amountInputMode } = useSettingsStore();
+  const decimalSeparator = useSettingsStore((s) => s.decimalSeparator);
   const isCustomRate = selectedCurrencyId === "custom";
-  const [activeField, setActiveField] = useState<"amount" | "customRate">("amount");
-  const [hasTyped, setHasTyped] = useState(false);
-  const [expression, setExpression] = useState("");
-
-  const safeAmount = amount ?? "";
-  const safeCustomRate = customRate ?? "";
-  const placeholder = decimalSeparator === "comma" ? "0,00" : "0.00";
-  const displayValue = safeAmount ? formatDotDecimalString(safeAmount, decimalSeparator) : placeholder;
-  const displayCustomRate = safeCustomRate ? formatDotDecimalString(safeCustomRate, decimalSeparator) : placeholder;
   const sheetName = `calculator-keypad-${label.replace(/\s+/g, "-").toLowerCase()}`;
+  const sheet = useAmountSheet(sheetName);
 
-  const updateFieldValue = (nextValue: string) => {
-    if (activeField === "amount") {
-      onAmountChange(nextValue);
-    } else {
-      onCustomRateChange(nextValue);
-    }
-  };
+  const { activeField, setActiveField, display, expressionPreview, placeholder, handlers } = useKeypadFields<PriceKeypadFieldId>({
+    fields: KEYPAD_FIELDS,
+    drafts,
+    setDraft: onDraftChange,
+    initialField: "amount",
+  });
 
-  const handleValueInput = (value: string) => {
-    const field = activeField;
-    const currentBase = !hasTyped ? "" : expression ? expression : field === "amount" ? safeAmount : safeCustomRate;
-    const nextExpr = `${currentBase}${value}`;
-    setExpression(nextExpr);
-    setHasTyped(true);
-    const { formattedResult } = evaluateExpression(nextExpr, amountInputMode, decimalSeparator);
-    if (formattedResult) {
-      updateFieldValue(formattedResult);
-    }
-  };
-
-  const handleOperatorPress = (op: MathOperator) => {
-    const field = activeField;
-    const currentBase = expression ? expression : field === "amount" ? safeAmount : safeCustomRate;
-    if (!currentBase) return;
-    setHasTyped(true);
-    const nextExpr = appendOperatorToExpression(currentBase, op);
-    setExpression(nextExpr);
-  };
-
-  const handleEvaluate = () => {
-    if (!expression) return;
-    const { formattedResult } = evaluateExpression(expression, amountInputMode, decimalSeparator);
-    if (formattedResult) {
-      updateFieldValue(formattedResult);
-    }
-    setExpression("");
-  };
-
-  const handleValueDelete = () => {
-    if (expression.length > 0) {
-      const nextExpr = expression.slice(0, -1);
-      setExpression(nextExpr);
-      if (nextExpr.length === 0) {
-        updateFieldValue("");
-      } else {
-        const { formattedResult } = evaluateExpression(nextExpr, amountInputMode, decimalSeparator);
-        if (formattedResult) {
-          updateFieldValue(formattedResult);
-        }
-      }
-      return;
-    }
-    const field = activeField;
-    const currentValue = field === "amount" ? safeAmount : safeCustomRate;
-    const nextValue = currentValue.slice(0, -1);
-    updateFieldValue(nextValue);
-  };
-
-  const handleValueClear = () => {
-    setExpression("");
-    setHasTyped(false);
-    if (activeField === "amount") {
-      onAmountChange("");
-    } else {
-      onCustomRateChange("");
-    }
-  };
-
-  const handleOpenAmountSheet = async () => {
-    setActiveField("amount");
-    setExpression("");
-    await TrueSheet.dismissAll();
-    await TrueSheet.present(sheetName);
-  };
-
-  const handleOpenCustomRateSheet = async () => {
-    setActiveField("customRate");
-    setExpression("");
-    await TrueSheet.dismissAll();
-    await TrueSheet.present(sheetName);
+  const openField = (field: PriceKeypadFieldId) => {
+    void sheet.open(() => setActiveField(field));
   };
 
   return (
@@ -147,16 +65,16 @@ export function InputComparisonBlock({
       </View>
 
       <View style={styles.amountSection}>
-        {expression ? (
+        {expressionPreview ? (
           <AppText variant="label" style={styles.expressionPreview}>
-            {formatExpressionForDisplay(expression, amountInputMode, decimalSeparator)}
+            {expressionPreview}
           </AppText>
         ) : null}
-        <TouchZone hitSlop={12} style={styles.amountInputPanel} onPress={handleOpenAmountSheet}>
+        <TouchZone accessibilityRole="button" hitSlop={12} style={styles.amountInputPanel} onPress={() => openField("amount")}>
           <View style={styles.amountDisplayContainer}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.amountPreviewScroll}>
               <UniAppText variant="body" style={styles.amountPreview}>
-                {`${currency.symbol} ${displayValue}`}
+                {`${currency.symbol} ${display.amount || placeholder}`}
               </UniAppText>
             </ScrollView>
           </View>
@@ -171,9 +89,9 @@ export function InputComparisonBlock({
           <AppText variant="tab" style={styles.customRatePrefix}>
             Bs.
           </AppText>
-          <TouchZone hitSlop={8} style={styles.customRatePressable} onPress={handleOpenCustomRateSheet}>
+          <TouchZone accessibilityRole="button" hitSlop={8} style={styles.customRatePressable} onPress={() => openField("customRate")}>
             <AppText variant="body" style={styles.customRateDisplay}>
-              {displayCustomRate}
+              {display.customRate || placeholder}
             </AppText>
           </TouchZone>
         </View>
@@ -184,15 +102,12 @@ export function InputComparisonBlock({
         title={activeField === "customRate" ? "Editar tasa" : "Ingresar monto"}
         showFieldSwitch={isCustomRate}
         activeField={activeField}
-        onFieldChange={(field) => {
-          setExpression("");
-          setActiveField(field);
-        }}
-        onKeyPress={handleValueInput}
-        onDelete={handleValueDelete}
-        onClear={handleValueClear}
-        onOperatorPress={handleOperatorPress}
-        onEvaluate={handleEvaluate}
+        onFieldChange={setActiveField}
+        onKeyPress={handlers.onKeyPress}
+        onDelete={handlers.onDelete}
+        onClear={handlers.onClear}
+        onOperatorPress={handlers.onOperatorPress}
+        onEvaluate={handlers.onEvaluate}
       />
     </View>
   );

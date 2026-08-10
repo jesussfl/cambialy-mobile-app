@@ -1,24 +1,37 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
 import { AppText } from "@/components/ui/app-text";
 import { TopNavbar } from "@/components/ui/top-navbar";
 import { UniRemixIcon } from "@/components/ui/icon";
+import { toNumber } from "@/features/amount-input/model/amount-draft";
+import { AMOUNT_PRECISION, RATE_PRECISION } from "@/features/amount-input/model/constants";
+import { EMPTY_DRAFT, type AmountDraft, type KeypadConfig } from "@/features/amount-input/model/types";
 import { fallbackRates, RATES_CACHE_TIME, RATES_STALE_TIME, RATE_ORDER } from "@/features/exchange/constants";
-import { sanitizeKeypadInput } from "@/features/exchange/utils";
+import { useSettingsStore } from "@/features/settings/context/settings-context";
+import type { AppTheme } from "@/theme/themes";
 
 import { fetchExchangeRates } from "../api/rates-api";
 import { ComparisonSummary } from "../components/comparison-summary";
 import { InputComparisonBlock } from "../components/input-comparison-block";
-import { priceCurrencyMeta, priceCurrencyOrder } from "../constants";
-import type { PriceCurrencyId, PriceInputState, PriceSide } from "../types";
+import { PRICE_SIDES, priceCurrencyMeta, priceCurrencyOrder, type PriceSideId } from "../constants";
+import type { PriceCurrencyId, PriceInputState, PriceKeypadFieldId } from "../types";
 import { getComparisonOption, getComparisonResult } from "../utils";
 
+type PricesState = Record<PriceSideId, PriceInputState>;
+
+const initialPrices = (): PricesState =>
+  Object.fromEntries(
+    PRICE_SIDES.map((side) => [side.id, { amount: EMPTY_DRAFT, customRate: EMPTY_DRAFT, currencyId: side.defaultCurrencyId }]),
+  ) as PricesState;
+
 export function PriceComparisonScreen() {
-  const [firstPrice, setFirstPrice] = useState<PriceInputState>({ amount: "1", customRate: "", currencyId: "usdt" });
-  const [secondPrice, setSecondPrice] = useState<PriceInputState>({ amount: "", customRate: "", currencyId: "ves" });
+  const [prices, setPrices] = useState<PricesState>(initialPrices);
+
+  const mode = useSettingsStore((s) => s.amountInputMode);
+  const decimalSeparator = useSettingsStore((s) => s.decimalSeparator);
 
   const ratesQuery = useQuery({
     queryKey: ["exchange-rates"],
@@ -33,25 +46,37 @@ export function PriceComparisonScreen() {
   const currencyOptions = priceCurrencyOrder.map((id) => priceCurrencyMeta[id]);
   const ratesError = ratesQuery.isError ? "No se pudieron cargar las tasas actualizadas." : null;
 
-  const firstOption = getComparisonOption(firstPrice, ratesById);
-  const secondOption = getComparisonOption(secondPrice, ratesById);
-  const result = getComparisonResult(firstOption, secondOption);
+  // Read each draft once, here, under the user's active entry mode — the amounts the blocks display and
+  // the amounts the comparison uses are the same numbers, by construction.
+  const amountConfig: KeypadConfig = { mode, decimalSeparator, precision: AMOUNT_PRECISION };
+  const rateConfig: KeypadConfig = { mode, decimalSeparator, precision: RATE_PRECISION };
 
-  const handleAmountChange = (side: PriceSide, value: string) => {
-    const sanitizedValue = sanitizeKeypadInput(value);
-    const setter = side === "first" ? setFirstPrice : setSecondPrice;
-    setter((prev) => ({ ...prev, amount: sanitizedValue }));
+  const optionsBySide = Object.fromEntries(
+    PRICE_SIDES.map((side) => {
+      const price = prices[side.id];
+      return [
+        side.id,
+        getComparisonOption(
+          {
+            amount: toNumber(price.amount, amountConfig) ?? 0,
+            customRate: toNumber(price.customRate, rateConfig) ?? 0,
+            currencyId: price.currencyId,
+          },
+          ratesById,
+        ),
+      ];
+    }),
+  ) as Record<PriceSideId, ReturnType<typeof getComparisonOption>>;
+
+  const [firstSide, secondSide] = PRICE_SIDES;
+  const result = getComparisonResult(optionsBySide[firstSide.id], optionsBySide[secondSide.id]);
+
+  const handleDraftChange = (sideId: PriceSideId, field: PriceKeypadFieldId, next: AmountDraft) => {
+    setPrices((prev) => ({ ...prev, [sideId]: { ...prev[sideId], [field]: next } }));
   };
 
-  const handleCustomRateChange = (side: PriceSide, value: string) => {
-    const sanitizedValue = sanitizeKeypadInput(value);
-    const setter = side === "first" ? setFirstPrice : setSecondPrice;
-    setter((prev) => ({ ...prev, customRate: sanitizedValue }));
-  };
-
-  const handleCurrencySelect = (side: PriceSide, currencyId: string) => {
-    const setter = side === "first" ? setFirstPrice : setSecondPrice;
-    setter((prev) => ({ ...prev, currencyId: currencyId as PriceCurrencyId }));
+  const handleCurrencySelect = (sideId: PriceSideId, currencyId: string) => {
+    setPrices((prev) => ({ ...prev, [sideId]: { ...prev[sideId], currencyId: currencyId as PriceCurrencyId } }));
   };
 
   return (
@@ -59,50 +84,39 @@ export function PriceComparisonScreen() {
       <TopNavbar title="Compara precios" />
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.comparePanel}>
-          <InputComparisonBlock
-            amount={firstPrice.amount}
-            currency={priceCurrencyMeta[firstPrice.currencyId]}
-            customRate={firstPrice.customRate}
-            label="Precio A"
-            onAmountChange={(value) => handleAmountChange("first", value)}
-            onCustomRateChange={(value) => handleCustomRateChange("first", value)}
-            onCurrencySelect={(currencyId) => handleCurrencySelect("first", currencyId)}
-            options={currencyOptions}
-            rate={firstOption.rate}
-            selectedCurrencyId={firstPrice.currencyId}
-            valueInVes={firstOption.valueInVes}
-          />
+          {PRICE_SIDES.map((side, index) => (
+            <Fragment key={side.id}>
+              {index > 0 ? (
+                <View style={styles.dividerRow}>
+                  <View style={styles.dividerLine} />
+                  <View style={styles.compareIcon}>
+                    <UniRemixIcon
+                      name="arrow-left-right-line"
+                      size={22}
+                      uniProps={(theme: AppTheme) => ({
+                        color: theme.colors.primaryText,
+                      })}
+                    />
+                  </View>
+                  <View style={styles.dividerLine} />
+                </View>
+              ) : null}
 
-          <View style={styles.dividerRow}>
-            <View style={styles.dividerLine} />
-            <View style={styles.compareIcon}>
-              <UniRemixIcon
-                name="arrow-left-right-line"
-                size={22}
-                uniProps={(theme: any) => ({
-                  color: theme.colors.primaryText,
-                })}
+              <InputComparisonBlock
+                label={side.label}
+                currency={priceCurrencyMeta[prices[side.id].currencyId]}
+                options={currencyOptions}
+                selectedCurrencyId={prices[side.id].currencyId}
+                onCurrencySelect={(currencyId) => handleCurrencySelect(side.id, currencyId)}
+                drafts={{ amount: prices[side.id].amount, customRate: prices[side.id].customRate }}
+                onDraftChange={(field, next) => handleDraftChange(side.id, field, next)}
+                rate={optionsBySide[side.id].rate}
               />
-            </View>
-            <View style={styles.dividerLine} />
-          </View>
-
-          <InputComparisonBlock
-            amount={secondPrice.amount}
-            currency={priceCurrencyMeta[secondPrice.currencyId]}
-            customRate={secondPrice.customRate}
-            label="Precio B"
-            onAmountChange={(value) => handleAmountChange("second", value)}
-            onCustomRateChange={(value) => handleCustomRateChange("second", value)}
-            onCurrencySelect={(currencyId) => handleCurrencySelect("second", currencyId)}
-            options={currencyOptions}
-            rate={secondOption.rate}
-            selectedCurrencyId={secondPrice.currencyId}
-            valueInVes={secondOption.valueInVes}
-          />
+            </Fragment>
+          ))}
         </View>
 
-        <ComparisonSummary firstOption={firstOption} secondOption={secondOption} result={result} />
+        <ComparisonSummary firstOption={optionsBySide[firstSide.id]} secondOption={optionsBySide[secondSide.id]} result={result} />
 
         {ratesError ? (
           <AppText variant="tab" style={styles.errorText} numberOfLines={1}>
@@ -130,14 +144,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingBottom: 120,
     gap: theme.spacing.lg,
   },
-  header: {
-    minHeight: 48,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: theme.spacing.md,
-  },
-  headerTitle: {},
   comparePanel: {
     gap: theme.spacing.md,
     paddingVertical: theme.spacing.lg,

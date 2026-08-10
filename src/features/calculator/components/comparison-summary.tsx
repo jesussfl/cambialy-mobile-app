@@ -12,7 +12,7 @@ import { useSettingsStore } from "@/features/settings/context/settings-context";
 import type { ComparisonSummaryProps } from "../types";
 
 export function ComparisonSummary({ firstOption, secondOption, result }: ComparisonSummaryProps) {
-  const { decimalSeparator } = useSettingsStore();
+  const decimalSeparator = useSettingsStore((s) => s.decimalSeparator);
   const [copiedDetailId, setCopiedDetailId] = useState<string | null>(null);
 
   useEffect(() => {

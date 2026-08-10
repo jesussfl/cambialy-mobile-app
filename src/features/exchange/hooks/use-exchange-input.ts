@@ -14,13 +14,14 @@ type UseExchangeInputParams = {
  */
 export function useExchangeInput({ selectedBaseRate, baseRateOptions }: UseExchangeInputParams) {
   const inputAmount = useExchangeStore((s) => s.inputAmount);
-  const inputAmountDisplay = useExchangeStore((s) => s.inputAmountDisplay);
-  const customRateInput = useExchangeStore((s) => s.customRateInput);
+  const amountDraft = useExchangeStore((s) => s.amountDraft);
+  const customRateDraft = useExchangeStore((s) => s.customRateDraft);
   const isReversed = useExchangeStore((s) => s.isReversed);
-  const setInputAmount = useExchangeStore((s) => s.setInputAmount);
+  const setAmountDraft = useExchangeStore((s) => s.setAmountDraft);
+  const setCustomRateDraft = useExchangeStore((s) => s.setCustomRateDraft);
+  const setAmountValue = useExchangeStore((s) => s.setAmountValue);
   const setSelectedBaseRateId = useExchangeStore((s) => s.setSelectedBaseRateId);
   const setSelectedTargetCurrencyId = useExchangeStore((s) => s.setSelectedTargetCurrencyId);
-  const setCustomRate = useExchangeStore((s) => s.setCustomRate);
   const toggleReverse = useExchangeStore((s) => s.toggleReverse);
   const selectedTargetCurrencyId = useExchangeStore((s) => s.selectedTargetCurrencyId);
 
@@ -41,14 +42,12 @@ export function useExchangeInput({ selectedBaseRate, baseRateOptions }: UseExcha
 
   // --- Handlers ---
 
-  const handleInputAmountChange = (value: string) => setInputAmount(value);
-
   const handleQuickAmountSelect = (value: string) => {
     const num = Number(value);
-    setInputAmount(Number.isFinite(num) ? num.toFixed(2) : value);
+    if (Number.isFinite(num)) {
+      setAmountValue(num);
+    }
   };
-
-  const handleCustomRateChange = (value: string) => setCustomRate(value);
 
   const handleInputCurrencySelect = (optionId: string) => {
     if (isReversed) {
@@ -68,7 +67,7 @@ export function useExchangeInput({ selectedBaseRate, baseRateOptions }: UseExcha
 
   const handleSwapDirection = (convertedAmount: number) => {
     if (convertedAmount > 0) {
-      setInputAmount(convertedAmount.toFixed(2));
+      setAmountValue(convertedAmount);
     }
     toggleReverse();
   };
@@ -77,8 +76,10 @@ export function useExchangeInput({ selectedBaseRate, baseRateOptions }: UseExcha
 
   return {
     inputAmount,
-    inputAmountDisplay,
-    customRateInput,
+    amountDraft,
+    customRateDraft,
+    setAmountDraft,
+    setCustomRateDraft,
     inputCurrency,
     outputCurrency,
     inputOptions,
@@ -86,9 +87,7 @@ export function useExchangeInput({ selectedBaseRate, baseRateOptions }: UseExcha
     inputSelectedOptionId,
     outputSelectedOptionId,
     quickAmounts,
-    handleInputAmountChange,
     handleQuickAmountSelect,
-    handleCustomRateChange,
     handleInputCurrencySelect,
     handleOutputCurrencySelect,
     handleSwapDirection,

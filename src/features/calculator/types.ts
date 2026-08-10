@@ -1,13 +1,16 @@
+import type { AmountDraft } from "@/features/amount-input/model/types";
 import type { CurrencyOption } from "@/features/exchange/types";
 
 import type { ExchangeRateId } from "./api/rates-api";
 
 export type PriceCurrencyId = ExchangeRateId | "ves" | "custom";
-export type PriceSide = "first" | "second";
+
+/** The two keypad-backed fields a price block owns. Each keeps its own independent entry state. */
+export type PriceKeypadFieldId = "amount" | "customRate";
 
 export type PriceInputState = {
-  amount: string;
-  customRate: string;
+  amount: AmountDraft;
+  customRate: AmountDraft;
   currencyId: PriceCurrencyId;
 };
 
@@ -27,19 +30,16 @@ export type ComparisonResult = {
 };
 
 export type InputComparisonBlockProps = {
-  amount: string;
-  currency: CurrencyOption;
-  customRate: string;
   label: string;
-  onAmountChange: (value: string) => void;
-  onCustomRateChange: (value: string) => void;
-  onCurrencySelect: (currencyId: string) => void;
+  currency: CurrencyOption;
   options: CurrencyOption[];
-  rate: number;
   selectedCurrencyId: PriceCurrencyId;
-  valueInVes: number;
+  onCurrencySelect: (currencyId: string) => void;
+  /** Entry state for this block's two fields, owned by the screen. */
+  drafts: Record<PriceKeypadFieldId, AmountDraft>;
+  onDraftChange: (field: PriceKeypadFieldId, next: AmountDraft) => void;
+  rate: number;
 };
-
 
 export type ComparisonSummaryProps = {
   firstOption: ComparisonOption;

@@ -1,6 +1,22 @@
 import { formatNumber as formatCurrencyNumber } from "react-native-currency-input";
 import type { DecimalSeparator } from "@/features/settings/context/settings-context";
+import { formatDotDecimalString, sanitizeKeypadInput } from "@/features/amount-input/model/number-format";
 import type { TargetCurrencyOption } from "../types";
+
+/**
+ * Amount entry lives in `@/features/amount-input` — one implementation, shared by the exchange and
+ * price-comparison screens. These re-exports keep existing import sites working.
+ */
+export { formatDotDecimalString, sanitizeKeypadInput } from "@/features/amount-input/model/number-format";
+export {
+  appendOperatorToExpression,
+  evaluateExpression,
+  evaluateTokens,
+  formatExpressionForDisplay,
+  parseSegmentToNumber,
+  tokenizeExpression,
+} from "@/features/amount-input/model/arithmetic";
+export type { AmountInputMode, MathOperator } from "@/features/amount-input/model/types";
 
 /**
  * Parses a localized currency string (e.g., "1.234,56" or "1,234.56") into a native JavaScript number.
@@ -130,24 +146,6 @@ export const formatHistoricalDate = (value?: string): string => {
 };
 
 /**
- * Formats a raw dot-decimal string into a localized number string, retaining exact decimal places typed.
- * E.g., "12.5" -> "12,5"
- */
-export const formatDotDecimalString = (sanitizedAmount: string, decimalSeparator: DecimalSeparator = "comma"): string => {
-  if (!sanitizedAmount) return "";
-
-  const [wholePart, decimalPart] = sanitizedAmount.split(".");
-  const numberValue = Number(`${wholePart}${decimalPart !== undefined ? `.${decimalPart}` : ""}`);
-
-  if (!Number.isFinite(numberValue)) return "";
-
-  const locale = decimalSeparator === "comma" ? "es-VE" : "en-US";
-  const formatOptions = decimalPart !== undefined ? { minimumFractionDigits: decimalPart.length, maximumFractionDigits: decimalPart.length } : {};
-
-  return new Intl.NumberFormat(locale, formatOptions).format(numberValue);
-};
-
-/**
  * Gets the final formatted string to display on the keypad screen based on user input.
  */
 export const formatKeypadInputForDisplay = (amount: string, mode: "automatic" | "manual" = "automatic", decimalSeparator: DecimalSeparator = "comma"): string => {
@@ -155,41 +153,6 @@ export const formatKeypadInputForDisplay = (amount: string, mode: "automatic" | 
   const sanitizedAmount = sanitizeKeypadInput(amount, mode);
   if (!sanitizedAmount) return "";
   return formatDotDecimalString(sanitizedAmount, decimalSeparator);
-};
-
-/**
- * Sanitizes a raw input string from the keypad into a valid dot-decimal string (e.g. "12.50").
- * 
- * - "automatic" mode (default): cents-based fixed decimal entry from the right.
- *   E.g., "5" -> "0.05", "55" -> "0.55", "555" -> "5.55"
- * 
- * - "manual" mode: the user types digits and optionally a comma/dot as the decimal
- *   separator. The raw entry is returned as a dot-decimal string.
- *   E.g., "23" -> "23", "235" -> "235", "23,5" -> "23.5", "23,50" -> "23.50"
- */
-export const sanitizeKeypadInput = (value: string, mode: "automatic" | "manual" = "automatic"): string => {
-  if (mode === "manual") {
-    const normalized = value.replace(/,/g, ".");
-    const firstDot = normalized.indexOf(".");
-    const digits = firstDot === -1
-      ? normalized.replace(/[^\d]/g, "")
-      : normalized.slice(0, firstDot).replace(/[^\d]/g, "") + "." + normalized.slice(firstDot + 1).replace(/[^\d]/g, "");
-
-    if (!digits || digits === ".") return "";
-    return digits.replace(/^0+(\d)/, "$1");
-  }
-
-  // Automatic cents-based mode
-  const digits = value.replace(/[^\d]/g, "");
-  if (!digits) return "";
-
-  const trimmedDigits = digits.replace(/^0+(?=\d)/, "");
-  if (!trimmedDigits) return "0.00";
-
-  if (trimmedDigits.length === 1) return `0.0${trimmedDigits}`;
-  if (trimmedDigits.length === 2) return `0.${trimmedDigits}`;
-
-  return `${trimmedDigits.slice(0, -2)}.${trimmedDigits.slice(-2)}`;
 };
 
 /**
@@ -211,219 +174,3 @@ export const normalizeKeypadInput = (value: string, previousAmount: string, mode
   if (!value) return "";
   return sanitizeKeypadInput(value, mode);
 };
-
-// --- CALCULATOR LOGIC ---
-
-export type AmountInputMode = "automatic" | "manual";
-export type MathOperator = "+" | "-" | "×" | "÷";
-
-/**
- * Parses raw typed expression segment into a number, respecting the input mode.
- */
-export function parseSegmentToNumber(rawSegment: string, mode: AmountInputMode = "automatic"): number {
-  if (!rawSegment) return 0;
-
-  if (mode === "manual") {
-    const num = parseFloat(rawSegment.replace(/,/g, "."));
-    return isNaN(num) ? 0 : num;
-  }
-
-  if (rawSegment.includes(".") || rawSegment.includes(",")) {
-    const num = parseFloat(rawSegment.replace(/,/g, "."));
-    return isNaN(num) ? 0 : num;
-  }
-
-  const sanitized = sanitizeKeypadInput(rawSegment, "automatic");
-  const num = parseFloat(sanitized);
-  return isNaN(num) ? 0 : num;
-}
-
-/**
- * Tokenizes a raw expression string (e.g. "23+23" or "500×20") into an array of numbers and operators.
- */
-export function tokenizeExpression(expression: string, mode: AmountInputMode = "automatic"): (number | MathOperator)[] {
-  const tokens: (number | MathOperator)[] = [];
-  let currentSegment = "";
-
-  for (let i = 0; i < expression.length; i++) {
-    const char = expression[i];
-
-    if (["+", "-", "×", "÷", "*", "/"].includes(char)) {
-      if (currentSegment.length > 0) {
-        tokens.push(parseSegmentToNumber(currentSegment, mode));
-        currentSegment = "";
-      } else if (char === "-" && (tokens.length === 0 || typeof tokens[tokens.length - 1] !== "number")) {
-        currentSegment += char;
-        continue;
-      }
-
-      const opMap: Record<string, MathOperator> = {
-        "+": "+",
-        "-": "-",
-        "×": "×",
-        "*": "×",
-        "÷": "÷",
-        "/": "÷",
-      };
-      tokens.push(opMap[char]);
-    } else if (char === " ") {
-      continue;
-    } else {
-      currentSegment += char;
-    }
-  }
-
-  if (currentSegment.length > 0) {
-    tokens.push(parseSegmentToNumber(currentSegment, mode));
-  }
-
-  return tokens;
-}
-
-/**
- * Evaluates token list according to standard BODMAS / PEMDAS rules (* / before + -).
- */
-export function evaluateTokens(tokens: (number | MathOperator)[]): number | null {
-  if (tokens.length === 0) return null;
-
-  let currentTokens = [...tokens];
-
-  if (typeof currentTokens[currentTokens.length - 1] !== "number") {
-    currentTokens.pop();
-  }
-
-  if (currentTokens.length === 0) return null;
-
-  const pass1: (number | MathOperator)[] = [];
-  let i = 0;
-
-  while (i < currentTokens.length) {
-    const token = currentTokens[i];
-
-    if (token === "×" || token === "÷") {
-      const prev = pass1.pop();
-      const next = currentTokens[i + 1];
-
-      if (typeof prev !== "number" || typeof next !== "number") {
-        return null;
-      }
-
-      if (token === "÷" && next === 0) {
-        return null;
-      }
-
-      const result = token === "×" ? prev * next : prev / next;
-      pass1.push(result);
-      i += 2;
-    } else {
-      pass1.push(token);
-      i++;
-    }
-  }
-
-  let finalResult = pass1[0];
-  if (typeof finalResult !== "number") return null;
-
-  let j = 1;
-  while (j < pass1.length) {
-    const op = pass1[j];
-    const next = pass1[j + 1];
-
-    if (typeof op !== "string" || typeof next !== "number") {
-      return null;
-    }
-
-    if (op === "+") {
-      finalResult += next;
-    } else if (op === "-") {
-      finalResult -= next;
-    }
-
-    j += 2;
-  }
-
-  return finalResult;
-}
-
-/**
- * Evaluates a raw expression string and returns a formatted result string.
- */
-export function evaluateExpression(
-  expression: string,
-  mode: AmountInputMode = "automatic",
-  decimalSeparator: DecimalSeparator = "comma",
-): { result: string | null; formattedResult: string } {
-  if (!expression.trim()) {
-    return { result: null, formattedResult: "" };
-  }
-
-  const tokens = tokenizeExpression(expression, mode);
-  const numResult = evaluateTokens(tokens);
-
-  if (numResult === null || !isFinite(numResult)) {
-    return { result: null, formattedResult: "" };
-  }
-
-  const rounded = Math.round(numResult * 100) / 100;
-  const separatorChar = decimalSeparator === "comma" ? "," : ".";
-  const resultStr = rounded.toFixed(2).replace(/\./g, separatorChar);
-
-  return { result: rounded.toFixed(2), formattedResult: resultStr };
-}
-
-/**
- * Appends operator to an expression string safely (replaces last operator if multiple chained).
- */
-export function appendOperatorToExpression(expression: string, operator: MathOperator): string {
-  if (!expression) return "";
-
-  const trimmed = expression.trimEnd();
-  const lastChar = trimmed[trimmed.length - 1];
-
-  if (["+", "-", "×", "÷"].includes(lastChar)) {
-    return `${trimmed.slice(0, -1)}${operator}`;
-  }
-
-  return `${expression}${operator}`;
-}
-
-/**
- * Formats a raw math expression string for visual presentation on the keypad preview.
- */
-export function formatExpressionForDisplay(expression: string, mode: AmountInputMode = "automatic", decimalSeparator: DecimalSeparator = "comma"): string {
-  if (!expression) return "";
-
-  const separatorChar = decimalSeparator === "comma" ? "," : ".";
-  const parts: string[] = [];
-  let currentSegment = "";
-
-  for (let i = 0; i < expression.length; i++) {
-    const char = expression[i];
-
-    if (["+", "-", "×", "÷"].includes(char)) {
-      if (currentSegment) {
-        if (mode === "manual") {
-          parts.push(currentSegment.replace(/\./g, separatorChar));
-        } else {
-          const numStr = sanitizeKeypadInput(currentSegment, "automatic").replace(/\./g, separatorChar);
-          parts.push(numStr);
-        }
-        currentSegment = "";
-      }
-      parts.push(char);
-    } else {
-      currentSegment += char;
-    }
-  }
-
-  if (currentSegment) {
-    if (mode === "manual") {
-      parts.push(currentSegment.replace(/\./g, separatorChar));
-    } else {
-      const numStr = sanitizeKeypadInput(currentSegment, "automatic").replace(/\./g, separatorChar);
-      parts.push(numStr);
-    }
-  }
-
-  return parts.join(" ");
-}

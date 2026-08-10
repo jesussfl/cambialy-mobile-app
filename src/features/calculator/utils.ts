@@ -1,19 +1,29 @@
-import { parseSegmentToNumber } from "@/features/exchange/utils";
-
 import type { ExchangeRateId } from "./api/rates-api";
 import { priceCurrencyMeta } from "./constants";
-import type { ComparisonOption, ComparisonResult, PriceInputState } from "./types";
+import type { ComparisonOption, ComparisonResult, PriceCurrencyId } from "./types";
 
-export function getComparisonOption(price: PriceInputState, ratesById: Map<ExchangeRateId, { value: number }>): ComparisonOption {
-  const amount = parseSegmentToNumber(price.amount);
-  const safeAmount = Number.isFinite(amount) && amount > 0 ? amount : 0;
-  const customRate = parseSegmentToNumber(price.customRate);
-  const safeCustomRate = Number.isFinite(customRate) && customRate > 0 ? customRate : 0;
-  const rate = price.currencyId === "ves" ? 1 : price.currencyId === "custom" ? safeCustomRate : (ratesById.get(price.currencyId)?.value ?? 0);
+/**
+ * The already-interpreted inputs for one price.
+ *
+ * These arrive as numbers, read once from the entry drafts under the user's active entry mode. This
+ * function used to re-parse the raw strings itself with a defaulted mode, which read a manual-mode
+ * user's `"25"` as `0.25` — a hundredfold error in a price comparison.
+ */
+export type ComparisonInput = {
+  amount: number;
+  customRate: number;
+  currencyId: PriceCurrencyId;
+};
+
+export function getComparisonOption(input: ComparisonInput, ratesById: Map<ExchangeRateId, { value: number }>): ComparisonOption {
+  const safeAmount = Number.isFinite(input.amount) && input.amount > 0 ? input.amount : 0;
+  const safeCustomRate = Number.isFinite(input.customRate) && input.customRate > 0 ? input.customRate : 0;
+  const rate =
+    input.currencyId === "ves" ? 1 : input.currencyId === "custom" ? safeCustomRate : (ratesById.get(input.currencyId)?.value ?? 0);
 
   return {
     amount: safeAmount,
-    currency: priceCurrencyMeta[price.currencyId],
+    currency: priceCurrencyMeta[input.currencyId],
     rate,
     valueInVes: safeAmount > 0 && rate > 0 ? safeAmount * rate : 0,
   };
