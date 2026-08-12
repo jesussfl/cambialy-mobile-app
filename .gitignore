@@ -48,3 +48,6 @@ example
 modules/*/android/build/
 modules/*/android/.gradle/
 
+
+# local agent tooling
+.atl/
