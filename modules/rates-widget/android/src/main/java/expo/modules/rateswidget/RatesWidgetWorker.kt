@@ -23,10 +23,10 @@ class RatesWidgetWorker(
       withContext(Dispatchers.IO) {
         RatesWidgetRepository.fetchAndCacheRates(applicationContext)
       }
-      RatesWidgetProvider.renderAll(applicationContext)
+      WidgetRenderers.renderAll(applicationContext)
       Result.success()
     } catch (_: Exception) {
-      RatesWidgetProvider.renderAll(applicationContext, hasError = true)
+      WidgetRenderers.renderAll(applicationContext, hasError = true)
       Result.retry()
     }
   }

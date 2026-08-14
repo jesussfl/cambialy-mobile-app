@@ -27,7 +27,9 @@ class RatesWidgetProvider : AppWidgetProvider() {
 
     when (intent.action) {
       ACTION_REFRESH -> {
-        renderAll(context, isLoading = true)
+        // Refresh every widget, not just this one: they share a cache, so refreshing
+        // one and leaving the other stale would show two different "last updated" lines.
+        WidgetRenderers.renderAll(context, isLoading = true)
         RatesWidgetWorker.enqueueImmediate(context)
       }
       ACTION_OPEN_APP -> {
@@ -61,29 +63,13 @@ class RatesWidgetProvider : AppWidgetProvider() {
           setTextViewText(R.id.rates_widget_usd_value, context.getString(R.string.rates_widget_unavailable))
           setTextViewText(R.id.rates_widget_eur_value, context.getString(R.string.rates_widget_unavailable))
           setTextViewText(R.id.rates_widget_usdt_value, context.getString(R.string.rates_widget_unavailable))
-          setTextViewText(
-            R.id.rates_widget_status,
-            if (isLoading) context.getString(R.string.rates_widget_loading) else context.getString(R.string.rates_widget_empty)
-          )
         } else {
           setTextViewText(R.id.rates_widget_usd_value, RatesWidgetRepository.formatRate(rates.usdBcv))
           setTextViewText(R.id.rates_widget_eur_value, RatesWidgetRepository.formatRate(rates.eurBcv))
           setTextViewText(R.id.rates_widget_usdt_value, RatesWidgetRepository.formatRate(rates.usdtBinance))
-
-          val statusText = when {
-            isLoading -> context.getString(R.string.rates_widget_loading)
-            hasError -> context.getString(R.string.rates_widget_stale)
-            else -> {
-              val formattedTime = RatesWidgetRepository.formatTime(rates.updatedAt)
-              if (formattedTime.isNotEmpty()) {
-                context.getString(R.string.rates_widget_updated, formattedTime)
-              } else {
-                context.getString(R.string.rates_widget_stale)
-              }
-            }
-          }
-          setTextViewText(R.id.rates_widget_status, statusText)
         }
+
+        setTextViewText(R.id.rates_widget_status, WidgetStatus.text(context, rates, isLoading, hasError))
 
         setViewVisibility(R.id.rates_widget_refresh, if (isLoading) View.GONE else View.VISIBLE)
         setViewVisibility(R.id.rates_widget_progress, if (isLoading) View.VISIBLE else View.GONE)

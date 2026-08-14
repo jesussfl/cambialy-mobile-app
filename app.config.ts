@@ -163,6 +163,72 @@ export default ({ config }: ConfigContext): ExpoConfig => {
               description: "Consulta USD BCV, EUR BCV y USDT Binance",
               supportedFamilies: ["systemSmall", "systemMedium", "systemLarge"],
             },
+            {
+              name: "RateWidget",
+              displayName: "Tasa",
+              description: "Una moneda a elegir, en grande",
+              supportedFamilies: ["systemSmall", "systemMedium"],
+              configuration: {
+                title: "Tasa",
+                description: "Elige la moneda y el tema del widget",
+                parameters: {
+                  // enum `value`s must be valid Swift identifiers (the plugin asserts
+                  // this) and must match Android's WidgetCurrency ids.
+                  currency: {
+                    title: "Moneda",
+                    type: "enum",
+                    default: "usd",
+                    values: [
+                      { name: "USD · BCV", value: "usd" },
+                      { name: "EUR · BCV", value: "eur" },
+                      { name: "USDT · Binance", value: "usdt" },
+                    ],
+                  },
+                  theme: {
+                    title: "Tema",
+                    type: "enum",
+                    default: "system",
+                    values: [
+                      { name: "Automático", value: "system" },
+                      { name: "Claro", value: "light" },
+                      { name: "Oscuro", value: "dark" },
+                    ],
+                  },
+                },
+              },
+            },
+            {
+              name: "TrendWidget",
+              displayName: "Tendencia",
+              description: "Una moneda y cuánto se movió",
+              supportedFamilies: ["systemSmall", "systemMedium"],
+              configuration: {
+                title: "Tendencia",
+                description: "Elige la moneda y el tema del widget",
+                parameters: {
+                  currency: {
+                    title: "Moneda",
+                    type: "enum",
+                    default: "usd",
+                    values: [
+                      { name: "USD · BCV", value: "usd" },
+                      { name: "EUR · BCV", value: "eur" },
+                      { name: "USDT · Binance", value: "usdt" },
+                    ],
+                  },
+                  theme: {
+                    title: "Tema",
+                    type: "enum",
+                    default: "system",
+                    values: [
+                      { name: "Automático", value: "system" },
+                      { name: "Claro", value: "light" },
+                      { name: "Oscuro", value: "dark" },
+                    ],
+                  },
+                },
+              },
+            },
           ],
         },
       ],
@@ -176,6 +242,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ],
       "./plugins/withHermesMmap",
       "./plugins/withXcodeEnv",
+      // Injects EXPO_PUBLIC_API_URL into the Android build so the rates widget cannot
+      // drift onto a different backend than the app.
+      "./plugins/withRatesWidgetApiUrl",
       "expo-image",
       "expo-web-browser",
     ],

@@ -13,5 +13,46 @@
         android:name="android.appwidget.provider"
         android:resource="@xml/rates_widget_info" />
     </receiver>
+
+    <receiver
+      android:name=".RateWidgetProvider"
+      android:exported="false"
+      android:label="@string/rate_widget_name">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="expo.modules.rateswidget.action.RATE_OPEN_APP" />
+        <action android:name="expo.modules.rateswidget.action.RATE_REFRESH" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/rate_widget_info" />
+    </receiver>
+
+    <receiver
+      android:name=".TrendWidgetProvider"
+      android:exported="false"
+      android:label="@string/trend_widget_name">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="expo.modules.rateswidget.action.TREND_OPEN_APP" />
+        <action android:name="expo.modules.rateswidget.action.TREND_REFRESH" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/trend_widget_info" />
+    </receiver>
+
+    <!-- Launched by the launcher when a configurable widget is placed or edited, so it
+         must be exported. It only reads/writes this app's own widget preferences. -->
+    <activity
+      android:name=".WidgetConfigurationActivity"
+      android:exported="true"
+      android:excludeFromRecents="true"
+      android:label="@string/widget_config_title"
+      android:theme="@android:style/Theme.DeviceDefault.Dialog.Alert">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+      </intent-filter>
+    </activity>
   </application>
 </manifest>

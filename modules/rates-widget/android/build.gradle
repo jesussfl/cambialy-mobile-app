@@ -8,10 +8,28 @@ version = '0.1.0'
 
 android {
   namespace "expo.modules.rateswidget"
+
+  buildFeatures {
+    buildConfig true
+  }
+
   defaultConfig {
     versionCode 1
     versionName "0.1.0"
+
+    // Written into android/gradle.properties by plugins/withRatesWidgetApiUrl.js from
+    // EXPO_PUBLIC_API_URL. Deliberately has no fallback: a missing value must fail the
+    // build, never silently produce a widget pointed at nothing.
+    def ratesApiBaseUrl = project.findProperty("cambialyRatesApiBaseUrl")
+    if (!ratesApiBaseUrl?.trim()) {
+      throw new GradleException(
+        "Missing gradle property 'cambialyRatesApiBaseUrl'. Run `expo prebuild` with " +
+        "EXPO_PUBLIC_API_URL set so the rates widget targets the same backend as the app."
+      )
+    }
+    buildConfigField "String", "RATES_API_BASE_URL", "\"${ratesApiBaseUrl.trim()}\""
   }
+
   lintOptions {
     abortOnError false
   }

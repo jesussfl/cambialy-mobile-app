@@ -14,4 +14,29 @@
   <string name="rates_widget_stale">Mostrando último valor guardado</string>
   <string name="rates_widget_empty">Tasas no disponibles</string>
   <string name="rates_widget_unavailable">No disponible</string>
+
+  <string name="widget_currency_unit">Bs.</string>
+  <string name="widget_ticker_usd">USD</string>
+  <string name="widget_ticker_eur">EUR</string>
+  <string name="widget_ticker_usdt">USDT</string>
+  <string name="widget_source_bcv">BCV</string>
+  <string name="widget_source_binance">Binance</string>
+
+  <string name="rate_widget_name">Tasa</string>
+  <string name="rate_widget_description">Una moneda a elegir, en grande</string>
+
+  <string name="trend_widget_name">Tendencia</string>
+  <string name="trend_widget_description">Una moneda y cuánto se movió</string>
+  <string name="widget_trend_arrow_up">▲</string>
+  <string name="widget_trend_arrow_down">▼</string>
+  <string name="widget_trend_delta">%1$s %2$s (%3$s)</string>
+  <string name="widget_trend_flat">Sin cambios</string>
+  <string name="widget_trend_since">Desde %1$s</string>
+
+  <string name="widget_config_title">Elige la moneda</string>
+  <string name="widget_config_subtitle">El widget mostrará solo esta tasa.</string>
+  <string name="widget_config_usd_label">USD · BCV</string>
+  <string name="widget_config_eur_label">EUR · BCV</string>
+  <string name="widget_config_usdt_label">USDT · Binance</string>
+  <string name="widget_config_save">Guardar</string>
 </resources>

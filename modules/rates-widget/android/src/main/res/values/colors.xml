@@ -16,6 +16,9 @@
   <color name="rates_widget_badge_usdt_bg">#FEF3C7</color>
   <color name="rates_widget_badge_usdt_text">#B45309</color>
 
+  <color name="widget_trend_up">#15803D</color>
+  <color name="widget_trend_down">#B91C1C</color>
+
   <color name="rates_widget_refresh_bg">#EFF6FF</color>
   <color name="rates_widget_refresh_icon">#0350FF</color>
   <color name="rates_widget_refresh_text">#FFFFFF</color>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:orientation="vertical"
+  android:padding="24dp">
+
+  <TextView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="@string/widget_config_title"
+    android:textSize="18sp"
+    android:textStyle="bold" />
+
+  <TextView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="4dp"
+    android:text="@string/widget_config_subtitle"
+    android:textSize="13sp" />
+
+  <RadioGroup
+    android:id="@+id/widget_config_currency_group"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:orientation="vertical">
+
+    <RadioButton
+      android:id="@+id/widget_config_usd"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:minHeight="48dp"
+      android:text="@string/widget_config_usd_label"
+      android:textSize="16sp" />
+
+    <RadioButton
+      android:id="@+id/widget_config_eur"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:minHeight="48dp"
+      android:text="@string/widget_config_eur_label"
+      android:textSize="16sp" />
+
+    <RadioButton
+      android:id="@+id/widget_config_usdt"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:minHeight="48dp"
+      android:text="@string/widget_config_usdt_label"
+      android:textSize="16sp" />
+  </RadioGroup>
+
+  <Button
+    android:id="@+id/widget_config_save"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:minHeight="48dp"
+    android:text="@string/widget_config_save" />
+</LinearLayout>
