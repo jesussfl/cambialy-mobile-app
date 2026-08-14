@@ -4,10 +4,15 @@ import { createWidget, type WidgetEnvironment } from "expo-widgets";
 
 export type RateWidgetStatus = "updated" | "stale" | "empty" | "loading";
 
+/**
+ * Nullable fields are optional because publishSnapshot strips null values before they
+ * cross into native: expo-modules-core throws on `null` inside a `[String: Any]` props
+ * dictionary and skips `undefined`. An absent key means "unavailable".
+ */
 export type RateWidgetProps = {
-  usdBcv: number | null;
-  eurBcv: number | null;
-  usdtBinance: number | null;
+  usdBcv?: number | null;
+  eurBcv?: number | null;
+  usdtBinance?: number | null;
   updatedAt: number;
   status?: RateWidgetStatus;
 };

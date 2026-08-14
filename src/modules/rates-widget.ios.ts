@@ -62,9 +62,29 @@ export async function refreshRatesWidget() {
 async function publishSnapshot(snapshot: WidgetSnapshot, status: RatesWidgetStatus) {
   const trendProps = await buildTrendProps(snapshot, status);
 
-  RatesWidget.updateSnapshot({ ...snapshot, status });
-  RateWidget.updateSnapshot({ ...snapshot, status });
-  TrendWidget.updateSnapshot(trendProps);
+  RatesWidget.updateSnapshot(withoutNullValues({ ...snapshot, status }));
+  RateWidget.updateSnapshot(withoutNullValues({ ...snapshot, status }));
+  TrendWidget.updateSnapshot(withoutNullValues(trendProps));
+}
+
+/**
+ * Widget props cross into native as `[String: Any]`, and expo-modules-core throws
+ * `NullCastException` on any `null` value while silently skipping `undefined`
+ * (DynamicDictionaryType.cast / DynamicRawType.cast). Dropping the keys entirely is the
+ * only shape that survives the bridge; widget bodies already treat a missing value and
+ * an unavailable value identically.
+ */
+function withoutNullValues<T extends object>(props: T): T {
+  const result: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(props)) {
+    if (value !== null && value !== undefined) {
+      result[key] = value;
+    }
+  }
+
+  // Safe: only nullable fields are dropped, and they are optional on every props type.
+  return result as T;
 }
 
 /**
@@ -119,7 +139,13 @@ function toPrevious(value: number | null | undefined, changedAt: number | null |
 export async function getCachedRatesWidget(): Promise<WidgetRates | null> {
   const props = await getLatestWidgetProps();
 
-  if (!props || props.usdBcv === null || props.eurBcv === null || props.usdtBinance === null) {
+  // Absent keys read back as undefined, not null, because publishSnapshot strips them.
+  if (
+    !props ||
+    typeof props.usdBcv !== "number" ||
+    typeof props.eurBcv !== "number" ||
+    typeof props.usdtBinance !== "number"
+  ) {
     return null;
   }
 

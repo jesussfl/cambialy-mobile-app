@@ -4,10 +4,15 @@ import { createWidget, type WidgetEnvironment } from "expo-widgets";
 
 export type RatesWidgetStatus = "updated" | "stale" | "empty" | "loading";
 
+/**
+ * Nullable fields are optional because publishSnapshot strips null values before they
+ * cross into native: expo-modules-core throws on `null` inside a `[String: Any]` props
+ * dictionary and skips `undefined`. An absent key means "unavailable".
+ */
 export type RatesWidgetProps = {
-  usdBcv: number | null;
-  eurBcv: number | null;
-  usdtBinance: number | null;
+  usdBcv?: number | null;
+  eurBcv?: number | null;
+  usdtBinance?: number | null;
   updatedAt: number;
   sourceUpdatedAt?: string | null;
   status?: RatesWidgetStatus;
@@ -52,7 +57,7 @@ function RatesWidget(props: RatesWidgetProps, environment: WidgetEnvironment) {
   const usdtBadgeBg = isDark ? "#78350F" : "#FEF3C7";
   const usdtBadgeText = isDark ? "#FDE68A" : "#B45309";
 
-  const formatWidgetRate = (value: number | null) => {
+  const formatWidgetRate = (value: number | null | undefined) => {
     if (typeof value !== "number" || !Number.isFinite(value)) {
       return "No disponible";
     }
