@@ -1,56 +1,33 @@
 import type { FC } from "react";
-import { View, useWindowDimensions } from "react-native";
+import { useWindowDimensions, View } from "react-native";
 import type { SharedValue } from "react-native-reanimated";
 import { StyleSheet } from "react-native-unistyles";
 
+import { getPaginationLayout } from "../lib/pagination-layout";
 import type { OnboardingSlide } from "../lib/types";
 import { PaginationItem } from "./pagination-item";
 
 type PaginationProps = {
+  onSelectSlide: (index: number) => void;
+  slideProgress: SharedValue<number>;
   slides: OnboardingSlide[];
-  currentSlideIndex: number;
-  animatedSlideIndex: SharedValue<number>;
-  isDragging: SharedValue<boolean>;
-  handleScrollToIndex: (index: number) => void;
-  translateY: SharedValue<number>;
-  topCarouselOffset: number;
 };
 
-export const Pagination: FC<PaginationProps> = ({
-  slides,
-  currentSlideIndex,
-  animatedSlideIndex,
-  isDragging,
-  handleScrollToIndex,
-  translateY,
-  topCarouselOffset,
-}) => {
+export const Pagination: FC<PaginationProps> = ({ onSelectSlide, slideProgress, slides }) => {
   const { width: screenWidth } = useWindowDimensions();
-  const horizontalPadding = screenWidth * 0.25;
-  const gap = 3;
-  const totalPaginationWidth = screenWidth - horizontalPadding;
-  const totalGaps = (slides.length - 1) * gap;
-  const totalItems = slides.length + 2;
-  const itemWidth = (totalPaginationWidth - totalGaps) / totalItems;
-  const inactiveWidth = itemWidth;
-  const activeWidth = itemWidth * 3;
+  const { activeWidth, gap, horizontalInset, inactiveWidth } = getPaginationLayout(screenWidth, slides.length);
 
   return (
-    <View style={[styles.container, { gap, paddingHorizontal: horizontalPadding / 2 }]}>
+    <View style={[styles.container, { gap, paddingHorizontal: horizontalInset }]}>
       {slides.map((slide, index) => (
         <PaginationItem
           key={slide.title}
-          index={index}
-          currentSlideIndex={currentSlideIndex}
-          animatedSlideIndex={animatedSlideIndex}
-          inactiveWidth={inactiveWidth}
+          accessibilityLabel={`Ir al paso ${index + 1} de ${slides.length}`}
           activeWidth={activeWidth}
-          totalSlides={slides.length}
-          isDragging={isDragging}
-          slideDuration={slide.duration}
-          handleScrollToIndex={handleScrollToIndex}
-          translateY={translateY}
-          topCarouselOffset={topCarouselOffset}
+          inactiveWidth={inactiveWidth}
+          index={index}
+          onPress={onSelectSlide}
+          slideProgress={slideProgress}
         />
       ))}
     </View>

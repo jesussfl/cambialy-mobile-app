@@ -1,54 +1,19 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as SplashScreen from "expo-splash-screen";
 import type { PropsWithChildren } from "react";
-import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { View, type ViewStyle } from "react-native";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { StyleSheet } from "react-native-unistyles";
 
-import { DEV_SHOW_ONBOARDING_EVERY_LAUNCH, ONBOARDING_STORAGE_KEY } from "../constants";
+import { useOnboardingGate } from "../hooks/use-onboarding-gate";
 import { OnboardingScreen } from "./onboarding-screen";
 
-const ONBOARDING_SEEN_VALUE = "seen";
+// Plain styles: Animated.View must not receive Unistyles styles directly.
+// The overlay is absolute so the app underneath keeps its full height while
+// the onboarding fades out, instead of both sharing the flex column.
+const FILL: ViewStyle = { flex: 1 };
+const OVERLAY: ViewStyle = { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 20 };
 
 export function OnboardingGate({ children }: PropsWithChildren) {
-  const [isReady, setIsReady] = useState(false);
-  const [shouldShowOnboarding, setShouldShowOnboarding] = useState(false);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadOnboardingState = async () => {
-      try {
-        const storedValue = await AsyncStorage.getItem(ONBOARDING_STORAGE_KEY);
-        const shouldShow = DEV_SHOW_ONBOARDING_EVERY_LAUNCH || storedValue !== ONBOARDING_SEEN_VALUE;
-
-        if (isMounted) {
-          setShouldShowOnboarding(shouldShow);
-        }
-      } finally {
-        if (isMounted) {
-          setIsReady(true);
-        }
-      }
-    };
-
-    void loadOnboardingState();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (isReady) {
-      SplashScreen.hide();
-    }
-  }, [isReady]);
-
-  const handleFinish = async () => {
-    setShouldShowOnboarding(false);
-    await AsyncStorage.setItem(ONBOARDING_STORAGE_KEY, ONBOARDING_SEEN_VALUE);
-  };
+  const { finishOnboarding, isReady, shouldShowOnboarding } = useOnboardingGate();
 
   if (!isReady) {
     return null;
@@ -56,7 +21,15 @@ export function OnboardingGate({ children }: PropsWithChildren) {
 
   return (
     <View style={styles.container}>
-      {shouldShowOnboarding ? <OnboardingScreen onFinish={handleFinish} /> : children}
+      {shouldShowOnboarding ? (
+        <Animated.View style={OVERLAY} exiting={FadeOut.duration(220)}>
+          <OnboardingScreen onFinish={finishOnboarding} />
+        </Animated.View>
+      ) : (
+        <Animated.View style={FILL} entering={FadeIn.duration(260)}>
+          {children}
+        </Animated.View>
+      )}
     </View>
   );
 }

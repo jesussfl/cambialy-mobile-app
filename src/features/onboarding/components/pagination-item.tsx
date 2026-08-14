@@ -1,73 +1,68 @@
-import { useEffect, type FC } from "react";
-import { View } from "react-native";
-import { TouchZone } from "@/components/ui/button";
-import Animated, {
-  Extrapolation,
-  interpolate,
-  type SharedValue,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
+import type { FC } from "react";
+import { View, type ViewStyle } from "react-native";
+import Animated, { Extrapolation, interpolate, type SharedValue, useAnimatedStyle } from "react-native-reanimated";
 import { StyleSheet } from "react-native-unistyles";
 
+import { TouchZone } from "@/components/ui/button";
+
 type PaginationItemProps = {
-  index: number;
-  currentSlideIndex: number;
-  animatedSlideIndex: SharedValue<number>;
-  inactiveWidth: number;
+  accessibilityLabel: string;
   activeWidth: number;
-  totalSlides: number;
-  isDragging: SharedValue<boolean>;
-  slideDuration: number;
-  handleScrollToIndex: (index: number) => void;
-  translateY: SharedValue<number>;
-  topCarouselOffset: number;
+  inactiveWidth: number;
+  index: number;
+  onPress: (index: number) => void;
+  slideProgress: SharedValue<number>;
+};
+
+/**
+ * The fill wrapper must carry real dimensions of its own: an absolutely
+ * positioned child contributes no layout height, so a plain flex wrapper would
+ * collapse to zero and the fill would never paint.
+ */
+const FILL_LAYOUT: ViewStyle = {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  transformOrigin: "left center",
 };
 
 export const PaginationItem: FC<PaginationItemProps> = ({
-  index,
-  currentSlideIndex,
-  animatedSlideIndex,
-  inactiveWidth,
+  accessibilityLabel,
   activeWidth,
-  slideDuration,
-  handleScrollToIndex,
+  inactiveWidth,
+  index,
+  onPress,
+  slideProgress,
 }) => {
-  const progress = useSharedValue(0);
-
-  useEffect(() => {
-    if (currentSlideIndex === index) {
-      progress.value = 0;
-      progress.value = withTiming(1, { duration: slideDuration });
-      return;
-    }
-
-    progress.value = 0;
-  }, [currentSlideIndex, index, progress, slideDuration]);
-
-  const containerStyle = useAnimatedStyle(() => {
-    const distanceFromActive = Math.abs(animatedSlideIndex.value - index);
-    const width = interpolate(distanceFromActive, [0, 1], [activeWidth, inactiveWidth], Extrapolation.CLAMP);
-    const opacity = interpolate(distanceFromActive, [0, 1], [1, 0.42], Extrapolation.CLAMP);
+  const trackStyle = useAnimatedStyle(() => {
+    const distanceFromActive = Math.abs(slideProgress.value - index);
 
     return {
-      opacity,
-      width,
+      width: interpolate(distanceFromActive, [0, 1], [activeWidth, inactiveWidth], Extrapolation.CLAMP),
+      opacity: interpolate(distanceFromActive, [0, 1], [1, 0.42], Extrapolation.CLAMP),
     };
   }, [activeWidth, inactiveWidth, index]);
 
-  const progressStyle = useAnimatedStyle(() => ({
-    transform: [{ scaleX: currentSlideIndex === index ? progress.value : 0 }],
-  }));
+  // Empty until the deck reaches this slide, filling across the swipe, full
+  // once it has been passed — derived purely from scroll position.
+  const fillStyle = useAnimatedStyle(() => ({
+    transform: [{ scaleX: interpolate(slideProgress.value, [index - 1, index], [0, 1], Extrapolation.CLAMP) }],
+  }), [index]);
 
   return (
-    <TouchZone accessibilityRole="button" onPress={() => handleScrollToIndex(index)} style={styles.pressable}>
-      <Animated.View style={containerStyle}>
+    <TouchZone
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      onPress={() => onPress(index)}
+      style={styles.pressable}
+    >
+      <Animated.View style={trackStyle}>
         <View style={styles.track}>
           <View style={styles.trackBase} />
-          <Animated.View style={[{ transformOrigin: 'left center' }, progressStyle]}>
-            <View style={styles.progress} />
+          <Animated.View style={[FILL_LAYOUT, fillStyle]}>
+            <View style={styles.fill} />
           </Animated.View>
         </View>
       </Animated.View>
@@ -89,10 +84,9 @@ const styles = StyleSheet.create((theme) => ({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: theme.colors.borderSubtle,
   },
-  progress: {
-    ...StyleSheet.absoluteFillObject,
+  fill: {
+    flex: 1,
     backgroundColor: theme.colors.primary,
     borderRadius: theme.radius.pill,
-    transformOrigin: "left center",
   },
 }));
