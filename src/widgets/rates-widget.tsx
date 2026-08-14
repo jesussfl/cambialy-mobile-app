@@ -1,5 +1,18 @@
 import { HStack, Spacer, Text, VStack } from "@expo/ui/swift-ui";
-import { background, containerBackground, cornerRadius, font, foregroundStyle, frame, lineLimit, padding, widgetURL } from "@expo/ui/swift-ui/modifiers";
+import {
+  background,
+  clipShape,
+  containerBackground,
+  cornerRadius,
+  font,
+  foregroundStyle,
+  frame,
+  lineLimit,
+  minimumScaleFactor,
+  padding,
+  strokeBorder,
+  widgetURL,
+} from "@expo/ui/swift-ui/modifiers";
 import { createWidget, type WidgetEnvironment } from "expo-widgets";
 
 export type RatesWidgetStatus = "updated" | "stale" | "empty" | "loading";
@@ -21,13 +34,19 @@ export type RatesWidgetProps = {
 /**
  * FULL widget — all three rates.
  *
- * IMPORTANT: the body of a `"widget"` function is handed to native as source text and
- * evaluated in a standalone JS context whose only dependencies are the globals injected
- * by expo-widgets. It therefore CANNOT reference imported modules, shared constants or
- * helpers from elsewhere in this repo — every palette entry and helper below must stay
- * inline. This is why the palette is duplicated across rate-widget.tsx and
- * trend-widget.tsx rather than extracted; keep the three in sync by hand, and keep them
- * in sync with the Android res/values/colors.xml + res/values-night/colors.xml pair.
+ * Visual spec mirrors Android's res/layout/rates_widget.xml and its row includes: 14pt
+ * frame padding, title at 15, bordered 12pt-radius rows with 12pt horizontal padding,
+ * badge at 11, label at 12 secondary, and the value at 13 in the PRIMARY colour (not
+ * text_primary) — that colour choice comes straight from the Android row layout.
+ *
+ * Modifier order is semantic: padding precedes background so the fill covers the padded
+ * area, the way an Android <shape> fills its view.
+ *
+ * IMPORTANT: a `"widget"` function body is handed to native as source text and evaluated
+ * standalone, so it cannot reference imported modules or shared constants. Every palette
+ * entry below must stay inline — this is why it is duplicated across rate-widget.tsx and
+ * trend-widget.tsx. Keep all three in sync with Android's res/values +
+ * res/values-night/colors.xml.
  */
 function RatesWidget(props: RatesWidgetProps, environment: WidgetEnvironment) {
   "widget";
@@ -44,11 +63,14 @@ function RatesWidget(props: RatesWidgetProps, environment: WidgetEnvironment) {
   const family = environment.widgetFamily;
   const isDark = environment.colorScheme === "dark";
 
-  const background_ = isDark ? "#0F172A" : "#F8FAFC";
+  const backgroundColor = isDark ? "#0F172A" : "#F8FAFC";
   const surface = isDark ? "#1E293B" : "#FFFFFF";
+  const cardStroke = isDark ? "#334155" : "#E2E8F0";
   const textPrimary = isDark ? "#F8FAFC" : "#0F172A";
   const textSecondary = isDark ? "#94A3B8" : "#64748B";
-  const accent = isDark ? "#3B82F6" : "#0350FF";
+  const primary = isDark ? "#3B82F6" : "#0350FF";
+  const refreshBg = isDark ? "#1E3A8A" : "#EFF6FF";
+  const refreshIcon = isDark ? "#93C5FD" : "#0350FF";
 
   const usdBadgeBg = isDark ? "#1E3A8A" : "#EFF6FF";
   const usdBadgeText = isDark ? "#93C5FD" : "#1D4ED8";
@@ -62,12 +84,9 @@ function RatesWidget(props: RatesWidgetProps, environment: WidgetEnvironment) {
       return "No disponible";
     }
 
-    // en-US deliberately: matches Android's String.format(Locale.US, "Bs. %,.2f", …)
-    // so both platforms render the same digits. Do not "localize" this in isolation.
-    return `Bs. ${value.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
+    // en-US deliberately: matches Android's String.format(Locale.US, "Bs. %,.2f", …) so
+    // both platforms render the same digits. Do not "localize" this in isolation.
+    return `Bs. ${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   const usdBcv = formatWidgetRate(safeProps.usdBcv);
@@ -88,162 +107,79 @@ function RatesWidget(props: RatesWidgetProps, environment: WidgetEnvironment) {
     statusText = "Tasas no disponibles";
   }
 
-  if (family === "systemSmall") {
-    return (
-      <VStack
-        spacing={8}
-        modifiers={[containerBackground(background_, "widget"), padding({ all: 12 }), widgetURL("cambialy://exchange")]}
-      >
-        <HStack spacing={6} alignment="center">
-          <Text modifiers={[font({ weight: "bold", size: 13 }), foregroundStyle(textPrimary), lineLimit(1)]}>Tasas</Text>
-          <Spacer minLength={0} />
-          <Text modifiers={[font({ weight: "bold", size: 12 }), foregroundStyle(accent)]}>↻</Text>
-        </HStack>
-
-        <VStack
-          spacing={2}
-          alignment="leading"
-          modifiers={[background(surface), cornerRadius(12), padding({ horizontal: 10, vertical: 8 }), frame({ minHeight: 46 })]}
-        >
-          <Text modifiers={[font({ weight: "bold", size: 10 }), foregroundStyle(usdBadgeText), lineLimit(1)]}>USD BCV</Text>
-          <Text modifiers={[font({ weight: "bold", size: 15 }), foregroundStyle(textPrimary), lineLimit(1)]}>{usdBcv}</Text>
-        </VStack>
-
-        <VStack
-          spacing={2}
-          alignment="leading"
-          modifiers={[background(surface), cornerRadius(12), padding({ horizontal: 10, vertical: 8 }), frame({ minHeight: 46 })]}
-        >
-          <Text modifiers={[font({ weight: "bold", size: 10 }), foregroundStyle(usdtBadgeText), lineLimit(1)]}>USDT BINANCE</Text>
-          <Text modifiers={[font({ weight: "bold", size: 15 }), foregroundStyle(textPrimary), lineLimit(1)]}>{usdtBinance}</Text>
-        </VStack>
-
-        <Spacer minLength={0} />
-        <Text modifiers={[font({ size: 9 }), foregroundStyle(textSecondary), lineLimit(1)]}>{statusText}</Text>
-      </VStack>
-    );
-  }
-
+  const isSmall = family === "systemSmall";
   const isLarge = family === "systemLarge";
   const statusWithSource = isLarge && safeProps.sourceUpdatedAt ? `${statusText} · ${safeProps.sourceUpdatedAt}` : statusText;
 
-  if (family === "systemMedium") {
-    return (
-      <VStack
-        spacing={9}
-        modifiers={[containerBackground(background_, "widget"), padding({ horizontal: 14, vertical: 12 }), widgetURL("cambialy://exchange")]}
+  // Built by a local function rather than .map(): the native renderer reads
+  // props.children with `compactMap { $0 as? [String: Any] }`, which flattens exactly one
+  // level, so a nested array child would be dropped silently rather than error.
+  const renderRow = (ticker: string, label: string, value: string, badgeBg: string, badgeText: string) => (
+    <HStack
+      spacing={8}
+      alignment="center"
+      modifiers={[
+        padding({ horizontal: 12, vertical: isLarge ? 12 : 10 }),
+        background(surface),
+        cornerRadius(12),
+        strokeBorder({ color: cardStroke, style: { lineWidth: 1 }, shape: "roundedRectangle", cornerRadius: 12 }),
+      ]}
+    >
+      <Text
+        modifiers={[
+          font({ weight: "bold", size: 11 }),
+          foregroundStyle(badgeText),
+          padding({ horizontal: 8, vertical: 3 }),
+          background(badgeBg),
+          cornerRadius(6),
+          lineLimit(1),
+        ]}
       >
-        <HStack spacing={6} alignment="center">
-          <Text modifiers={[font({ weight: "bold", size: 14 }), foregroundStyle(textPrimary), lineLimit(1)]}>Tasas Cambialy</Text>
-          <Spacer minLength={0} />
-          <Text modifiers={[font({ weight: "bold", size: 13 }), foregroundStyle(accent)]}>↻</Text>
-        </HStack>
-
-        <HStack spacing={8}>
-          <VStack
-            spacing={4}
-            alignment="leading"
-            modifiers={[background(surface), cornerRadius(12), padding({ horizontal: 10, vertical: 9 }), frame({ minHeight: 58 })]}
-          >
-            <Text
-              modifiers={[font({ weight: "bold", size: 9 }), foregroundStyle(usdBadgeText), background(usdBadgeBg), cornerRadius(5), padding({ horizontal: 5, vertical: 2 }), lineLimit(1)]}
-            >
-              USD
-            </Text>
-            <Text modifiers={[font({ weight: "bold", size: 13 }), foregroundStyle(textPrimary), lineLimit(1)]}>{usdBcv}</Text>
-          </VStack>
-
-          <VStack
-            spacing={4}
-            alignment="leading"
-            modifiers={[background(surface), cornerRadius(12), padding({ horizontal: 10, vertical: 9 }), frame({ minHeight: 58 })]}
-          >
-            <Text
-              modifiers={[font({ weight: "bold", size: 9 }), foregroundStyle(eurBadgeText), background(eurBadgeBg), cornerRadius(5), padding({ horizontal: 5, vertical: 2 }), lineLimit(1)]}
-            >
-              EUR
-            </Text>
-            <Text modifiers={[font({ weight: "bold", size: 13 }), foregroundStyle(textPrimary), lineLimit(1)]}>{eurBcv}</Text>
-          </VStack>
-
-          <VStack
-            spacing={4}
-            alignment="leading"
-            modifiers={[background(surface), cornerRadius(12), padding({ horizontal: 10, vertical: 9 }), frame({ minHeight: 58 })]}
-          >
-            <Text
-              modifiers={[font({ weight: "bold", size: 9 }), foregroundStyle(usdtBadgeText), background(usdtBadgeBg), cornerRadius(5), padding({ horizontal: 5, vertical: 2 }), lineLimit(1)]}
-            >
-              USDT
-            </Text>
-            <Text modifiers={[font({ weight: "bold", size: 13 }), foregroundStyle(textPrimary), lineLimit(1)]}>{usdtBinance}</Text>
-          </VStack>
-        </HStack>
-
-        <Text modifiers={[font({ size: 10 }), foregroundStyle(textSecondary), lineLimit(1)]}>{statusText}</Text>
-      </VStack>
-    );
-  }
+        {ticker}
+      </Text>
+      <Text modifiers={[font({ weight: "bold", size: 12 }), foregroundStyle(textSecondary), lineLimit(1)]}>{label}</Text>
+      <Spacer minLength={4} />
+      <Text modifiers={[font({ weight: "bold", size: 13 }), foregroundStyle(primary), lineLimit(1), minimumScaleFactor(0.7)]}>
+        {value}
+      </Text>
+    </HStack>
+  );
 
   return (
     <VStack
-      spacing={12}
-      modifiers={[containerBackground(background_, "widget"), padding({ all: 18 }), widgetURL("cambialy://exchange")]}
+      spacing={10}
+      alignment="leading"
+      modifiers={[containerBackground(backgroundColor, "widget"), padding({ all: 14 }), widgetURL("cambialy://exchange")]}
     >
       <HStack spacing={6} alignment="center">
-        <Text modifiers={[font({ weight: "bold", size: 16 }), foregroundStyle(textPrimary), lineLimit(1)]}>Tasas Cambialy</Text>
+        <Text modifiers={[font({ weight: "bold", size: 15 }), foregroundStyle(textPrimary), lineLimit(1)]}>
+          {isSmall ? "Tasas" : "Tasas Cambialy"}
+        </Text>
         <Spacer minLength={0} />
-        <Text modifiers={[font({ weight: "bold", size: 14 }), foregroundStyle(accent)]}>↻</Text>
+        <Text
+          modifiers={[
+            font({ weight: "bold", size: 15 }),
+            foregroundStyle(refreshIcon),
+            frame({ width: 32, height: 32 }),
+            background(refreshBg),
+            clipShape("circle"),
+          ]}
+        >
+          ↻
+        </Text>
       </HStack>
 
-      <VStack spacing={10}>
-        <HStack
-          spacing={10}
-          alignment="center"
-          modifiers={[background(surface), cornerRadius(14), padding({ horizontal: 12, vertical: 12 }), frame({ minHeight: 46 })]}
-        >
-          <Text
-            modifiers={[font({ weight: "bold", size: 10 }), foregroundStyle(usdBadgeText), background(usdBadgeBg), cornerRadius(6), padding({ horizontal: 6, vertical: 3 }), lineLimit(1)]}
-          >
-            USD
-          </Text>
-          <Text modifiers={[font({ weight: "semibold", size: 12 }), foregroundStyle(textSecondary), lineLimit(1)]}>BCV</Text>
-          <Spacer minLength={4} />
-          <Text modifiers={[font({ weight: "bold", size: 15 }), foregroundStyle(textPrimary), lineLimit(1)]}>{usdBcv}</Text>
-        </HStack>
-
-        <HStack
-          spacing={10}
-          alignment="center"
-          modifiers={[background(surface), cornerRadius(14), padding({ horizontal: 12, vertical: 12 }), frame({ minHeight: 46 })]}
-        >
-          <Text
-            modifiers={[font({ weight: "bold", size: 10 }), foregroundStyle(eurBadgeText), background(eurBadgeBg), cornerRadius(6), padding({ horizontal: 6, vertical: 3 }), lineLimit(1)]}
-          >
-            EUR
-          </Text>
-          <Text modifiers={[font({ weight: "semibold", size: 12 }), foregroundStyle(textSecondary), lineLimit(1)]}>BCV</Text>
-          <Spacer minLength={4} />
-          <Text modifiers={[font({ weight: "bold", size: 15 }), foregroundStyle(textPrimary), lineLimit(1)]}>{eurBcv}</Text>
-        </HStack>
-
-        <HStack
-          spacing={10}
-          alignment="center"
-          modifiers={[background(surface), cornerRadius(14), padding({ horizontal: 12, vertical: 12 }), frame({ minHeight: 46 })]}
-        >
-          <Text
-            modifiers={[font({ weight: "bold", size: 10 }), foregroundStyle(usdtBadgeText), background(usdtBadgeBg), cornerRadius(6), padding({ horizontal: 6, vertical: 3 }), lineLimit(1)]}
-          >
-            USDT
-          </Text>
-          <Text modifiers={[font({ weight: "semibold", size: 12 }), foregroundStyle(textSecondary), lineLimit(1)]}>Binance</Text>
-          <Spacer minLength={4} />
-          <Text modifiers={[font({ weight: "bold", size: 15 }), foregroundStyle(textPrimary), lineLimit(1)]}>{usdtBinance}</Text>
-        </HStack>
+      {/* systemSmall is narrower than any Android cell this widget supports, so it drops
+          EUR rather than truncating values. A null child is discarded by the same
+          compactMap that flattens the children array. */}
+      <VStack spacing={6} alignment="leading">
+        {renderRow("USD", "BCV", usdBcv, usdBadgeBg, usdBadgeText)}
+        {isSmall ? null : renderRow("EUR", "BCV", eurBcv, eurBadgeBg, eurBadgeText)}
+        {renderRow("USDT", "Binance", usdtBinance, usdtBadgeBg, usdtBadgeText)}
       </VStack>
 
       <Spacer minLength={0} />
+
       <Text modifiers={[font({ size: 11 }), foregroundStyle(textSecondary), lineLimit(1)]}>{statusWithSource}</Text>
     </VStack>
   );
