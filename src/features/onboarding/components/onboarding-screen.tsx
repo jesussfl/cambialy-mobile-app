@@ -20,8 +20,19 @@ const AnimatedFlatList = Animated.FlatList<OnboardingSlide>;
 const UniAppText = withUnistyles(AppText);
 
 export function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
-  const { goToNextSlide, handleMomentumScrollEnd, handleScroll, isLastSlide, listRef, scrollToSlide, slideProgress, width } =
-    useOnboardingCarousel({ slideCount: ONBOARDING_SLIDES.length, onComplete: onFinish });
+  const {
+    currentSlideIndex,
+    goToNextSlide,
+    handleMomentumScrollEnd,
+    handleScroll,
+    handleScrollBeginDrag,
+    isLastSlide,
+    listRef,
+    scrollToSlide,
+    slideProgress,
+    timerProgress,
+    width,
+  } = useOnboardingCarousel({ slides: ONBOARDING_SLIDES, onComplete: onFinish });
 
   return (
     <View style={styles.overlay}>
@@ -41,6 +52,7 @@ export function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
           keyExtractor={(item) => item.title}
           onMomentumScrollEnd={handleMomentumScrollEnd}
           onScroll={handleScroll}
+          onScrollBeginDrag={handleScrollBeginDrag}
           pagingEnabled
           renderItem={({ item, index }) => <SlideItem index={index} item={item} slideProgress={slideProgress} width={width} />}
           scrollEventThrottle={16}
@@ -48,7 +60,13 @@ export function OnboardingScreen({ onFinish }: OnboardingScreenProps) {
         />
 
         <View style={styles.footer}>
-          <Pagination slides={ONBOARDING_SLIDES} slideProgress={slideProgress} onSelectSlide={scrollToSlide} />
+          <Pagination
+            currentSlideIndex={currentSlideIndex}
+            onSelectSlide={scrollToSlide}
+            slideProgress={slideProgress}
+            slides={ONBOARDING_SLIDES}
+            timerProgress={timerProgress}
+          />
           <AppButton label={isLastSlide ? "Comenzar" : "Siguiente"} icon="arrow-right-line" onPress={goToNextSlide} />
         </View>
       </SafeAreaView>

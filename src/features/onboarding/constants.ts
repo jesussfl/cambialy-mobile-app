@@ -19,6 +19,9 @@ export const PAGINATION = {
   activeWidthRatio: 3,
 } as const;
 
+/** Default time a slide holds before the carousel advances on its own. */
+export const SLIDE_DURATION_MS = 4200;
+
 export const ONBOARDING_SLIDES: OnboardingSlide[] = [
   {
     title: "Calcula cambios sin perder tiempo",
@@ -26,6 +29,7 @@ export const ONBOARDING_SLIDES: OnboardingSlide[] = [
     bgColor: "#004FFB",
     accentColor: "#9BFF2A",
     illustration: "converter",
+    durationMs: SLIDE_DURATION_MS,
   },
   {
     title: "Compara precios con claridad",
@@ -33,6 +37,7 @@ export const ONBOARDING_SLIDES: OnboardingSlide[] = [
     bgColor: "#07101F",
     accentColor: "#38D5FF",
     illustration: "compare",
+    durationMs: SLIDE_DURATION_MS,
   },
   {
     title: "Ten el dato a mano",
@@ -40,5 +45,6 @@ export const ONBOARDING_SLIDES: OnboardingSlide[] = [
     bgColor: "#0F7A4D",
     accentColor: "#DFFF73",
     illustration: "rates",
+    durationMs: SLIDE_DURATION_MS,
   },
 ];

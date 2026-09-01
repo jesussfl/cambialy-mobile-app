@@ -8,12 +8,20 @@ import type { OnboardingSlide } from "../lib/types";
 import { PaginationItem } from "./pagination-item";
 
 type PaginationProps = {
+  currentSlideIndex: number;
   onSelectSlide: (index: number) => void;
   slideProgress: SharedValue<number>;
   slides: OnboardingSlide[];
+  timerProgress: SharedValue<number>;
 };
 
-export const Pagination: FC<PaginationProps> = ({ onSelectSlide, slideProgress, slides }) => {
+export const Pagination: FC<PaginationProps> = ({
+  currentSlideIndex,
+  onSelectSlide,
+  slideProgress,
+  slides,
+  timerProgress,
+}) => {
   const { width: screenWidth } = useWindowDimensions();
   const { activeWidth, gap, horizontalInset, inactiveWidth } = getPaginationLayout(screenWidth, slides.length);
 
@@ -24,10 +32,12 @@ export const Pagination: FC<PaginationProps> = ({ onSelectSlide, slideProgress, 
           key={slide.title}
           accessibilityLabel={`Ir al paso ${index + 1} de ${slides.length}`}
           activeWidth={activeWidth}
+          currentSlideIndex={currentSlideIndex}
           inactiveWidth={inactiveWidth}
           index={index}
           onPress={onSelectSlide}
           slideProgress={slideProgress}
+          timerProgress={timerProgress}
         />
       ))}
     </View>

@@ -8,10 +8,12 @@ import { TouchZone } from "@/components/ui/button";
 type PaginationItemProps = {
   accessibilityLabel: string;
   activeWidth: number;
+  currentSlideIndex: number;
   inactiveWidth: number;
   index: number;
   onPress: (index: number) => void;
   slideProgress: SharedValue<number>;
+  timerProgress: SharedValue<number>;
 };
 
 /**
@@ -31,10 +33,12 @@ const FILL_LAYOUT: ViewStyle = {
 export const PaginationItem: FC<PaginationItemProps> = ({
   accessibilityLabel,
   activeWidth,
+  currentSlideIndex,
   inactiveWidth,
   index,
   onPress,
   slideProgress,
+  timerProgress,
 }) => {
   const trackStyle = useAnimatedStyle(() => {
     const distanceFromActive = Math.abs(slideProgress.value - index);
@@ -45,11 +49,22 @@ export const PaginationItem: FC<PaginationItemProps> = ({
     };
   }, [activeWidth, inactiveWidth, index]);
 
-  // Empty until the deck reaches this slide, filling across the swipe, full
-  // once it has been passed — derived purely from scroll position.
-  const fillStyle = useAnimatedStyle(() => ({
-    transform: [{ scaleX: interpolate(slideProgress.value, [index - 1, index], [0, 1], Extrapolation.CLAMP) }],
-  }), [index]);
+  // Two fills compete for the same bar and the larger one wins.
+  //
+  // `passedFill` is scroll-derived and grows only as the deck moves *beyond*
+  // this slide, so swiping away completes the bar instead of snapping it.
+  // `timerFill` is the dwell countdown, and applies to the active bar alone.
+  // Taking the max means the countdown reads as elapsed time while the slide is
+  // held, then hands over to the gesture the moment the user starts swiping —
+  // the bar never jumps backwards, whichever is driving it.
+  const fillStyle = useAnimatedStyle(() => {
+    const passedFill = interpolate(slideProgress.value, [index, index + 1], [0, 1], Extrapolation.CLAMP);
+    const timerFill = currentSlideIndex === index ? timerProgress.value : 0;
+
+    return {
+      transform: [{ scaleX: Math.max(passedFill, timerFill) }],
+    };
+  }, [currentSlideIndex, index]);
 
   return (
     <TouchZone
